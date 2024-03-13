@@ -1,6 +1,6 @@
 # PRRI-MMORPG2024
 
-A fantasy MMORPG game based on Stanislav Petrov's [Sprite Stacking project](https://github.com/StanislavPetrovV/SpriteStacking) developed by students in the [Artificial Intelligence Laboratory](https://ai.foi.hr/) at the [University of Zagreb Faculty of Organization and Informatics](https://www.foi.unizg.hr/). The game is developed using the [PyGame](https://www.pygame.org/). More details available at [itch.io](https://ailab-foi.itch.io/prri-mmorpg2024).
+A fantasy MMORPG game based on Stanislav Petrov's [Sprite Stacking project](https://github.com/StanislavPetrovV/SpriteStacking) developed by students in the [Artificial Intelligence Laboratory](https://ai.foi.hr/) at the [University of Zagreb Faculty of Organization and Informatics](https://www.foi.unizg.hr/). The game is developed using [PyGame](https://www.pygame.org/). More details available at [itch.io](https://ailab-foi.itch.io/prri-mmorpg2024).
 
 # Short intro
 
