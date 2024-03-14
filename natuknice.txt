@@ -1,0 +1,16 @@
+MMORPG
+- preporuka desktop klijent (ne webassembly) zbog brzine i eventualno networking i modula
+- implementirati user management
+- implementirati više mapa
+- implementirati mehaniku borbe (real-time ili turn based)
+- implementirati exit (are you sure?)
+- povesti računa o pixelart rezolucijama
+- implementirati pucanje kod drugih igrača
+- implementirati statuse igrača (online / offline / ...)
+- implementirati chat ili voip
+- optimizirati algoritam sinkronizacije (minimizirati broadcasting, npr. samo slati igračima na istoj mapi, podijeliti mapu na kvadrate umjesto pixela i sl.)
+- admin sučelje za rad s bazom podataka
+- implementirati join novih igrača i logout postojećih (kad je igra pokrenuta, za sada samo učitava sve igrače samo pri pokretanju igre)
+- implementirati animaciju pokreta remote igrača
+- implementirati status igrača (on-line/off-line)
+- implementirati username igrača da se prikazuje drugima
