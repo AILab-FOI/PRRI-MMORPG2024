@@ -19,3 +19,7 @@ MMORPG
 Sprite Stacking Tutorial:
 
 https://www.youtube.com/watch?v=HcRWqchSZOE&t=1035s&ab_channel=CoderSpace
+
+Alat za pretvaranje VOX (Magical Voxel) formata u stacked sprite:
+
+https://github.com/AILab-FOI/Voxel2StackedSprite
