@@ -110,11 +110,13 @@ Let us walk through the circus and I show you some of our performers!
         if self.inc.x and self.inc.y:
             self.inc *= self.diag_move_corr
 
-    def single_fire( self, event ):
-        if event.key == pg.K_UP:
-            Bullet( app=self.app )
-        if event.key == pg.K_SPACE:
-            self.app.message.handle_input()
+    def single_fire( self, event ): #treba razlikovati kakav je klik, mis ili tipkovnica, zato event.type
+        if event.type == pg.MOUSEBUTTONDOWN:
+            if event.button == 1:  
+                Bullet(app=self.app)
+        elif event.type == pg.KEYDOWN:
+            if event.key == pg.K_SPACE:
+                self.app.message.handle_input()
 
     def check_collision( self ):
         hitobst = pg.sprite.spritecollide( self, self.app.collision_group,
@@ -151,18 +153,6 @@ Let us walk through the circus and I show you some of our performers!
         self.control()
         self.check_collision()
         self.move()
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

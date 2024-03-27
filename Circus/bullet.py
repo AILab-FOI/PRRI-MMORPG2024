@@ -1,5 +1,5 @@
 from entity import *
-
+from math import atan2, pi
 
 class Explosion( Entity ):
     def __init__( self, app, name='explosion', pos=( 0, 0 )):
@@ -23,17 +23,19 @@ class Explosion( Entity ):
 
 
 class Bullet( BaseEntity ):
-    def __init__( self, app, name='bullet', pos=( 0, 0 )):
+    def __init__( self, app, name='bullet', pos=( 0, -50 )): #koordinate drugacije da puca iz centra playera
         super().__init__( app, name )
-        self.pos = vec2( pos )
+        self.pos = vec2( pos )  
         self.player = app.player
-        self.y_offset = self.attrs[ 'y_offset' ]
+        self.y_offset = self.attrs[ 'y_offset' ] 
 
         self.speed = 0.7
         self.bullet_direction = vec2( 0, -self.speed )
         self.life_time_cycles = 20
         self.cycles = 0
-        self.angle = self.player.angle
+        self.initial_angle = self.calc_init_ang()
+        self.angle = self.initial_angle
+    
 
     def check_collision( self ):
         hits = pg.sprite.spritecollide( self, self.app.collision_group,
@@ -66,6 +68,15 @@ class Bullet( BaseEntity ):
         new_pos = pos.rotate_rad( self.player.angle )
         self.rect.center = new_pos + CENTER
         self.rect.centery += self.y_offset
+    
+
+    def calc_init_ang( self ):
+        player_pos = self.player.rect.center
+        mouse_pos = pg.mouse.get_pos()
+        dx = mouse_pos[0] - player_pos[0]
+        dy = mouse_pos[1] - player_pos[1]
+        angle_to_mouse = atan2(dy, dx) 
+        return -angle_to_mouse + self.player.angle - pi/2
 
     def run( self ):
         bullet_direction = self.bullet_direction * self.app.delta_time

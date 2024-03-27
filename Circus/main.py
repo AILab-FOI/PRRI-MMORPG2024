@@ -98,6 +98,10 @@ class App:
                 self.anim_trigger = True
             elif e.type == pg.KEYDOWN:
                 self.player.single_fire( event=e )
+            elif e.type == pg.MOUSEBUTTONDOWN: #1 lijevi klik, 2 scroll, 3 desni klik
+                print("Mis pritisnut")
+                if e.button == 1: 
+                    self.player.single_fire( event=e )
 
     def get_time( self ):
         self.time = pg.time.get_ticks() * 0.001

@@ -3,7 +3,7 @@ import sys
 
 vec2 = pg.math.Vector2
 
-RES = WIDTH, HEIGHT = vec2( 800, 450 ) #vec2( 1600, 900 )
+RES = WIDTH, HEIGHT = vec2( 1600, 900 ) #vec2( 1600, 900 )
 CENTER = H_WIDTH, H_HEIGHT = RES // 2
 TILE_SIZE = 250  #
 
