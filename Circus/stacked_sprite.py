@@ -1,23 +1,22 @@
-from settings import *
+from shared import *
 import math
 
 
 class StackedSprite( pg.sprite.Sprite ):
-    def __init__( self, app, name, pos, rot=0, collision=True ):
-        self.app = app
+    def __init__( self, name, pos, rot=0, collision=True ):
         self.name = name
         self.pos = vec2( pos ) * TILE_SIZE
-        self.player = app.player
-        self.group = app.main_group
+        self.player = g.client_app.player
+        self.group = g.client_app.draw_manager.layer_masks["main_layer"]
         super().__init__( self.group )
 
         if collision:
-            self.app.collision_group.add( self )
+            g.client_app.collision_group.add( self )
 
         self.attrs = STACKED_SPRITE_ATTRS[ name ]
         self.y_offset = vec2( 0, self.attrs[ 'y_offset' ] )
-        self.cache = app.cache.stacked_sprite_layer_cache
-        self.viewing_angle = app.cache.viewing_angle
+        self.cache = g.client_app.cache.stacked_sprite_layer_cache
+        self.viewing_angle = g.client_app.cache.viewing_angle
         self.rotated_sprites = self.cache[ name ][ 'rotated_sprites' ]
         self.collision_masks = self.cache[ name ][ 'collision_masks' ]
 
@@ -62,7 +61,7 @@ class StackedSprite( pg.sprite.Sprite ):
 class TrnspStackedSprite( StackedSprite ):
     def __init__( self, *args, **kwargs ):
         super().__init__( *args, **kwargs )
-        self.app.transparent_objects.append( self )
+        g.client_app.transparent_objects.append( self )
 
         self.alpha_trigger = False
         self.alpha_objects = self.cache[ self.name ][ 'alpha_sprites' ]

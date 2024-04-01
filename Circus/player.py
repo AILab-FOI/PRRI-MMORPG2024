@@ -1,4 +1,4 @@
-from settings import *
+from shared import *
 import math
 from entity import BaseEntity
 from bullet import Bullet
@@ -7,8 +7,8 @@ import json
 
 
 class Player( BaseEntity ):
-    def __init__( self, app, name='player' ):
-        super().__init__( app, name )
+    def __init__( self, name='player' ):
+        super().__init__( name )
 
         self.group.change_layer( self, CENTER.y )
 
@@ -52,7 +52,7 @@ Let us walk through the circus and I show you some of our performers!
 """
                 
     def animate( self ):
-        if self.app.anim_trigger:
+        if g.client_app.anim_trigger:
             if self.direction == 'DOWN':
                 if self.moving:
                     self.frame_index = next( self.down_list )
@@ -80,8 +80,8 @@ Let us walk through the circus and I show you some of our performers!
     def control( self ):
         self.moving = False
         self.inc = vec2( 0 )
-        speed = PLAYER_SPEED * self.app.delta_time
-        rot_speed = PLAYER_ROT_SPEED * self.app.delta_time
+        speed = PLAYER_SPEED * g.client_app.delta_time
+        rot_speed = PLAYER_ROT_SPEED * g.client_app.delta_time
 
         key_state = pg.key.get_pressed()
 
@@ -112,14 +112,14 @@ Let us walk through the circus and I show you some of our performers!
 
     def single_fire( self, event ):
         if event.key == pg.K_UP:
-            Bullet( app=self.app )
+            Bullet()
         if event.key == pg.K_SPACE:
-            self.app.message.handle_input()
+            g.client_app.message.handle_input()
 
     def check_collision( self ):
-        hitobst = pg.sprite.spritecollide( self, self.app.collision_group,
+        hitobst = pg.sprite.spritecollide( self, g.client_app.collision_group,
                                       dokill=False, collided=pg.sprite.collide_mask )
-        hit = pg.sprite.spritecollide( self, self.app.entity_group,
+        hit = pg.sprite.spritecollide( self, g.client_app.draw_manager.layer_masks['entity_layer'],
                                       dokill=False, collided=pg.sprite.collide_mask )
         if not hitobst and not hit:
             if self.inc.x or self.inc.y:
@@ -127,11 +127,11 @@ Let us walk through the circus and I show you some of our performers!
         else:
             self.inc = -self.prev_inc
             if hit:
-                self.app.message.set_message( hit[ 0 ].message )
-                self.app.message.active = True
+                g.client_app.message.set_message( hit[ 0 ].message )
+                g.client_app.message.active = True
             if hitobst and hitobst[ 0 ].message != '':
-                self.app.message.set_message( hitobst[ 0 ].message )
-                self.app.message.active = True
+                g.client_app.message.set_message( hitobst[ 0 ].message )
+                g.client_app.message.active = True
 
 
     def move( self ):
@@ -141,8 +141,8 @@ Let us walk through the circus and I show you some of our performers!
         x1 = self.last_offset[ 0 ] // TILE_SIZE + 0.5
         y1 = self.last_offset[ 1 ] // TILE_SIZE + 0.5
         if x != x1 or y != y1:
-            message = json.dumps( { "command":"update", "id": self.app.username, "position": { "x": x, "y": y } } )
-            self.app.ws.send( message )
+            message = json.dumps( { "command":"update", "id": g.client_app.username, "position": { "x": x, "y": y } } )
+            g.client_app.ws.send( message )
             self.last_offset[ 0 ] = int( self.offset[ 0 ] )
             self.last_offset[ 1 ] = int( self.offset[ 1 ] )
 

@@ -1,9 +1,11 @@
+from shared import *
 from stacked_sprite import *
 from random import uniform
 from entity import Entity, RemotePlayer
 from cache import Cache
 from player import Player
 import threading
+from tilemap import Material, Tile
 
 P = 'player'
 K = 'kitty'  # entity
@@ -73,47 +75,56 @@ MAP_CENTER = MAP_SIZE / 2
 
 
 class Scene:
-    def __init__( self, app ):
-        self.app = app
+    def __init__( self ):
         self.transform_objects = []
         self.load_scene()
-        self.app.message.set_message( self.app.player.message )
-        self.app.message.active = True
+        g.client_app.message.set_message( g.client_app.player.message )
+        g.client_app.message.active = True
 
     def load_scene( self ):
         rand_rot = lambda: uniform( 0, 360 )
         rand_pos = lambda pos: pos + vec2( uniform( -0.25, 0.25 ))
+
+        player_pos = vec2(0)
 
         for j, row in enumerate( MAP ):
             for i, name in enumerate( row ):
                 pos = vec2( i, j ) + vec2( 0.5 )
                 print( name, pos )
                 if name == 'player':
-                    self.app.player.offset = pos * TILE_SIZE
+                    g.client_app.player.offset = pos * TILE_SIZE
+                    player_pos = g.client_app.player.offset
                 elif name == 'kitty' or name == 'circus' or name == 'movement' or name == 'resource' or name == 'combat' or name == 'tetris' or name == 'globe' or name == 'upgrades' or name == 'ui':
-                    Entity( self.app, name=name, pos=pos )
+                    Entity( name=name, pos=pos )
                 elif str( name ).startswith( 'tree' ) or name == 'bush':
-                    TrnspStackedSprite( self.app, name=name, pos=rand_pos( pos ), rot=rand_rot() )
+                    TrnspStackedSprite( name=name, pos=rand_pos( pos ), rot=rand_rot() )
                 elif name == 'grass' or str( name ).startswith( 'flower' ):
-                    StackedSprite( self.app, name=name, pos=rand_pos( pos ), rot=rand_rot(),
+                    StackedSprite( name=name, pos=rand_pos( pos ), rot=rand_rot(),
                                   collision=False )
                 elif name == 'sphere':
-                    obj = StackedSprite( self.app, name=name, pos=rand_pos( pos ), rot=rand_rot() )
+                    obj = StackedSprite( name=name, pos=rand_pos( pos ), rot=rand_rot() )
                     self.transform_objects.append( obj )
                 elif name:
-                    StackedSprite( self.app, name=name, pos=rand_pos( pos ), rot=rand_rot() )
+                    StackedSprite( name=name, pos=rand_pos( pos ), rot=rand_rot() )
 
-        for pl in self.app.players_pos: 
-            RemotePlayer( self.app, 'remote_player', self.app.players_pos[ pl ], pl )
+        print(player_pos)
+        material1 = Material("assets/materials/tiles/test_tile.png")
+        Tile( material1, player_pos, g.client_app.draw_manager.layer_masks["tile_layer"] )
+        Tile( material1, player_pos + vec2( TILE_SIZE, 0 ), g.client_app.draw_manager.layer_masks["tile_layer"] )
+        Tile( material1, player_pos + vec2( TILE_SIZE * 2, 0 ), g.client_app.draw_manager.layer_masks["tile_layer"] )
+        Tile( material1, player_pos + vec2( TILE_SIZE * 3, 0 ), g.client_app.draw_manager.layer_masks["tile_layer"] )
+
+        for pl in g.client_app.players_pos: 
+            RemotePlayer( 'remote_player', g.client_app.players_pos[ pl ], pl )
 
     def get_closest_object_to_player( self ):
-        closest = sorted( self.app.transparent_objects, key=lambda e: e.dist_to_player )
+        closest = sorted( g.client_app.transparent_objects, key=lambda e: e.dist_to_player )
         closest[ 0 ].alpha_trigger = True
         closest[ 1 ].alpha_trigger = True
 
     def transform( self ):
         for obj in self.transform_objects:
-            obj.rot = 30 * self.app.time
+            obj.rot = 30 * g.client_app.time
 
     def update( self ):
         self.get_closest_object_to_player()
@@ -140,8 +151,7 @@ def run_in_thread( func, args=None, kwargs=None, callback=None ):
         
 
 class LoadingScene:
-    def __init__( self, app ):
-        self.app = app
+    def __init__( self ):
         self.font = pg.font.Font( "assets/PressStart2P-Regular.ttf", 16 )
         self.progress = 0
         self.messages = [ 
@@ -167,9 +177,9 @@ class LoadingScene:
         self.bar_height = int( HEIGHT / 56.33 )
         self.MAX = len( STACKED_SPRITE_ATTRS )
         self.done = False
-        self.app.cache = Cache( self.app )
-        self.app.cache.cache_entity_sprite_data()
-        self.stacked_sprite_iterator = self.app.cache.cache_stacked_sprite_data()
+        g.client_app.cache = Cache()
+        g.client_app.cache.cache_entity_sprite_data()
+        self.stacked_sprite_iterator = g.client_app.cache.cache_stacked_sprite_data()
 
     def done_cache( self ):
         self.done = True
@@ -182,39 +192,40 @@ class LoadingScene:
         
         if self.done:
             # Switch to the game scene after loading is complete
-            self.app.player = Player( self.app )
-            self.app.scene = Scene( self.app )
+            g.client_app.player = Player()
+            g.client_app.scene = Scene()
         else:
             # Simulate loading progress
-            self.progress = self.app.done_counter / self.MAX * len( self.messages )
+            self.progress = g.client_app.done_counter / self.MAX * len( self.messages )
 
+        print(self.progress)
 
 
     def draw( self ):
-        #self.app.screen.fill( BG_COLOR )
-        self.bg_img = pg.image.load( 'assets/images/circus.png' )
-        self.bg_img = pg.transform.smoothscale( self.bg_img, self.app.screen.get_size() )
-        self.app.screen.blit( self.bg_img, self.bg_img.get_rect() )
-        screen_center_x = self.app.screen.get_width() // 2
-        screen_center_y = self.app.screen.get_height() // 100 * 85
+        #client_app.screen.fill( BG_COLOR )
+        self.bg_img = pg.image.load( 'assets/images/png' )
+        self.bg_img = pg.transform.smoothscale( self.bg_img, g.client_app.screen.get_size() )
+        g.client_app.screen.blit( self.bg_img, self.bg_img.get_rect() )
+        screen_center_x = g.client_app.screen.get_width() // 2
+        screen_center_y = g.client_app.screen.get_height() // 100 * 85
 
         # Display the current message based on progress
         current_message_index = min( int( self.progress ), len( self.messages ) - 1 )
         msg = self.messages[ current_message_index ]
         text = self.font.render( msg, True, ( 0, 0, 0 ))
         text_rect = text.get_rect( center=( screen_center_x, screen_center_y + 80 ))
-        self.app.screen.blit( text, text_rect )
+        g.client_app.screen.blit( text, text_rect )
 
         # Draw the progress bar background
         bar_bg_rect = pg.Rect( 0, 0, self.bar_width, self.bar_height )
         bar_bg_rect.center = ( screen_center_x, screen_center_y + 40 )
-        pg.draw.rect( self.app.screen, ( 204, 239, 253 ), bar_bg_rect )
+        pg.draw.rect( g.client_app.screen, ( 204, 239, 253 ), bar_bg_rect )
 
         # Draw the progress bar
         progress_width = int( self.progress / len( self.messages ) * self.bar_width )
         bar_rect = pg.Rect( 0, 0, progress_width, self.bar_height )
         bar_rect.midleft = bar_bg_rect.midleft
-        pg.draw.rect( self.app.screen, ( 221, 220, 79 ), bar_rect )
+        pg.draw.rect( g.client_app.screen, ( 221, 220, 79 ), bar_rect )
 
 
 

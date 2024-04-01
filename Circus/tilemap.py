@@ -1,6 +1,8 @@
-from settings import *
+import copy
+import math
+from pygame import Rect, Surface
+from shared import *
 import os
-from main import app
 
 class MapData(object):
 	def __init__(self, width, height):
@@ -33,29 +35,55 @@ class WorldObject:
 	def __init__( self, pos ):
 		self.pos = vec2( pos )
 		self.screen_pos = vec2( 0 )
+		self.screen_ang = 0
 		self.viewpoint = None
 
 	def update( self ):
-		self.calculate_viewpoint_position( self.viewpoint )
+		self.calculate_viewpoint_position()
 
 	def calculate_viewpoint_position( self ):
 		view_pos = self.pos - self.viewpoint.offset
 		view_pos = view_pos.rotate_rad( self.viewpoint.angle )
 		self.screen_pos = view_pos + CENTER
 
-#Tile class with an image, x and y
-class Tile( pg.sprite.Sprite, WorldObject ):
-	def __init__( self, material, pos ):
-		super().__init__( pos )
-
-		self.sprite.image = material.image
-		self.rect = self.image.get_rect()
-		self.rect.x = x
-		self.rect.y = y
+		self.screen_ang = -math.degrees( self.viewpoint.angle )
 
 class Material:
-	def __init__( self, file ):
+	def __init__( self, file: str ):
 		if( os.path.isfile(file) ):
-			self.image = pg.image.load( file )
+			self.image: Surface = pg.image.load( file )
 		else:
-			self.image = pg.image.load( "assets/materials/missing.png" )
+			self.image: Surface = pg.image.load( "assets/materials/missing.png" )
+
+#Tile class with an image, x and y
+class Tile( pg.sprite.Sprite, WorldObject ):
+	def __init__( self, material: Material, pos, group ):
+		# TODO: Da li da uzimamo direktan pos ili
+		# da uzimamo Tile pos pa onda izračunamo konkretan pos
+		self.group = group
+		super().__init__( group )
+		super( pg.sprite.Sprite, self ).__init__( pos )
+
+		# Temporary
+		self.viewpoint = g.client_app.player
+
+		self.material: Material = material
+		size = material.image.get_size()
+		self.resize = vec2( TILE_SIZE / size[0], TILE_SIZE / size[1] )
+		print(self.resize)
+		self.image: Surface = material.image.__copy__()
+		self.rect: Rect = self.image.get_rect()
+		self.rect.x = self.pos.x
+		self.rect.y = self.pos.y
+
+		self.calculate_viewpoint_position()
+
+	def update( self ):
+		super().update()
+		super( pg.sprite.Sprite, self ).update()
+
+		self.image = pg.transform.scale( self.material.image, vec2(TILE_SIZE, TILE_SIZE) )
+		self.image = pg.transform.rotate( self.image, self.screen_ang )
+		
+		self.rect: Rect = self.image.get_rect()
+		self.rect.center = self.screen_pos

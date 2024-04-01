@@ -1,19 +1,19 @@
-from settings import *
+from shared import *
 from random import random
 from itertools import cycle
 
 class BaseEntity( pg.sprite.Sprite ):
-    def __init__( self, app, name ):
-        self.app = app
+    def __init__( self, name ):
         self.name = name
         if name == 'player' or name == 'bullet' or name == 'explosion':
-            self.group = app.main_group
+            
+            self.group = g.client_app.draw_manager.layer_masks["main_layer"]
         else:
-            self.group = app.entity_group
+            self.group = g.client_app.draw_manager.layer_masks["entity_layer"]
         super().__init__( self.group )
 
         self.attrs = ENTITY_SPRITE_ATTRS[ name ]
-        entity_cache = self.app.cache.entity_sprite_cache
+        entity_cache = g.client_app.cache.entity_sprite_cache
         self.images = entity_cache[ name ][ 'images' ]
         self.image = self.images[ 0 ]
         self.mask = entity_cache[ name ][ 'mask' ]
@@ -21,7 +21,7 @@ class BaseEntity( pg.sprite.Sprite ):
         self.frame_index = 0
 
     def animate( self ):
-        if self.app.anim_trigger:
+        if g.client_app.anim_trigger:
             self.frame_index = ( self.frame_index + 1 ) % len( self.images )
             self.image = self.images[ self.frame_index ]
 
@@ -30,10 +30,10 @@ class BaseEntity( pg.sprite.Sprite ):
 
 
 class Entity( BaseEntity ):
-    def __init__( self, app, name, pos ):
-        super().__init__( app, name )
+    def __init__( self, name, pos ):
+        super().__init__( name )
         self.pos = vec2( pos ) * TILE_SIZE
-        self.player = app.player
+        self.player = g.client_app.player
         self.y_offset = vec2( 0, self.attrs[ 'y_offset' ] )
         self.screen_pos = vec2( 0 )
 
@@ -63,8 +63,8 @@ class Entity( BaseEntity ):
 
 
 class RemotePlayer( Entity ):
-    def __init__( self, app, name, pos, username ):
-        super().__init__( app, name, pos )
+    def __init__( self, name, pos, username ):
+        super().__init__( name, pos )
         self.username = username
 
         self.down_ind = [ 3, 7, 11 ]
@@ -80,7 +80,7 @@ class RemotePlayer( Entity ):
         self.moving = False  
           
     def animate( self ):
-        if self.app.anim_trigger or True: # TODO: ovo podesiti ako se pomakne remote igrač
+        if g.client_app.anim_trigger or True: # TODO: ovo podesiti ako se pomakne remote igrač
             if self.direction == 'DOWN':
                 if self.moving:
                     self.frame_index = next( self.down_list )
@@ -109,8 +109,8 @@ class RemotePlayer( Entity ):
         return        
         self.moving = False
         self.inc = vec2( 0 )
-        speed = PLAYER_SPEED * self.app.delta_time
-        rot_speed = PLAYER_ROT_SPEED * self.app.delta_time
+        speed = PLAYER_SPEED * g.client_app.delta_time
+        rot_speed = PLAYER_ROT_SPEED * g.client_app.delta_time
 
         key_state = pg.key.get_pressed()
 
@@ -141,7 +141,7 @@ class RemotePlayer( Entity ):
 
     
     def move( self ): # TODO: Ovdje bi trebalo staviti promjenu pozicije temeljem poruke
-        self.pos = self.app.players_pos[ self.username ]
+        self.pos = g.client_app.players_pos[ self.username ]
 
     def update( self ):
         super().update()

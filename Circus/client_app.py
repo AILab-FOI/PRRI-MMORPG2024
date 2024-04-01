@@ -1,4 +1,4 @@
-from settings import *
+from shared import *
 from message import Message
 
 from config import URI
@@ -9,6 +9,8 @@ import logging
 import websocket
 
 import json
+
+from draw_manager import DrawManager
 
 class ClientApp:
     def __init__( self, username: str, password: str ):
@@ -25,11 +27,10 @@ class ClientApp:
         self.anim_trigger = False
         self.anim_event = pg.USEREVENT + 0
         pg.time.set_timer( self.anim_event, 100 )
+        
         # groups
 
-        self.tile_group = pg.sprite.LayeredUpdates()
-        self.main_group = pg.sprite.LayeredUpdates()
-        self.entity_group = pg.sprite.LayeredUpdates()
+        self.draw_manager = DrawManager()
         self.collision_group = pg.sprite.Group()
         
         self.transparent_objects = []
@@ -52,16 +53,20 @@ class ClientApp:
         
         self.cache = None
         self.scene = None
-        self.message = Message( self )
+        self.message = Message( self.screen.get_size() )
         
-
+    def tick( self ):
+        if self.player:
+            self.check_events()
+        
+        self.get_time()
+        self.update()
+        self.draw()
 
     def update( self ):
         if self.scene:
             self.scene.update()
-            self.tile_group.update()
-            self.entity_group.update()
-            self.main_group.update()
+            self.draw_manager.update()
             pg.display.set_caption( 'The Circus of Game Mechanics' ) #( f'{self.clock.get_fps(): .1f}' )
             self.delta_time = self.clock.tick()
 
@@ -70,8 +75,7 @@ class ClientApp:
             self.scene.draw()
         except:
             self.screen.fill( BG_COLOR )
-            self.entity_group.draw( self.screen )
-            self.main_group.draw( self.screen )
+            self.draw_manager.draw()
             self.message.draw()
         
         
@@ -109,7 +113,7 @@ class ClientApp:
     def on_message( self, ws, message ):
         logging.info( f"Message received: {message}" )
         if not self.scene:
-            self.scene = LoadingScene( self )
+            self.scene = LoadingScene()
         data = json.loads( message )
         for player in data:
             if player != self.username:

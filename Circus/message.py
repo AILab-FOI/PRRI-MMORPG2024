@@ -1,13 +1,12 @@
 
-from settings import *
+from shared import *
 import textwrap
 from itertools import chain
 
 class Message:
-    def __init__( self, app, alpha=156, border_radius=10, border_color=( 150, 150, 150 )):
-        self.app = app
+    def __init__( self, screen_size, alpha=156, border_radius=10, border_color=( 150, 150, 150 )):
         self.alpha = alpha
-        self.x, self.y = self.app.screen.get_size()
+        self.x, self.y = screen_size
         self.y //= 2
         self.border = 10
         self.border_radius = border_radius
@@ -78,7 +77,7 @@ To contribute to the project contact Cody "CodeMan38" Boisclair."""
         if self.active:
             self.draw_border()
             self.draw_message()
-            self.app.screen.blit( self.overlay_surface, ( self.border, self.y + self.border ))
+            g.client_app.screen.blit( self.overlay_surface, ( self.border, self.y + self.border ))
         else:
             if 'CREDITS' in ''.join( self.wrapped_text ) and self.shown:
                 if __import__( "sys" ).platform != "emscripten":

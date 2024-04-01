@@ -5,19 +5,16 @@ import platform
 import asyncio
 import logging
 
-from settings import *
-from client import ClientApp
+from shared import *
+from client_app import ClientApp
+
+from scene import LoadingScene
 
 logging.basicConfig(level=logging.INFO)
 
-
 async def run( app ):
     while True:
-        if app.player:
-            app.check_events()
-        app.get_time()
-        app.update()
-        app.draw()
+        app.tick()
         await asyncio.sleep( 0 )
 
 
@@ -37,9 +34,7 @@ if __name__ == '__main__':
     parser.add_argument('--password', type=str, help='The password', required=True)
 
     args = parser.parse_args()
-
-
     args = parser.parse_args()
 
-    app = ClientApp( args.username, args.password )
-    asyncio.run( run( app ) )
+    g.client_app = ClientApp( args.username, args.password )
+    asyncio.run( run( g.client_app ) )

@@ -1,3 +1,3 @@
 class EntitySystem:
-    def __init__( self, app ):
-        self.app = app
+    def __init__( self ):
+      pass
