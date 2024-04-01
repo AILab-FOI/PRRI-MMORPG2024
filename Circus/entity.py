@@ -1,7 +1,6 @@
 from settings import *
 from random import random
 from itertools import cycle
-import json
 
 class BaseEntity( pg.sprite.Sprite ):
     def __init__( self, app, name ):
@@ -57,6 +56,7 @@ class Entity( BaseEntity ):
     def change_layer( self ):
         self.group.change_layer( self, self.screen_pos.y )
 
+    # Rect is the actual thing used in the draw call to determine the position
     def set_rect( self ):
         self.rect.center = self.screen_pos + self.y_offset
 
@@ -148,18 +148,4 @@ class RemotePlayer( Entity ):
         self.transform()
         self.set_rect()
         #self.change_layer()
-        self.move() 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        self.move()

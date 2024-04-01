@@ -16,7 +16,7 @@ class StackedSprite( pg.sprite.Sprite ):
 
         self.attrs = STACKED_SPRITE_ATTRS[ name ]
         self.y_offset = vec2( 0, self.attrs[ 'y_offset' ] )
-        self.cache = app.cache.stacked_sprite_cache
+        self.cache = app.cache.stacked_sprite_layer_cache
         self.viewing_angle = app.cache.viewing_angle
         self.rotated_sprites = self.cache[ name ][ 'rotated_sprites' ]
         self.collision_masks = self.cache[ name ][ 'collision_masks' ]
@@ -85,19 +85,3 @@ class TrnspStackedSprite( StackedSprite ):
                 if self.rect.contains( self.player.rect ):
                     self.image = self.alpha_objects[ self.angle ]
                     self.alpha_trigger = False
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

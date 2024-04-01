@@ -168,8 +168,8 @@ class LoadingScene:
         self.MAX = len( STACKED_SPRITE_ATTRS )
         self.done = False
         self.app.cache = Cache( self.app )
-        self.app.cache.get_entity_sprite_cache()
-        self.stacked_sprite_iterator = self.app.cache.get_stacked_sprite_cache()
+        self.app.cache.cache_entity_sprite_data()
+        self.stacked_sprite_iterator = self.app.cache.cache_stacked_sprite_data()
 
     def done_cache( self ):
         self.done = True

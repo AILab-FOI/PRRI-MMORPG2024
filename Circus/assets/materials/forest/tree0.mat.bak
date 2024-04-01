@@ -1,0 +1,9 @@
+{
+	'type': 'stacked_sprite',
+	'path': 'assets/stacked_sprites/tree4.png',
+	'num_layers': 46,
+	'scale': 8,
+	'y_offset': -130,
+	'transparency': True,
+	'mask_layer': 3,
+}
