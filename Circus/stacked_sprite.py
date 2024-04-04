@@ -6,17 +6,17 @@ class StackedSprite( pg.sprite.Sprite ):
     def __init__( self, name, pos, rot=0, collision=True ):
         self.name = name
         self.pos = vec2( pos ) * TILE_SIZE
-        self.player = g.client_app.player
-        self.group = g.client_app.draw_manager.layer_masks["main_layer"]
+        self.player = clientApp().player
+        self.group = clientApp().draw_manager.layer_masks["main_layer"]
         super().__init__( self.group )
 
         if collision:
-            g.client_app.collision_group.add( self )
+            clientApp().collision_group.add( self )
 
         self.attrs = STACKED_SPRITE_ATTRS[ name ]
         self.y_offset = vec2( 0, self.attrs[ 'y_offset' ] )
-        self.cache = g.client_app.cache.stacked_sprite_layer_cache
-        self.viewing_angle = g.client_app.cache.viewing_angle
+        self.cache = clientApp().cache.stacked_sprite_layer_cache
+        self.viewing_angle = clientApp().cache.viewing_angle
         self.rotated_sprites = self.cache[ name ][ 'rotated_sprites' ]
         self.collision_masks = self.cache[ name ][ 'collision_masks' ]
 
@@ -61,14 +61,14 @@ class StackedSprite( pg.sprite.Sprite ):
 class TrnspStackedSprite( StackedSprite ):
     def __init__( self, *args, **kwargs ):
         super().__init__( *args, **kwargs )
-        g.client_app.transparent_objects.append( self )
+        clientApp().transparent_objects.append( self )
 
         self.alpha_trigger = False
         self.alpha_objects = self.cache[ self.name ][ 'alpha_sprites' ]
         self.dist_to_player = 0.0
 
     def get_dist_to_player( self ):
-        self.dist_to_player = self.screen_pos.distance_to( self.player.rect.center )
+        self.dist_to_player = self.screen_pos.distance_to( self.player.sprite.rect.center )
 
     def update( self ):
         super().update()
@@ -80,7 +80,7 @@ class TrnspStackedSprite( StackedSprite ):
 
     def get_alpha_image( self ):
         if self.alpha_trigger:
-            if self.rect.centery > self.player.rect.top:
-                if self.rect.contains( self.player.rect ):
+            if self.rect.centery > self.player.sprite.rect.top:
+                if self.rect.contains( self.player.sprite.rect ):
                     self.image = self.alpha_objects[ self.angle ]
                     self.alpha_trigger = False

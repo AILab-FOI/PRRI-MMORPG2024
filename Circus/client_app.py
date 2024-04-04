@@ -1,4 +1,5 @@
 from shared import *
+
 from message import Message
 
 from config import URI
@@ -11,6 +12,11 @@ import websocket
 import json
 
 from draw_manager import DrawManager
+from player import Player
+from viewpoint import Viewpoint
+from entity_system import EntitySystem
+
+import pygame as pg
 
 class ClientApp:
     def __init__( self, username: str, password: str ):
@@ -30,6 +36,7 @@ class ClientApp:
         
         # groups
 
+        self.entity_system = EntitySystem()
         self.draw_manager = DrawManager()
         self.collision_group = pg.sprite.Group()
         
@@ -38,7 +45,7 @@ class ClientApp:
         self.done_counter = 0
 
         # game objects
-        self.player = None
+        self.player: Player = None
 
         # player credentials
         self.username = username
@@ -49,12 +56,21 @@ class ClientApp:
         self.connect()
     
         self.players_pos = {}
-
         
         self.cache = None
         self.scene = None
         self.message = Message( self.screen.get_size() )
-        
+
+        self.active_viewpoint: Viewpoint = None
+    
+    def set_local_player( self, player: Player ):
+        self.player = player
+        self.active_viewpoint = player.viewpoint
+        self.draw_manager.dirty = True
+
+    def set_active_scene( self, scene ):
+        self.scene = scene
+
     def tick( self ):
         if self.player:
             self.check_events()
@@ -66,9 +82,11 @@ class ClientApp:
     def update( self ):
         if self.scene:
             self.scene.update()
-            self.draw_manager.update()
             pg.display.set_caption( 'The Circus of Game Mechanics' ) #( f'{self.clock.get_fps(): .1f}' )
             self.delta_time = self.clock.tick()
+        
+        self.entity_system.think()
+        self.draw_manager.update()
 
     def draw( self ):
         try:
@@ -128,11 +146,13 @@ class ClientApp:
 
     def on_close( self, ws, close_status_code, close_msg ):
         logging.warning( "Connection to server closed" )
+        self.closed = True
         if not self.closing:
             logging.info( "Attempting to reconnect..." )
             self.connect()
 
     def on_open( self, ws ):
+        self.closed = False
         logging.info( "Connection established" )
         message = json.dumps( {"command":"register", "id": self.username, "password": self.password } )
         ws.send( message )

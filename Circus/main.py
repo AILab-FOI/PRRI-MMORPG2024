@@ -36,5 +36,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     args = parser.parse_args()
 
-    g.client_app = ClientApp( args.username, args.password )
-    asyncio.run( run( g.client_app ) )
+    setClientApp( ClientApp( args.username, args.password ) )
+    asyncio.run( run( clientApp() ) )

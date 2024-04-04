@@ -3,7 +3,7 @@ from shared import *
 
 class Cache:
     def __init__( self ):
-        g.client_app.done_counter = 0
+        clientApp().done_counter = 0
 
         # This dictionary contains all the raw layers of each stacked sprite
         self.stacked_sprite_layer_cache = {}
@@ -58,7 +58,7 @@ class Cache:
             attrs = STACKED_SPRITE_ATTRS[ obj_name ]
             layer_array = self.create_stack_layer_array( attrs )
             self.compile_stacked_sprite_angles( obj_name, layer_array, attrs )
-            g.client_app.done_counter += 1
+            clientApp().done_counter += 1
             yield 1
         yield 'done'
 

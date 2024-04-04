@@ -1,18 +1,20 @@
 from shared import *
 import math
-from entity import BaseEntity
+from entity import BaseSpriteEntity
 from bullet import Bullet
 from itertools import cycle
 import json
 
+from viewpoint import Viewpoint
 
-class Player( BaseEntity ):
+
+class Player( BaseSpriteEntity ):
     def __init__( self, name='player' ):
         super().__init__( name )
 
-        self.group.change_layer( self, CENTER.y )
+        self.sprite.groups()[0].change_layer( self.sprite, CENTER.y )
 
-        self.rect = self.image.get_rect( center=CENTER )
+        self.sprite.rect = self.sprite.image.get_rect( center=CENTER )
 
         self.offset = vec2( 0 )
         self.last_offset = vec2( 0 )
@@ -22,6 +24,8 @@ class Player( BaseEntity ):
         self.last_inc = vec2( 0 )
         self.angle = 0
         self.diag_move_corr = 1 / math.sqrt( 2 )
+
+        self.viewpoint = Viewpoint()
 
         self.down_ind = [ 3, 7, 11, 15 ]
         self.down_list = cycle( self.down_ind )
@@ -52,7 +56,7 @@ Let us walk through the circus and I show you some of our performers!
 """
                 
     def animate( self ):
-        if g.client_app.anim_trigger:
+        if clientApp().anim_trigger:
             if self.direction == 'DOWN':
                 if self.moving:
                     self.frame_index = next( self.down_list )
@@ -74,14 +78,14 @@ Let us walk through the circus and I show you some of our performers!
                 else:
                     self.frame_index = self.right_ind[ 1 ]
 
-            self.image = self.images[ self.frame_index ]
+            self.sprite.image = self.images[ self.frame_index ]
 
 
     def control( self ):
         self.moving = False
         self.inc = vec2( 0 )
-        speed = PLAYER_SPEED * g.client_app.delta_time
-        rot_speed = PLAYER_ROT_SPEED * g.client_app.delta_time
+        speed = PLAYER_SPEED * clientApp().delta_time
+        rot_speed = PLAYER_ROT_SPEED * clientApp().delta_time
 
         key_state = pg.key.get_pressed()
 
@@ -114,12 +118,12 @@ Let us walk through the circus and I show you some of our performers!
         if event.key == pg.K_UP:
             Bullet()
         if event.key == pg.K_SPACE:
-            g.client_app.message.handle_input()
+            clientApp().message.handle_input()
 
     def check_collision( self ):
-        hitobst = pg.sprite.spritecollide( self, g.client_app.collision_group,
+        hitobst = pg.sprite.spritecollide( self.sprite, clientApp().collision_group,
                                       dokill=False, collided=pg.sprite.collide_mask )
-        hit = pg.sprite.spritecollide( self, g.client_app.draw_manager.layer_masks['entity_layer'],
+        hit = pg.sprite.spritecollide( self.sprite, clientApp().draw_manager.layer_masks['entity_layer'],
                                       dokill=False, collided=pg.sprite.collide_mask )
         if not hitobst and not hit:
             if self.inc.x or self.inc.y:
@@ -127,11 +131,11 @@ Let us walk through the circus and I show you some of our performers!
         else:
             self.inc = -self.prev_inc
             if hit:
-                g.client_app.message.set_message( hit[ 0 ].message )
-                g.client_app.message.active = True
+                clientApp().message.set_message( hit[ 0 ].entity.message )
+                clientApp().message.active = True
             if hitobst and hitobst[ 0 ].message != '':
-                g.client_app.message.set_message( hitobst[ 0 ].message )
-                g.client_app.message.active = True
+                clientApp().message.set_message( hitobst[ 0 ].entity.message )
+                clientApp().message.active = True
 
 
     def move( self ):
@@ -141,13 +145,22 @@ Let us walk through the circus and I show you some of our performers!
         x1 = self.last_offset[ 0 ] // TILE_SIZE + 0.5
         y1 = self.last_offset[ 1 ] // TILE_SIZE + 0.5
         if x != x1 or y != y1:
-            message = json.dumps( { "command":"update", "id": g.client_app.username, "position": { "x": x, "y": y } } )
-            g.client_app.ws.send( message )
+            message = json.dumps( { "command":"update", "id": clientApp().username, "position": { "x": x, "y": y } } )
+            if( not clientApp().closed ):
+                clientApp().ws.send( message )
+
             self.last_offset[ 0 ] = int( self.offset[ 0 ] )
             self.last_offset[ 1 ] = int( self.offset[ 1 ] )
 
-    def update( self ):
+    def should_think(self) -> bool:
+        return True
+    
+    def update_visuals(self):
         self.animate()
+        self.viewpoint.set_ang( self.angle )
+        self.viewpoint.set_pos( self.offset )
+
+    def think( self ):
         self.control()
         self.check_collision()
         self.move()

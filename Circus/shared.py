@@ -409,5 +409,11 @@ MAMA SC!!!
     },
 }
 
-class g:
-    client_app = None
+class _globals:
+    app = None
+
+def clientApp():
+    return _globals.app
+
+def setClientApp( app ):
+    _globals.app = app
