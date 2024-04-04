@@ -66,7 +66,7 @@ class ClientApp:
     def set_local_player( self, player: Player ):
         self.player = player
         self.active_viewpoint = player.viewpoint
-        self.draw_manager.dirty = True
+        self.draw_manager.set_dirty()
 
     def set_active_scene( self, scene ):
         self.scene = scene

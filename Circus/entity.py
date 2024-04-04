@@ -6,7 +6,7 @@ import math
 # Base class for anything that is within the world
 # Handles displaying the object on the screen based on a given viewpoint
 class WorldObject(object):
-    def __init__( self, pos ):
+    def __init__( self, pos=( 0, 0 ) ):
         self.pos: vec2 = vec2( pos )
         self.screen_pos: vec2 = vec2( 0 )
         self.screen_ang = 0
@@ -78,8 +78,8 @@ class WorldObject(object):
         return False
 
 class BaseSpriteEntity( WorldObject ):
-    def __init__( self, name ):
-        super().__init__( vec2(0) )
+    def __init__( self, name, pos=( 0, 0 ) ):
+        super().__init__( pos )
         self.name = name
         self.ent_index = -1 # -1 means unassigned entindex
 
@@ -104,12 +104,11 @@ class BaseSpriteEntity( WorldObject ):
         clientApp().entity_system.add_entity(self)
     
     def __del__(self):
-        print("Hmm")
-        clientApp().entity_system.remove_entity(self.ent_index)
-        self.sprite.kill()
+        pass
 
     def kill(self):
         clientApp().entity_system.delete(self)
+        del self
 
     def animate( self ):
         if clientApp().anim_trigger:
@@ -121,7 +120,7 @@ class BaseSpriteEntity( WorldObject ):
 
 
 class Entity( BaseSpriteEntity ):
-    def __init__( self, name, pos ):
+    def __init__( self, name, pos=( 0, 0 ) ):
         super().__init__( name )
         self.pos = vec2( pos ) * TILE_SIZE
         self.player = clientApp().player

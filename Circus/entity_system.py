@@ -1,3 +1,5 @@
+from shared import *
+
 class EntitySystem(object):
     def __init__( self ):
         self.entity_list: dict = {}
@@ -16,6 +18,12 @@ class EntitySystem(object):
         for entity in list(self.delete_list):
             self.delete_list.remove(entity)
             self.remove_entity(entity.ent_index)
+
+            clientApp().draw_manager.remove_drawable(entity)
+
+            if( entity.sprite ):
+                entity.sprite.kill()
+                entity.sprite = None
             del entity
 
         for entity in list(self.entity_list.values()):

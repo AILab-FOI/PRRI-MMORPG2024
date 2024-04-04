@@ -40,7 +40,7 @@ class Bullet( BaseSpriteEntity ):
         hits = pg.sprite.spritecollide( self.sprite, clientApp().collision_group,
                                       dokill=False, collided=pg.sprite.collide_mask )
         if hits:
-            #Explosion( pos=( self.pos + self.player.offset ) / TILE_SIZE )
+            Explosion( pos=( self.pos + self.player.offset ) / TILE_SIZE )
             self.kill()
 
     def change_layer( self ):

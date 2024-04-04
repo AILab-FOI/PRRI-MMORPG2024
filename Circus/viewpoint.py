@@ -23,4 +23,4 @@ class Viewpoint(object):
         if( clientApp().active_viewpoint != self ):
             return
 
-        clientApp().draw_manager.dirty = True
+        clientApp().draw_manager.set_dirty(1)
