@@ -1,0 +1,112 @@
+[gd_scene load_steps=6 format=3 uid="uid://ciet2ihaoxqo0"]
+
+[ext_resource type="Script" path="res://main.gd" id="1_e1med"]
+[ext_resource type="Script" path="res://scripts/TopMenu/file.gd" id="1_f6n8v"]
+[ext_resource type="Script" path="res://scripts/TopMenu/map.gd" id="3_jdc2b"]
+[ext_resource type="PackedScene" uid="uid://b8olwx5hdnym4" path="res://panels/size_menu.tscn" id="4_o2faq"]
+[ext_resource type="Script" path="res://Layers.gd" id="5_jnvlk"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_e1med")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+
+[node name="TopMenu" type="MenuBar" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/h_separation = 0
+
+[node name="File" type="PopupMenu" parent="VBoxContainer/TopMenu"]
+size = Vector2i(165, 100)
+item_count = 1
+item_0/text = "Set Asset Folder..."
+item_0/id = 0
+script = ExtResource("1_f6n8v")
+
+[node name="FileDialog" type="FileDialog" parent="VBoxContainer/TopMenu/File"]
+title = "Open a Directory"
+initial_position = 2
+size = Vector2i(800, 500)
+popup_window = true
+ok_button_text = "Select Current Folder"
+file_mode = 2
+access = 2
+
+[node name="Map" type="PopupMenu" parent="VBoxContainer/TopMenu"]
+title = "Map"
+item_count = 1
+item_0/text = "Size..."
+item_0/id = 0
+script = ExtResource("3_jdc2b")
+
+[node name="SizeMenu" parent="VBoxContainer/TopMenu/Map" instance=ExtResource("4_o2faq")]
+visible = false
+
+[node name="GridContainer" type="GridContainer" parent="VBoxContainer"]
+clip_contents = true
+layout_mode = 2
+size_flags_vertical = 3
+columns = 2
+
+[node name="Map" type="Control" parent="VBoxContainer/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="Panel" type="Panel" parent="VBoxContainer/GridContainer/Map"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Layer" type="Control" parent="VBoxContainer/GridContainer/Map"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("5_jnvlk")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer/GridContainer"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="MaterialList" type="ItemList" parent="VBoxContainer/GridContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 1
+max_columns = 3
+same_column_width = true
+fixed_column_width = 57
+icon_mode = 0
+fixed_icon_size = Vector2i(57, 57)
+metadata/_edit_use_anchors_ = true
+
+[connection signal="assets_loaded" from="VBoxContainer/TopMenu/File" to="." method="_on_file_assets_loaded"]
+[connection signal="id_pressed" from="VBoxContainer/TopMenu/File" to="VBoxContainer/TopMenu/File" method="_on_id_pressed"]
+[connection signal="dir_selected" from="VBoxContainer/TopMenu/File/FileDialog" to="VBoxContainer/TopMenu/File" method="_on_file_dialog_dir_selected"]
+[connection signal="id_pressed" from="VBoxContainer/TopMenu/Map" to="VBoxContainer/TopMenu/Map" method="_on_id_pressed"]
+[connection signal="map_size_changed" from="VBoxContainer/TopMenu/Map/SizeMenu" to="VBoxContainer/TopMenu/Map" method="_on_size_menu_map_size_changed"]
+[connection signal="gui_input" from="VBoxContainer/GridContainer/Map/Layer" to="VBoxContainer/GridContainer/Map/Layer" method="_on_gui_input"]
+[connection signal="item_selected" from="VBoxContainer/GridContainer/ScrollContainer/MaterialList" to="." method="_on_item_list_item_selected"]
