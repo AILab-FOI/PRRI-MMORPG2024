@@ -16,8 +16,6 @@ func _process(delta):
 
 
 func _on_mouse_entered():
-	print(name)
-		
 	if( get_parent().painting && Main.g_SelectedTexture ):
 		texture = Main.g_SelectedTexture
 		m_Material = Main.g_SelectedTextureName

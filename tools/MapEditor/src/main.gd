@@ -1,5 +1,7 @@
 extends Control
 
+var TileInstance = preload("res://panels/tile.tscn")
+
 var g_AssetPath = "ASSET PATH NOT SELECTED"
 var g_Materials: Dictionary = {}
 
@@ -20,6 +22,22 @@ func _ready():
 func _process(delta):
 	pass
 
+func change_map_size(size: Vector2):
+	g_MapSize = size
+	var width = size.x
+	var height = size.y
+	
+	%Layer.set_size( Vector2( g_TileSize * width, g_TileSize * height ) )
+	for child in %Layer.get_children():
+		%Layer.remove_child(child)
+	
+	for y in range( 0, height ):
+		for x in range( 0, width ):
+			var newTile = TileInstance.instantiate()
+			newTile.name = str( (y * width) + x )
+			%Layer.add_child(newTile)
+			newTile.set_size( Vector2( g_TileSize, g_TileSize ) )
+			newTile.set_position( Vector2( x * g_TileSize, y * g_TileSize ) )
 
 func _on_file_assets_loaded():
 	var itemList: ItemList = $VBoxContainer/GridContainer/ScrollContainer/MaterialList
@@ -52,7 +70,7 @@ func _on_save_file_save_file(filename: String):
 
 	var map: Dictionary = {}
 	map["editor_version"] = g_EditorVersion
-	
+	map["size"] = g_MapSize
 	map["layers"] = {}
 	
 	if( g_MapSize != Vector2( 0, 0 ) ):
@@ -60,6 +78,9 @@ func _on_save_file_save_file(filename: String):
 		
 		for tile in %Layer.get_children():
 			if( tile.texture == null ):
+				continue
+			
+			if( tile.m_Material == null ):
 				continue
 			
 			var coord = Vector2(tile.position.x / g_TileSize, tile.position.y / g_TileSize)
