@@ -9,6 +9,11 @@ from viewpoint import Viewpoint
 
 
 class Player( BaseSpriteEntity ):
+    """Player base class
+
+    Args:
+        BaseSpriteEntity ( BaseSpriteEntity ): Sprite entity to create the player from
+    """    
     def __init__( self, name='player' ):
         super().__init__( name )
 

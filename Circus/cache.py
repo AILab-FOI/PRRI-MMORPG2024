@@ -2,6 +2,8 @@ from shared import *
 
 
 class Cache:
+    """Cache base class
+    """    
     def __init__( self ):
         clientApp().done_counter = 0
 
@@ -21,6 +23,9 @@ class Cache:
     # This method should be called when a scene loads
     # It takes all our sprite data and saves it into the cache
     def cache_entity_sprite_data( self ):
+        """Called when a scene loads.
+        Takes all the sprite data and saves it into the cache.
+        """        
         # Go through each sprite entity
         for sprite_name in ENTITY_SPRITE_ATTRS:
             # Create entry in our cache
@@ -38,7 +43,16 @@ class Cache:
             mask = self.create_entity_mask( attrs, images )
             self.entity_sprite_cache[ sprite_name ][ 'mask' ] = mask
 
-    def create_entity_mask( self, attrs, images ):
+    def create_entity_mask( self, attrs: dict, images: list ) -> pg.Mask:
+        """Creates an entity mask
+
+        Args:
+            attrs ( dict ): Dictionary of attributes
+            images ( list ): Array of images
+
+        Returns:
+            Mask: Entity mask
+        """        
         path = attrs.get( 'mask_path', False )
         if not path:
             return pg.mask.from_surface( images[ 0 ] )
@@ -49,6 +63,11 @@ class Cache:
             return pg.mask.from_surface( mask_image )
 
     def cache_stacked_sprite_data( self ):
+        """Caches stacked sprite data
+
+        Yields:
+            status: whether it was done or not
+        """        
         for obj_name in STACKED_SPRITE_ATTRS:
             self.stacked_sprite_layer_cache[ obj_name ] = {
                 'rotated_sprites': {},
@@ -62,7 +81,14 @@ class Cache:
             yield 1
         yield 'done'
 
-    def compile_stacked_sprite_angles( self, obj_name, layer_array, attrs ):
+    def compile_stacked_sprite_angles( self, obj_name: str, layer_array: list, attrs: dict ):
+        """Compiles the stacked sprite angles of a given stacked sprite
+
+        Args:
+            obj_name (str): object's name
+            layer_array (list): array of the slices
+            attrs (dict): sprite attributes
+        """        
         outline = attrs.get( 'outline', 0 )
         transparency = attrs.get( 'transparency', False )
         mask_layer = attrs.get( 'mask_layer', attrs[ 'num_layers' ] // 2 )
@@ -103,7 +129,15 @@ class Cache:
 
 
 
-    def create_stack_layer_array( self, attrs ):
+    def create_stack_layer_array( self, attrs: dict ) -> list:
+        """Creates a stack sprite layer array, returns the layer array in reverse order
+
+        Args:
+            attrs ( dict ): dictionary of attributes
+
+        Returns:
+            list: layer array list in reverse
+        """        
         # load sprite sheet
         sprite_sheet = pg.image.load( attrs[ 'path' ] ).convert_alpha()
         # scaling

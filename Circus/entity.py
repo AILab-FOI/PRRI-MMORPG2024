@@ -6,6 +6,12 @@ import math
 # Base class for anything that is within the world
 # Handles displaying the object on the screen based on a given viewpoint
 class WorldObject(object):
+    """World Object base class for anything that is within the world
+    Handles displaying the object on the screen based on a given viewpoint
+
+    Args:
+        object ( object ): world object
+    """    
     def __init__( self, pos=( 0, 0 ) ):
         self.pos: vec2 = vec2( pos )
         self.screen_pos: vec2 = vec2( 0 )
@@ -31,6 +37,8 @@ class WorldObject(object):
 
     # Called by Sprite layers - Primarily used for visuals
     def _draw_update( self ):
+        """Called by Sprite layers - Primarily used for visuals
+        """        
         if( not self.visible ):
             return
         
@@ -43,24 +51,43 @@ class WorldObject(object):
     
     # If you can, at any point, see the object
     def is_visible(self) -> bool:
+        """If you can, at any point, see the object
+
+        Returns:
+            bool: Returns the object's visibility
+        """        
         return self.visible
     
     # Check if we should
     def _should_update_visuals(self) -> bool:
+        """Check if visuals should be updated
+
+        Returns:
+            bool: Returns true if the object is set to "always_update" or if self.is_in_pov()
+        """        
         return self.always_update or self.is_in_pov()
 
     # Is the object in our line of sight
     def is_in_pov(self) -> bool:
+        """Checks if the object is in our line of sight
+
+        Returns:
+            bool: Returns true if the object is in the line of sight
+        """        
         # TODO: Implement
         return True
     
     # Called every frame when in view
     # Replace for classes with visuals
     def update_visuals(self):
+        """Called for every frame when in view
+        """        
         pass
 
     # When the viewpoint changes, this triggers
     def _screenpos_update(self):
+        """This is triggered when the viewpoint changes
+        """        
         if( not self.is_visible() ):
             return
 
@@ -78,6 +105,11 @@ class WorldObject(object):
         return False
 
 class BaseSpriteEntity( WorldObject ):
+    """BaseSpriteEntity class 
+
+    Args:
+        WorldObject ( WorldObject ): _description_
+    """    
     def __init__( self, name, pos=( 0, 0 ) ):
         super().__init__( pos )
         self.name = name
@@ -111,6 +143,7 @@ class BaseSpriteEntity( WorldObject ):
         del self
 
     def animate( self ):
+        
         if clientApp().anim_trigger:
             self.frame_index = ( self.frame_index + 1 ) % len( self.images )
             self.sprite.image = self.images[ self.frame_index ]
@@ -120,6 +153,11 @@ class BaseSpriteEntity( WorldObject ):
 
 
 class Entity( BaseSpriteEntity ):
+    """Base Entity class
+
+    Args:
+        BaseSpriteEntity ( BaseSpriteEntity ): _description_
+    """    
     def __init__( self, name, pos=( 0, 0 ) ):
         super().__init__( name )
         self.pos = vec2( pos ) * TILE_SIZE
@@ -230,6 +268,11 @@ class RemotePlayer( Entity ):
         self.pos = clientApp().players_pos[ self.username ]
 
     def should_think(self) -> bool:
+        """Checks whether the entity has behaviour to be called every frame
+
+        Returns:
+            bool: Returns true if the entity has defined behaviour in the think function
+        """        
         return True
 
     def think(self):

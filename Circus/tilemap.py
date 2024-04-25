@@ -4,11 +4,15 @@ import os
 from entity import WorldObject
 
 class MapData(object):
+	"""MapData base class
+	"""    
 	def __init__(self, width, height):
 		self.width = width
 		self.height = height
 
 class Layer(object):
+	"""Layer base class
+	"""    
 	def __init__( self, layerIndex, mapObject ):
 		#Layer index from tiled map
 		self.layerIndex = layerIndex
@@ -25,9 +29,16 @@ class Layer(object):
 
 	#Draw layer
 	def draw( self, screen ):
+		"""Draws the layer on given screen
+
+		Args:
+			screen ( reference ): reference to the screen to draw on
+		"""     
 		self.tiles.draw(screen)
 
 class Material:
+	"""Base Material class
+	"""    
 	def __init__( self, file: str ):
 		if( os.path.isfile(file) ):
 			self.image: Surface = pg.image.load( file )
@@ -36,6 +47,11 @@ class Material:
 
 #Tile class with an image, x and y
 class Tile( WorldObject ):
+	"""Tile base class with an image, x and y coordinates
+
+	Args:
+		WorldObject ( WorldObject ): Which class the tile inherits from
+	"""    
 	def __init__( self, material: Material, pos, group ):
 		# TODO: Da li da uzimamo direktan pos ili
 		# da uzimamo Tile pos pa onda izračunamo konkretan pos
@@ -53,6 +69,8 @@ class Tile( WorldObject ):
 		super().__init__( pos )
 
 	def update_screenpos(self):
+		"""Updates the screen position of the tile
+		"""     
 		self.sprite.image = pg.transform.scale( self.material.image, vec2(TILE_SIZE, TILE_SIZE) )
 		self.sprite.image = pg.transform.rotate( self.sprite.image, self.screen_ang )
 		

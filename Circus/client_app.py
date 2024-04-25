@@ -19,6 +19,8 @@ from entity_system import EntitySystem
 import pygame as pg
 
 class ClientApp:
+    """Client app base class
+    """    
     def __init__( self, username: str, password: str ):
         if __import__( "sys" ).platform == "emscripten": # change to !=
             self.screen = pg.display.set_mode( RES, pg.FULLSCREEN )
@@ -64,14 +66,26 @@ class ClientApp:
         self.active_viewpoint: Viewpoint = None
     
     def set_local_player( self, player: Player ):
+        """Set the local player
+
+        Args:
+            player (Player): player to set local
+        """        
         self.player = player
         self.active_viewpoint = player.viewpoint
         self.draw_manager.set_dirty()
 
     def set_active_scene( self, scene ):
+        """Sets the active scene
+
+        Args:
+            scene (Scene): Scene to set as active
+        """        
         self.scene = scene
 
     def tick( self ):
+        """A single game tick
+        """        
         if self.player:
             self.check_events()
         
@@ -80,6 +94,8 @@ class ClientApp:
         self.draw()
 
     def update( self ):
+        """Updates the systems
+        """        
         if self.scene:
             self.scene.update()
             pg.display.set_caption( 'The Circus of Game Mechanics' ) #( f'{self.clock.get_fps(): .1f}' )
@@ -89,6 +105,8 @@ class ClientApp:
         self.draw_manager.update()
 
     def draw( self ):
+        """Draws the scene
+        """        
         try:
             self.scene.draw()
         except:
@@ -100,6 +118,8 @@ class ClientApp:
         pg.display.flip()
 
     def check_events( self ):
+        """Checks events
+        """        
         self.anim_trigger = False
         for e in pg.event.get():
             if e.type == pg.QUIT or ( e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE ):
@@ -116,10 +136,14 @@ class ClientApp:
                 self.player.single_fire( event=e )
 
     def get_time( self ):
+        """Gets the time
+        """        
         self.time = pg.time.get_ticks() * 0.001
 
     
     def connect( self ):
+        """Connects self to websocket
+        """        
         self.ws = websocket.WebSocketApp( URI,
                                          on_open=self.on_open,
                                          on_message=self.on_message,
@@ -128,7 +152,13 @@ class ClientApp:
         self.thread = threading.Thread( target=lambda: self.ws.run_forever( ping_interval=60 ) )
         self.thread.start()
 
-    def on_message( self, ws, message ):
+    def on_message( self, ws: websocket, message: Message ):
+        """On message received from websocket, updates the player based on message
+
+        Args:
+            ws ( Websocket ): Websocket
+            message ( Message ): Message
+        """        
         logging.info( f"Message received: {message}" )
         if not self.scene:
             self.scene = LoadingScene()
@@ -141,17 +171,29 @@ class ClientApp:
                 pos = vec2( x * TILE_SIZE, y * TILE_SIZE ) + vec2( 0.5 )
                 self.players_pos[ player ] = pos
 
-    def on_error( self, ws, error ):
+    def on_error( self, ws: websocket, error ):
+        """On error
+
+        Args:
+            ws (websocket): websocket
+            error (error): error
+        """        
         logging.error( f"Connection error: {error}" )
 
-    def on_close( self, ws, close_status_code, close_msg ):
+    def on_close( self, ws: websocket, close_status_code, close_msg ):
+    
         logging.warning( "Connection to server closed" )
         self.closed = True
         if not self.closing:
             logging.info( "Attempting to reconnect..." )
             self.connect()
 
-    def on_open( self, ws ):
+    def on_open( self, ws: websocket ):
+        """On open
+
+        Args:
+            ws (websocket): websocked to open
+        """        
         self.closed = False
         logging.info( "Connection established" )
         message = json.dumps( {"command":"register", "id": self.username, "password": self.password } )
