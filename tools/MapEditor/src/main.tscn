@@ -1,8 +1,9 @@
-[gd_scene load_steps=6 format=3 uid="uid://ciet2ihaoxqo0"]
+[gd_scene load_steps=7 format=3 uid="uid://ciet2ihaoxqo0"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_e1med"]
 [ext_resource type="Script" path="res://scripts/TopMenu/file.gd" id="1_f6n8v"]
 [ext_resource type="Script" path="res://scripts/TopMenu/map.gd" id="3_jdc2b"]
+[ext_resource type="PackedScene" uid="uid://dx2fmkcllu0bi" path="res://panels/save_file.tscn" id="3_rm61t"]
 [ext_resource type="PackedScene" uid="uid://b8olwx5hdnym4" path="res://panels/size_menu.tscn" id="4_o2faq"]
 [ext_resource type="Script" path="res://Layers.gd" id="5_jnvlk"]
 
@@ -30,9 +31,11 @@ theme_override_constants/h_separation = 0
 
 [node name="File" type="PopupMenu" parent="VBoxContainer/TopMenu"]
 size = Vector2i(165, 100)
-item_count = 1
+item_count = 2
 item_0/text = "Set Asset Folder..."
 item_0/id = 0
+item_1/text = "Save"
+item_1/id = 1
 script = ExtResource("1_f6n8v")
 
 [node name="FileDialog" type="FileDialog" parent="VBoxContainer/TopMenu/File"]
@@ -43,6 +46,9 @@ popup_window = true
 ok_button_text = "Select Current Folder"
 file_mode = 2
 access = 2
+
+[node name="SaveFile" parent="VBoxContainer/TopMenu/File" instance=ExtResource("3_rm61t")]
+visible = false
 
 [node name="Map" type="PopupMenu" parent="VBoxContainer/TopMenu"]
 title = "Map"
@@ -106,6 +112,7 @@ metadata/_edit_use_anchors_ = true
 [connection signal="assets_loaded" from="VBoxContainer/TopMenu/File" to="." method="_on_file_assets_loaded"]
 [connection signal="id_pressed" from="VBoxContainer/TopMenu/File" to="VBoxContainer/TopMenu/File" method="_on_id_pressed"]
 [connection signal="dir_selected" from="VBoxContainer/TopMenu/File/FileDialog" to="VBoxContainer/TopMenu/File" method="_on_file_dialog_dir_selected"]
+[connection signal="save_file" from="VBoxContainer/TopMenu/File/SaveFile" to="." method="_on_save_file_save_file"]
 [connection signal="id_pressed" from="VBoxContainer/TopMenu/Map" to="VBoxContainer/TopMenu/Map" method="_on_id_pressed"]
 [connection signal="map_size_changed" from="VBoxContainer/TopMenu/Map/SizeMenu" to="VBoxContainer/TopMenu/Map" method="_on_size_menu_map_size_changed"]
 [connection signal="gui_input" from="VBoxContainer/GridContainer/Map/Layer" to="VBoxContainer/GridContainer/Map/Layer" method="_on_gui_input"]

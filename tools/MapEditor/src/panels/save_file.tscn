@@ -1,0 +1,60 @@
+[gd_scene load_steps=3 format=3 uid="uid://dx2fmkcllu0bi"]
+
+[ext_resource type="Script" path="res://scripts/panels/save_file.gd" id="1_pfh1t"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vbmh6"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(0.164706, 0.164706, 0.164706, 1)
+
+[node name="SaveFile" type="PopupPanel"]
+initial_position = 1
+size = Vector2i(900, 90)
+visible = true
+theme_override_styles/panel = SubResource("StyleBoxFlat_vbmh6")
+script = ExtResource("1_pfh1t")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 890.0
+offset_bottom = 80.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Input" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="VBoxContainer/Input"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "D:/FUnny"
+
+[node name="FileNameInput" type="TextEdit" parent="VBoxContainer/Input"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "filename"
+
+[node name="Buttons" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 8
+alignment = 1
+
+[node name="Ok" type="Button" parent="VBoxContainer/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Ok"
+
+[node name="Cancel" type="Button" parent="VBoxContainer/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+text = "Cancel"
+
+[connection signal="about_to_popup" from="." to="." method="_on_about_to_popup"]
+[connection signal="pressed" from="VBoxContainer/Buttons/Ok" to="." method="_on_ok_pressed"]
+[connection signal="pressed" from="VBoxContainer/Buttons/Cancel" to="." method="_on_cancel_pressed"]

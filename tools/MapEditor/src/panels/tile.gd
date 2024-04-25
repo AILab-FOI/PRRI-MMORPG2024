@@ -3,6 +3,7 @@ extends TextureRect
 class_name Tile
 
 var Main = null
+var m_Material = ""
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -19,5 +20,6 @@ func _on_mouse_entered():
 		
 	if( get_parent().painting && Main.g_SelectedTexture ):
 		texture = Main.g_SelectedTexture
+		m_Material = Main.g_SelectedTextureName
 	elif( get_parent().clearing ):
 		texture = null

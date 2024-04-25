@@ -23,6 +23,8 @@ func _on_id_pressed(id):
 
 
 func _on_size_menu_map_size_changed( width: int, height: int ):
+	Main.g_MapSize = Vector2( width, height )
+	
 	%Layer.set_size( Vector2( Main.g_TileSize * width, Main.g_TileSize * height ) )
 	for child in %Layer.get_children():
 		%Layer.remove_child(child)

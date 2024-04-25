@@ -15,10 +15,15 @@ func _process(delta):
 func _on_open_pressed():
 	$FileDialog.popup()
 
+func _open_save_file_menu():
+	$SaveFile.popup()
+
 func _on_id_pressed(id):
 	match id:
 		0:
 			_on_open_pressed()
+		1:
+			_open_save_file_menu()
 
 func _scan_folder_for_materials(dir: DirAccess):
 	var files = dir.get_files()
