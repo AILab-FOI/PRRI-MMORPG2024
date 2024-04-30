@@ -181,8 +181,6 @@ Let us walk through the circus and I show you some of our performers!
         self.control()
         self.check_collision()
         self.move()
-        clientApp().message.set_message( "Pos: " + str(self.pos) + "\n" + "Ang: " + str(self.angle) )
-        clientApp().message.active = True
 
 
 

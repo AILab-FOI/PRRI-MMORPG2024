@@ -1,3 +1,4 @@
+import time
 from shared import *
 
 from message import Message
@@ -59,7 +60,8 @@ class ClientApp:
         
         self.cache = None
         self.scene = None
-        self.message = Message( self.screen.get_size() )
+        self.message = Message( [self.screen.get_size()[0],self.screen.get_size()[1] / 2], self.screen.get_size(), font_size=20 )
+        self.fps_counter = Message( [0, 0], [200, 80], font_size= 10 )
 
         self.active_viewpoint: Viewpoint = None
     
@@ -72,6 +74,8 @@ class ClientApp:
         self.scene = scene
 
     def tick( self ):
+        start = time.time()
+
         if self.player:
             self.check_events()
         
@@ -79,6 +83,15 @@ class ClientApp:
         self.update()
         self.draw()
 
+        end = time.time()
+        delta_time = end - start
+        fps = "Inf"
+        if( delta_time != 0 ):
+            fps = 1 / max(delta_time, 0.000000000001)
+
+        clientApp().fps_counter.set_message( "Fps: " + str(fps) )
+        clientApp().fps_counter.active = True
+    
     def update( self ):
         if self.scene:
             self.scene.update()
@@ -95,6 +108,7 @@ class ClientApp:
             self.screen.fill( BG_COLOR )
             self.draw_manager.draw()
             self.message.draw()
+            self.fps_counter.draw()
         
         
         pg.display.flip()

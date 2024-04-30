@@ -38,12 +38,6 @@ class Bullet( Entity ):
 
         self.always_update = True
 
-    def calculate_viewpoint_position(self):
-        super().calculate_viewpoint_position()
-
-        clientApp().message.set_message( "Pos: " + str(self.pos) + "\n" + "SPos: " + str(self.screen_pos) )
-        clientApp().message.active = True
-
     def check_collision( self ):
         if( not self.sprite ):
             return
