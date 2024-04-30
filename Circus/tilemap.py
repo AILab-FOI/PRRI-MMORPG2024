@@ -1,7 +1,6 @@
-from pygame import Rect, Surface
 from shared import *
-import os
 from entity import WorldObject
+from materialsystem import Material
 
 class MapData(object):
 	def __init__(self, width, height):
@@ -26,13 +25,6 @@ class Layer(object):
 	#Draw layer
 	def draw( self, screen ):
 		self.tiles.draw(screen)
-
-class Material:
-	def __init__( self, file: str ):
-		if( os.path.isfile(file) ):
-			self.image: Surface = pg.image.load( file )
-		else:
-			self.image: Surface = pg.image.load( "assets/materials/missing.png" )
 
 #Tile class with an image, x and y
 class Tile( WorldObject ):

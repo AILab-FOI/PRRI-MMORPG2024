@@ -6,6 +6,7 @@ from cache import Cache
 from player import Player
 import threading
 from tilemap import Material, Tile
+import json
 
 P = 'player'
 K = 'kitty'  # entity
@@ -77,11 +78,22 @@ MAP_CENTER = MAP_SIZE / 2
 class Scene:
     def __init__( self ):
         self.transform_objects = []
-        self.load_scene()
+        self.load_scene("new")
         clientApp().message.set_message( clientApp().player.message )
         clientApp().message.active = True
 
-    def load_scene( self ):
+    def load_scene( self, mapname: str ):
+        if( mapname.endswith(".map") ):
+            mapname = mapname.replace(".map", "")
+
+        rawMap = open( "assets/maps/" + mapname + ".map" )
+        if( rawMap == None ):
+            return
+        
+        mapObj = json.load(rawMap)
+        rawMap.close()
+        print(mapObj)
+
         rand_rot = lambda: uniform( 0, 360 )
         rand_pos = lambda pos: pos + vec2( uniform( -0.25, 0.25 ))
 
@@ -90,7 +102,6 @@ class Scene:
         for j, row in enumerate( MAP ):
             for i, name in enumerate( row ):
                 pos = vec2( i, j ) + vec2( 0.5 )
-                print( name, pos )
                 if name == 'player':
                     clientApp().player.offset = pos * TILE_SIZE
                     player_pos = clientApp().player.offset
@@ -107,12 +118,13 @@ class Scene:
                 elif name:
                     StackedSprite( name=name, pos=rand_pos( pos ), rot=rand_rot() )
 
-        print(player_pos)
-        material1 = Material("assets/materials/tiles/test_tile.png")
-        Tile( material1, player_pos, clientApp().draw_manager.layer_masks["tile_layer"] )
-        Tile( material1, player_pos + vec2( TILE_SIZE, 0 ), clientApp().draw_manager.layer_masks["tile_layer"] )
-        Tile( material1, player_pos + vec2( TILE_SIZE * 2, 0 ), clientApp().draw_manager.layer_masks["tile_layer"] )
-        Tile( material1, player_pos + vec2( TILE_SIZE * 3, 0 ), clientApp().draw_manager.layer_masks["tile_layer"] )
+        for layerName in mapObj["layers"].keys():
+            layer = mapObj["layers"][layerName]
+            if layerName.startswith("tiles_"):
+                for posStr in layer:
+                    pos = strToVec(posStr)
+                    material: Material = clientApp().material_system.register_material( "assets" + layer[posStr] )
+                    Tile( material, pos * TILE_SIZE, clientApp().draw_manager.layer_masks["tile_layer"] )
 
         for pl in clientApp().players_pos: 
             RemotePlayer( 'remote_player', clientApp().players_pos[ pl ], pl )

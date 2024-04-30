@@ -15,8 +15,7 @@ from draw_manager import DrawManager
 from player import Player
 from viewpoint import Viewpoint
 from entity_system import EntitySystem
-
-import pygame as pg
+from materialsystem import MaterialSystem
 
 class ClientApp:
     def __init__( self, username: str, password: str ):
@@ -38,6 +37,7 @@ class ClientApp:
 
         self.entity_system = EntitySystem()
         self.draw_manager = DrawManager()
+        self.material_system = MaterialSystem()
         self.collision_group = pg.sprite.Group()
         
         self.transparent_objects = []

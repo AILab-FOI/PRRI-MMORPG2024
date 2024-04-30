@@ -417,3 +417,13 @@ def clientApp():
 
 def setClientApp( app ):
     _globals.app = app
+
+def strToVec(string: str) -> vec2:
+    ret = string
+    ret = ret.replace("Vector2", "")
+    ret = ret.replace("vec2", "")
+    ret = ret.replace("(","")
+    ret = ret.replace(")","")
+    ret = ret.replace(" ","")
+    strVals: list = ret.split(",")
+    return vec2(int(strVals[0]),int(strVals[1]))
