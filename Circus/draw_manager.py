@@ -13,7 +13,7 @@ class DrawManager:
     def __init__( self ):
         self.layer_masks: dict = {}
         self.drawables = []
-        self.dirty = 2
+        self.dirty = True
 
         # Default masks
         self.layer_masks["tile_layer"] = LayerMask(-1)
@@ -22,13 +22,12 @@ class DrawManager:
 
         self.layer_masks["hud_layer"] = LayerMask(999)
     
-    def set_dirty( self, repeats=2 ):
-        self.dirty = repeats
+    def set_dirty( self ):
+        self.dirty = True
 
     def update( self ):
-        if( self.dirty > 0 ):
+        if( self.dirty ):
             self.screenpos_update()
-            self.dirty -= 1
 
         for layer in self.layer_masks.values():
             layer.update()
@@ -43,6 +42,8 @@ class DrawManager:
     def screenpos_update( self ):
         for drawable in self.drawables:
             drawable._screenpos_update()
+        
+        self.dirty = False
 
     def sort_layers_by_order( self ):
         self.layer_masks = dict(sorted(self.layer_masks.items(), key=lambda item: item[1].order))
@@ -53,7 +54,6 @@ class DrawManager:
 
     def add_drawable( self, drawable ):
         self.drawables.append(drawable)
-        self.dirty = 2
 
     def remove_drawable( self, drawable ):
         self.drawables.remove(drawable)

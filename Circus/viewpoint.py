@@ -4,6 +4,7 @@ class Viewpoint(object):
     def __init__( self ):
         self.offset = vec2( 0 )
         self.angle = 0
+        self.size = RES
         
     def set_pos( self, pos: vec2 ):
         if( self.offset == pos ):
@@ -23,4 +24,4 @@ class Viewpoint(object):
         if( clientApp().active_viewpoint != self ):
             return
 
-        clientApp().draw_manager.set_dirty(1)
+        clientApp().draw_manager.set_dirty()

@@ -5,7 +5,8 @@ from entity import Entity, RemotePlayer
 from cache import Cache
 from player import Player
 import threading
-from tilemap import Material, Tile
+from tilemap import Tile, MapData
+from materialsystem import Material
 import json
 
 P = 'player'
@@ -85,19 +86,12 @@ class Scene:
     def load_scene( self, mapname: str ):
         if( mapname.endswith(".map") ):
             mapname = mapname.replace(".map", "")
-
-        rawMap = open( "assets/maps/" + mapname + ".map" )
-        if( rawMap == None ):
-            return
         
-        mapObj = json.load(rawMap)
-        rawMap.close()
-        print(mapObj)
+        mapObj = MapData("assets/maps/" + mapname + ".map")
+        
 
         rand_rot = lambda: uniform( 0, 360 )
         rand_pos = lambda pos: pos + vec2( uniform( -0.25, 0.25 ))
-
-        player_pos = vec2(0)
 
         for j, row in enumerate( MAP ):
             for i, name in enumerate( row ):
@@ -118,12 +112,12 @@ class Scene:
                 elif name:
                     StackedSprite( name=name, pos=rand_pos( pos ), rot=rand_rot() )
 
-        for layerName in mapObj["layers"].keys():
-            layer = mapObj["layers"][layerName]
+        for layerName in mapObj.layers.keys():
+            layer = mapObj.layers[layerName]
             if layerName.startswith("tiles_"):
                 for posStr in layer:
                     pos = strToVec(posStr)
-                    material: Material = clientApp().material_system.register_material( "assets" + layer[posStr] )
+                    material: Material = clientApp().material_system.register_material( "assets/" + layer[posStr] )
                     Tile( material, pos * TILE_SIZE, clientApp().draw_manager.layer_masks["tile_layer"] )
 
         for pl in clientApp().players_pos: 

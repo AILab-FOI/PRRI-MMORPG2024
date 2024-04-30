@@ -12,10 +12,6 @@ class Player( BaseSpriteEntity ):
     def __init__( self, name='player' ):
         super().__init__( name )
 
-        self.sprite.groups()[0].change_layer( self.sprite, CENTER.y )
-
-        self.sprite.rect = self.sprite.image.get_rect( center=CENTER )
-
         self.offset = vec2( 0 )
         self.last_offset = vec2( 0 )
         
@@ -54,7 +50,24 @@ It can include branching storylines, dialogue choices, moral and ethical choices
 Let us walk through the circus and I show you some of our performers!
 
 """
-                
+    def on_start_drawing(self):
+        super().on_start_drawing()
+        self.sprite.groups()[0].change_layer( self.sprite, CENTER.y )
+
+        self.sprite.rect = self.sprite.image.get_rect( center=CENTER )
+
+    def forward( self ):
+        ret = vec2()
+        ret.x = math.cos(-self.angle-(math.pi/2))
+        ret.y = math.sin(-self.angle-(math.pi/2))
+        return ret
+    
+    def right( self ):
+        ret = vec2()
+        ret.x = math.cos(-self.angle)
+        ret.y = math.sin(-self.angle)
+        return ret
+
     def animate( self ):
         if clientApp().anim_trigger:
             if self.direction == 'DOWN':
@@ -116,11 +129,14 @@ Let us walk through the circus and I show you some of our performers!
 
     def single_fire( self, event ):
         if event.key == pg.K_UP:
-            Bullet()
+            Bullet( "bullet", self.pos )
         if event.key == pg.K_SPACE:
             clientApp().message.handle_input()
 
     def check_collision( self ):
+        if( self.sprite == None ):
+            return
+
         hitobst = pg.sprite.spritecollide( self.sprite, clientApp().collision_group,
                                       dokill=False, collided=pg.sprite.collide_mask )
         hit = pg.sprite.spritecollide( self.sprite, clientApp().draw_manager.layer_masks['entity_layer'],
@@ -157,6 +173,7 @@ Let us walk through the circus and I show you some of our performers!
     
     def update_visuals(self):
         self.animate()
+        self.pos = self.offset
         self.viewpoint.set_ang( self.angle )
         self.viewpoint.set_pos( self.offset )
 
@@ -164,6 +181,8 @@ Let us walk through the circus and I show you some of our performers!
         self.control()
         self.check_collision()
         self.move()
+        clientApp().message.set_message( "Pos: " + str(self.pos) + "\n" + "Ang: " + str(self.angle) )
+        clientApp().message.active = True
 
 
 

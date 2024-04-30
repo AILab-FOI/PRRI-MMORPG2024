@@ -68,7 +68,7 @@ class TrnspStackedSprite( StackedSprite ):
         self.dist_to_player = 0.0
 
     def get_dist_to_player( self ):
-        self.dist_to_player = self.screen_pos.distance_to( self.player.sprite.rect.center )
+        self.dist_to_player = self.pos.distance_to( self.player.pos )
 
     def update( self ):
         super().update()
@@ -79,6 +79,9 @@ class TrnspStackedSprite( StackedSprite ):
         self.get_alpha_image()
 
     def get_alpha_image( self ):
+        if( self.player.sprite == None ):
+            return
+
         if self.alpha_trigger:
             if self.rect.centery > self.player.sprite.rect.top:
                 if self.rect.contains( self.player.sprite.rect ):

@@ -26,18 +26,24 @@ grow_vertical = 2
 theme_override_constants/separation = 0
 
 [node name="TopMenu" type="MenuBar" parent="VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/h_separation = 0
 
 [node name="File" type="PopupMenu" parent="VBoxContainer/TopMenu"]
 size = Vector2i(165, 100)
-item_count = 3
+item_count = 4
 item_0/text = "Set Asset Folder..."
 item_0/id = 0
-item_1/text = "Save"
-item_1/id = 1
-item_2/text = "Open Map..."
-item_2/id = 2
+item_1/text = ""
+item_1/id = 3
+item_1/separator = true
+item_2/text = "Save"
+item_2/id = 1
+item_2/disabled = true
+item_3/text = "Open..."
+item_3/id = 2
+item_3/disabled = true
 script = ExtResource("1_f6n8v")
 
 [node name="AssetDialog" type="FileDialog" parent="VBoxContainer/TopMenu/File"]
@@ -53,7 +59,7 @@ access = 2
 visible = false
 
 [node name="OpenFile" type="FileDialog" parent="VBoxContainer/TopMenu/File"]
-title = "Load map file"
+title = "Open a File"
 initial_position = 2
 size = Vector2i(800, 500)
 ok_button_text = "Open"
@@ -64,8 +70,9 @@ filters = PackedStringArray("*.map")
 [node name="Map" type="PopupMenu" parent="VBoxContainer/TopMenu"]
 title = "Map"
 item_count = 1
-item_0/text = "Size..."
+item_0/text = "New Map..."
 item_0/id = 0
+item_0/disabled = true
 script = ExtResource("3_jdc2b")
 
 [node name="SizeMenu" parent="VBoxContainer/TopMenu/Map" instance=ExtResource("4_o2faq")]

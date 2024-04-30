@@ -46,7 +46,13 @@ func _on_file_assets_loaded():
 	for name in g_Materials.keys():
 		itemList.add_item( name, g_Materials[name] )
 		print( name )
-
+	
+	_enable_asset_locked_options()
+	
+func _enable_asset_locked_options():
+	for child: PopupMenu in %TopMenu.get_children():
+		for item in child.item_count:
+			child.set_item_disabled(item, false)
 
 func _on_item_list_item_selected(index):
 	var materialList = $VBoxContainer/GridContainer/ScrollContainer/MaterialList

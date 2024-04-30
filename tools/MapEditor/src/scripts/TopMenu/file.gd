@@ -35,7 +35,7 @@ func _scan_folder_for_materials(dir: DirAccess):
 	var dirs = dir.get_directories()
 	for file in files:
 		var fullPath = dir.get_current_dir()+"/"+file
-		var relativePath = fullPath.replace(Main.g_AssetPath, "")
+		var relativePath = fullPath.replace(Main.g_AssetPath + "/", "")
 		
 		if( not file.ends_with(".material") ):
 			continue

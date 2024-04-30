@@ -16,16 +16,23 @@ class Material:
                 raw.close()
 
                 self.__dict__ = data.copy()
-
+                self.key = file
                 self.image: Surface = pg.image.load( "assets/" + self.path )
+
+                if( self.type == "tile" ):
+                    self.image = pg.transform.scale( self.image, vec2(TILE_SIZE, TILE_SIZE) )
+
             else:
-                self.type = "sprite"
+                self.key = file
+                self.type = "tile"
                 self.path = file
                 self.image: Surface = pg.image.load( "assets/" + self.path )
         else:
+            self.key = "materials/missing.png"
             self.type = "sprite"
-            self.path = "assets/materials/missing.png"
-            self.image: Surface = pg.image.load( self.path )
+            self.path = "materials/missing.png"
+            self.image: Surface = pg.image.load( "assets/" + self.path )
+            self.image = pg.transform.scale( self.image, vec2(TILE_SIZE, TILE_SIZE) )
 
 class MaterialSystem:
     def __init__( self ):

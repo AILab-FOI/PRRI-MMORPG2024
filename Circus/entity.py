@@ -11,11 +11,21 @@ class WorldObject(object):
         self.screen_pos: vec2 = vec2( 0 )
         self.screen_ang = 0
         self.visible: bool = True
-        self.always_update: bool = True
+        self.always_update: bool = False
+        self.is_drawing = False
         clientApp().draw_manager.add_drawable(self)
     
     def __del__(self):
         clientApp().draw_manager.remove_drawable(self)
+
+    def set_pos( self, newPos ):
+        if( newPos == self.pos ):
+            return
+
+        self.pos = newPos
+
+        if( self.sprite ):
+            self.update_screenpos()
 
     def calculate_viewpoint_position( self ):
         viewpoint = clientApp().active_viewpoint
@@ -31,27 +41,69 @@ class WorldObject(object):
 
     # Called by Sprite layers - Primarily used for visuals
     def _draw_update( self ):
-        if( not self.visible ):
+        if( not self.is_visible() ):
             return
-        
+
         self.calculate_viewpoint_position()
+
+        if( self.is_drawing != self.should_draw() ):
+            self.is_drawing = self.should_draw()
+
+            if( self.is_drawing ):
+                self.on_start_drawing()
+            else:
+                self.on_stop_drawing()
+
+        if( not self.is_drawing ):
+            return
         
         if( not self._should_update_visuals() ):
             return
         
         self.update_visuals()
     
-    # If you can, at any point, see the object
+    # If this object is supposed to be visible
     def is_visible(self) -> bool:
         return self.visible
     
-    # Check if we should
+    # If we should CURRENTLY draw the object
+    def should_draw(self) -> bool:
+        if( not self.is_visible() ):
+            return False
+        
+        if( not self._should_update_visuals() ):
+            return False
+        
+        return True
+    
+    # Check if we should call the visual update
     def _should_update_visuals(self) -> bool:
         return self.always_update or self.is_in_pov()
 
     # Is the object in our line of sight
     def is_in_pov(self) -> bool:
-        # TODO: Implement
+        viewpoint = clientApp().active_viewpoint
+
+        buffer = TILE_SIZE
+
+        screen_start = 0
+        screen_start -= buffer
+
+        screen_end = max(viewpoint.size.x,viewpoint.size.y)
+        screen_end += buffer
+
+        if( self.screen_pos.x > screen_end ):
+            return False
+        
+        if( self.screen_pos.y > screen_end ):
+            return False
+        
+        if( self.screen_pos.x < screen_start ):
+            return False
+        
+        if( self.screen_pos.y < screen_start ):
+            return False
+
         return True
     
     # Called every frame when in view
@@ -61,10 +113,7 @@ class WorldObject(object):
 
     # When the viewpoint changes, this triggers
     def _screenpos_update(self):
-        if( not self.is_visible() ):
-            return
-
-        if( not self._should_update_visuals() ):
+        if( not self.is_drawing ):
             return
         
         self.update_screenpos()
@@ -76,6 +125,12 @@ class WorldObject(object):
 
     def should_think(self) -> bool:
         return False
+    
+    def on_stop_drawing(self):
+        pass
+
+    def on_start_drawing(self):
+        pass
 
 class BaseSpriteEntity( WorldObject ):
     def __init__( self, name, pos=( 0, 0 ) ):
@@ -83,26 +138,38 @@ class BaseSpriteEntity( WorldObject ):
         self.name = name
         self.ent_index = -1 # -1 means unassigned entindex
 
-        group = None
+        self.group = None
 
         if name == 'player' or name == 'bullet' or name == 'explosion':
-            group = clientApp().draw_manager.layer_masks["main_layer"]
+            self.group = clientApp().draw_manager.layer_masks["main_layer"]
         else:
-            group = clientApp().draw_manager.layer_masks["entity_layer"]
-
-        self.sprite = pg.sprite.Sprite( group )
-        self.sprite.entity = self
-
-        self.attrs = ENTITY_SPRITE_ATTRS[ name ]
-        entity_cache = clientApp().cache.entity_sprite_cache
-        self.images = entity_cache[ name ][ 'images' ]
-        self.sprite.image = self.images[ 0 ]
-        self.mask = entity_cache[ name ][ 'mask' ]
-        self.sprite.rect = self.sprite.image.get_rect()
-        self.frame_index = 0
+            self.group = clientApp().draw_manager.layer_masks["entity_layer"]
 
         clientApp().entity_system.add_entity(self)
+
+        self.sprite = None
+
+        self.attrs = ENTITY_SPRITE_ATTRS[ self.name ]
+        entity_cache = clientApp().cache.entity_sprite_cache
+        self.images = entity_cache[ self.name ][ 'images' ]
+        self.mask = entity_cache[ self.name ][ 'mask' ]
+        self.frame_index = 0
     
+    def on_start_drawing(self):
+        super().on_start_drawing()
+        self.sprite = pg.sprite.Sprite( self.group )
+        self.sprite.entity = self
+
+        self.sprite.image = self.images[ 0 ]
+        self.sprite.rect = self.sprite.image.get_rect()
+
+        self.update_screenpos()
+    
+    def on_stop_drawing(self):
+        super().on_stop_drawing()
+        self.sprite.kill()
+        self.sprite = None
+
     def __del__(self):
         pass
 
@@ -136,6 +203,9 @@ class Entity( BaseSpriteEntity ):
         self.change_layer()
 
     def change_layer( self ):
+        if( self.sprite == None ):
+            return
+        
         self.sprite.groups()[0].change_layer( self.sprite, self.screen_pos.y )
 
     # Rect is the actual thing used in the draw call to determine the position
@@ -145,8 +215,6 @@ class Entity( BaseSpriteEntity ):
         self.sprite.rect.center = self.screen_pos + self.y_offset
 
         self.change_layer()
-
-
 
 class RemotePlayer( Entity ):
     def __init__( self, name, pos, username ):
