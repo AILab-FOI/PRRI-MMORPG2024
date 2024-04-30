@@ -53,7 +53,7 @@ func _scan_folder_for_materials(dir: DirAccess):
 		
 		print(json["type"])
 		
-		if( json["type"] != "sprite" ):
+		if( json["type"] != "sprite" and json["type"] != "tile" ):
 			continue
 		
 		var imagePath = Main.g_AssetPath + "/" + json["path"]
