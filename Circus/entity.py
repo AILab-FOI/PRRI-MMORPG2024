@@ -20,6 +20,7 @@ class BaseEntity( pg.sprite.Sprite ):
         self.mask = entity_cache[ name ][ 'mask' ]
         self.rect = self.image.get_rect()
         self.frame_index = 0
+        
 
     def animate( self ):
         if self.app.anim_trigger:
@@ -37,11 +38,29 @@ class Entity( BaseEntity ):
         self.player = app.player
         self.y_offset = vec2( 0, self.attrs[ 'y_offset' ] )
         self.screen_pos = vec2( 0 )
-
+        if 'health' in self.attrs: #hasattr(self, 'health'): i hasattr(self.attrs, 'health'): ne radi, ovo ga fixa, idk why
+            print('Ima health')
+            self.health = self.attrs[ 'health' ]
         try:
             self.message = self.attrs[ 'message' ]
         except:
             self.message = ''
+
+
+        
+
+    def damage(self, amount):
+        self.health -= amount
+
+        if self.health <= 0:
+            self.kill()
+
+    def on_collision(self, bullet_attrs):
+        print('Collision')
+        if self.health != None:
+            print(self.health)
+            print("Ima health")
+            self.damage(bullet_attrs['damage'])
 
     def update( self ):
         super().update()

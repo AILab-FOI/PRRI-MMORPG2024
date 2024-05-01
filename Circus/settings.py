@@ -3,7 +3,7 @@ import sys
 
 vec2 = pg.math.Vector2
 
-RES = WIDTH, HEIGHT = vec2( 1600, 900 ) #vec2( 1600, 900 )
+RES = WIDTH, HEIGHT = vec2( 800, 400 ) #vec2( 1600, 900 )
 CENTER = H_WIDTH, H_HEIGHT = RES // 2
 TILE_SIZE = 250  #
 
@@ -78,6 +78,7 @@ ENTITY_SPRITE_ATTRS = {
         'num_layers': 8,
         'scale': 0.8,
         'y_offset': -20,
+        'health': 3,
         'message':"""A lot of players are in there for the community. 
 
 Social and multiplayer game mechanics include cooperative and competitive gameplay, MMO systems, communication tools, trading between players, and guilds which foster social interaction within the game.""",
@@ -215,6 +216,7 @@ In the end, I give you a few secret best practices in game mechanics design:
         'scale': 0.4,
         'path': 'assets/entities/bullet/bullet.png',
         'y_offset': 0, 
+        'damage': 1,
     },
     'movement': {
         'path': 'assets/entities/movement/movement.png',

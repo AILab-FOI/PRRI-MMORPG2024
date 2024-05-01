@@ -38,9 +38,17 @@ class Bullet( BaseEntity ):
     
 
     def check_collision( self ):
+        
         hits = pg.sprite.spritecollide( self, self.app.collision_group,
                                       dokill=False, collided=pg.sprite.collide_mask )
-        if hits:
+        hitsen = pg.sprite.spritecollide( self, self.app.entity_group,
+                                      dokill=False, collided=pg.sprite.collide_mask )
+        if hitsen:
+            for hit in hitsen:
+                hit.on_collision(self.attrs)
+            Explosion( self.app, pos=( self.pos + self.player.offset ) / TILE_SIZE )
+            self.kill()
+        if hits: 
             Explosion( self.app, pos=( self.pos + self.player.offset ) / TILE_SIZE )
             self.kill()
 
