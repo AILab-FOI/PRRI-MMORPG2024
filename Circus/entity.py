@@ -7,7 +7,7 @@ class BaseEntity( pg.sprite.Sprite ):
     def __init__( self, app, name ):
         self.app = app
         self.name = name
-        if name == 'player' or name == 'bullet' or name == 'explosion':
+        if name == 'player' or name == 'bullet' or name == 'explosion' or name == 'heal':
             self.group = app.main_group
         else:
             self.group = app.entity_group
@@ -41,6 +41,7 @@ class Entity( BaseEntity ):
         if 'health' in self.attrs: #hasattr(self, 'health'): i hasattr(self.attrs, 'health'): ne radi, ovo ga fixa, idk why
             print('Ima health')
             self.health = self.attrs[ 'health' ]
+            self.maxhealth = self.health
         try:
             self.message = self.attrs[ 'message' ]
         except:
@@ -51,15 +52,13 @@ class Entity( BaseEntity ):
 
     def damage(self, amount):
         self.health -= amount
-
+        if self.health > self.maxhealth:
+            self.health = self.maxhealth
         if self.health <= 0:
             self.kill()
 
     def on_collision(self, bullet_attrs):
-        print('Collision')
-        if self.health != None:
-            print(self.health)
-            print("Ima health")
+        if 'health' in self.attrs:
             self.damage(bullet_attrs['damage'])
 
     def update( self ):

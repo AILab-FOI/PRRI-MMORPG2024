@@ -100,7 +100,7 @@ class App:
                 self.player.single_fire( event=e )
             elif e.type == pg.MOUSEBUTTONDOWN: #1 lijevi klik, 2 scroll, 3 desni klik
                 print("Mis pritisnut")
-                if e.button == 1: 
+                if e.button == 1 or e.button == 3: 
                     self.player.single_fire( event=e )
 
     def get_time( self ):

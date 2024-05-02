@@ -2,6 +2,7 @@ from settings import *
 import math
 from entity import BaseEntity
 from bullet import Bullet
+from heal import Heal
 from itertools import cycle
 import json
 
@@ -114,6 +115,8 @@ Let us walk through the circus and I show you some of our performers!
         if event.type == pg.MOUSEBUTTONDOWN:
             if event.button == 1:  
                 Bullet(app=self.app)
+            if event.button == 3:  
+                Heal(app=self.app, )
         elif event.type == pg.KEYDOWN:
             if event.key == pg.K_SPACE:
                 self.app.message.handle_input()

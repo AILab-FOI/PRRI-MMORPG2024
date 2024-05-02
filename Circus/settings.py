@@ -218,6 +218,13 @@ In the end, I give you a few secret best practices in game mechanics design:
         'y_offset': 0, 
         'damage': 1,
     },
+    'heal': {
+        'num_layers': 1,
+        'scale': 0.4,
+        'path': 'assets/entities/bullet/bullet.png',
+        'y_offset': 0,
+        'damage': -1,
+    },
     'movement': {
         'path': 'assets/entities/movement/movement.png',
         'num_layers': 74,

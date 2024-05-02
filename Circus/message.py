@@ -19,7 +19,7 @@ class Message:
         #self.overlay_surface.fill( (0, 0, 0, 255 ))
         self.active = False
         self.shown = False
-        self.font = pg.font.Font( "assets/PressStart2P-Regular.ttf", 39 )
+        self.font = pg.font.Font( "assets/PressStart2P-Regular.ttf", 16 )
         self.message = """About
 
 Press Start 2P is a bitmap font based on the font design from 1980s Namco arcade games. It works best at sizes of 8px, 16px and other multiples of 8. Although the design of uppercase letters and digits dates back to Atari's "Sprint" ( 1977 ), the specific glyph forms in this TrueType conversion are based on those from "Return of Ishtar" ( 1986 ), one of the first games to include and regularly use lowercase as well as uppercase letters in its screen font.
