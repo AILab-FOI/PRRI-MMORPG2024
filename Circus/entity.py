@@ -2,6 +2,8 @@ from shared import *
 from random import random
 from itertools import cycle
 import math
+import player
+import bullet
 
 # Base class for anything that is within the world
 # Handles displaying the object on the screen based on a given viewpoint
@@ -139,8 +141,7 @@ class BaseSpriteEntity( WorldObject ):
         self.ent_index = -1 # -1 means unassigned entindex
 
         self.group = None
-
-        if name == 'player' or name == 'bullet' or name == 'explosion':
+        if isinstance( self, player.Player ) or isinstance( self, bullet.Bullet) or isinstance( self, bullet.Explosion ):
             self.group = clientApp().draw_manager.layer_masks["main_layer"]
         else:
             self.group = clientApp().draw_manager.layer_masks["entity_layer"]

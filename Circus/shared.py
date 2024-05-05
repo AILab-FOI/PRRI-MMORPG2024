@@ -1,5 +1,6 @@
 import pygame as pg
 import sys
+import re
 
 vec2 = pg.math.Vector2
 
@@ -408,6 +409,23 @@ MAMA SC!!!
         'y_offset': 10,
     },
 }
+
+# NOTE NOTE: Only use this with strings that *we* made, not something the user can edit
+#            and ESPECIALLY not something an user can send to others
+#            This can cause unwanted code execution
+
+def getVarFromString( string: str ):
+    match = re.search("^(.+)\((.*)\)$", string)
+
+    type = match.group(1)
+    args = match.group(2)
+    
+    try:
+        val = eval(type + "(" + args + ")" )
+    except:
+        val = string
+    
+    return val
 
 class _globals:
     app = None

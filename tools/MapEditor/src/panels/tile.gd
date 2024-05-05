@@ -16,8 +16,11 @@ func _process(delta):
 
 
 func _on_mouse_entered():
-	if( get_parent().painting && Main.g_SelectedTexture ):
+	if( get_parent() != Main.g_Layers.get_top_visible_layer() ):
+		return
+	
+	if( Main.g_Layers.painting && Main.g_SelectedTexture ):
 		texture = Main.g_SelectedTexture
 		m_Material = Main.g_SelectedTextureName
-	elif( get_parent().clearing ):
+	elif( Main.g_Layers.clearing ):
 		texture = null

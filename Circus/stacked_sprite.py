@@ -3,7 +3,7 @@ import math
 
 
 class StackedSprite( pg.sprite.Sprite ):
-    def __init__( self, name, pos, rot=0, collision=True ):
+    def __init__( self, name="", pos=vec2(0,0), rot=0, collision=True ):
         self.name = name
         self.pos = vec2( pos ) * TILE_SIZE
         self.player = clientApp().player

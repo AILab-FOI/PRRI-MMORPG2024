@@ -9,6 +9,10 @@ from tilemap import Tile, MapData
 from materialsystem import Material
 import json
 
+vartypes = {
+    "vec2": vec2
+}
+
 P = 'player'
 K = 'kitty'  # entity
 CR = 'circus'
@@ -89,7 +93,6 @@ class Scene:
         
         mapObj = MapData("assets/maps/" + mapname + ".map")
         
-
         rand_rot = lambda: uniform( 0, 360 )
         rand_pos = lambda pos: pos + vec2( uniform( -0.25, 0.25 ))
 
@@ -116,6 +119,11 @@ class Scene:
             layer = mapObj.layers[layerName]
             if layerName.startswith("tiles_"):
                 for posStr in layer:
+                    pos = strToVec(posStr)
+                    material: Material = clientApp().material_system.register_material( "assets/" + layer[posStr] )
+                    Tile( material, pos * TILE_SIZE, clientApp().draw_manager.layer_masks["tile_layer"] )
+            elif layerName.startswith("entities_"):
+                for obj in layer:
                     pos = strToVec(posStr)
                     material: Material = clientApp().material_system.register_material( "assets/" + layer[posStr] )
                     Tile( material, pos * TILE_SIZE, clientApp().draw_manager.layer_masks["tile_layer"] )
