@@ -16,17 +16,21 @@ class StackedSprite( pg.sprite.Sprite ):
 
         self.attrs = STACKED_SPRITE_ATTRS[ name ]
         self.y_offset = vec2( 0, self.attrs[ 'y_offset' ] )
+        self.animation_speed = self.attrs.get('animation_speed', 2)
+        self.frame_index = 0
+        self.frame_timer = 0
         self.cache = app.cache.stacked_sprite_cache
         self.viewing_angle = app.cache.viewing_angle
         self.rotated_sprites = self.cache[ name ][ 'rotated_sprites' ]
         self.collision_masks = self.cache[ name ][ 'collision_masks' ]
-
+        #self.animated_sprites = self.cache[ name ][ 'animated_sprites' ]
         self.angle = 0
         self.screen_pos = vec2( 0 )
         self.rot = ( rot % 360 ) // self.viewing_angle
 
-        self.image = self.rotated_sprites[ self.angle ]
-        self.mask = self.collision_masks[ self.angle ]
+
+        self.image = self.rotated_sprites[ self.frame_index ][ self.angle ]
+        self.mask = self.collision_masks[ self.frame_index ][ self.angle ]
         self.rect = self.image.get_rect()
 
         
@@ -47,15 +51,22 @@ class StackedSprite( pg.sprite.Sprite ):
         self.angle = -math.degrees( self.player.angle ) // self.viewing_angle + self.rot
         self.angle = int( self.angle % NUM_ANGLES )
 
+    def update_animation(self):
+        self.frame_timer += self.app.delta_time
+        if self.frame_timer >= 1000 / self.animation_speed:  # Convert fps to ms
+            self.frame_timer = 0
+            self.frame_index = (self.frame_index + 1) % self.attrs['num_frames']
+
     def update( self ):
         self.transform()
+        self.update_animation()
         self.get_angle()
         self.get_image()
         self.change_layer()
 
     def get_image( self ):
-        self.image = self.rotated_sprites[ self.angle ]
-        self.mask = self.collision_masks[ self.angle ]
+        self.image = self.rotated_sprites[ self.frame_index ][ self.angle ]
+        self.mask = self.collision_masks[ self.frame_index ][ self.angle ]
         self.rect = self.image.get_rect( center=self.screen_pos + self.y_offset )
 
 
@@ -83,7 +94,7 @@ class TrnspStackedSprite( StackedSprite ):
         if self.alpha_trigger:
             if self.rect.centery > self.player.rect.top:
                 if self.rect.contains( self.player.rect ):
-                    self.image = self.alpha_objects[ self.angle ]
+                    self.image = self.alpha_objects[ self.frame_index ][ self.angle ]
                     self.alpha_trigger = False
 
 

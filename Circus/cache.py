@@ -44,52 +44,85 @@ class Cache:
                 'collision_masks': {}
             }
             attrs = STACKED_SPRITE_ATTRS[ obj_name ]
-            layer_array = self.get_layer_array( attrs )
-            self.run_prerender( obj_name, layer_array, attrs )
+            for frame_index in range(attrs[ 'num_frames' ]):
+                self.stacked_sprite_cache[ obj_name ][ 'rotated_sprites' ][ frame_index ] = {}
+                self.stacked_sprite_cache[ obj_name ][ 'collision_masks' ][ frame_index ] = {}
+                self.stacked_sprite_cache[ obj_name ][ 'alpha_sprites' ][ frame_index ] = {}
+            frame_layer_array = self.get_frame_layer_array( attrs )
+            self.run_prerender( obj_name, frame_layer_array, attrs )
             self.app.done_counter += 1
             yield 1
         yield 'done'
 
-    def run_prerender( self, obj_name, layer_array, attrs ):
+    def run_prerender( self, obj_name, frame_layer_array, attrs ):
         outline = attrs.get( 'outline', True )
         transparency = attrs.get( 'transparency', False )
         mask_layer = attrs.get( 'mask_layer', attrs[ 'num_layers' ] // 2 )
-
         for angle in range( NUM_ANGLES ):
-            surf = pg.Surface( layer_array[ 0 ].get_size() )
-            surf = pg.transform.rotate( surf, angle * self.viewing_angle )
-            sprite_surf = pg.Surface( [ surf.get_width(), surf.get_height()
-                                      + attrs[ 'num_layers' ] * attrs[ 'scale' ]] )
-            sprite_surf.fill( 'khaki' )
-            sprite_surf.set_colorkey( 'khaki' )
+            for frame_index, frame_array in enumerate(frame_layer_array):
+                for frame_layers in frame_array:
+                    surf = pg.Surface( frame_layers[ 0 ].get_size() )
+                    surf = pg.transform.rotate( surf, angle * self.viewing_angle )
+                    sprite_surf = pg.Surface( [ surf.get_width(), surf.get_height()
+                                            + attrs[ 'num_layers' ] * attrs[ 'scale' ]] )
+                    sprite_surf.fill( 'khaki' )
+                    sprite_surf.set_colorkey( 'khaki' )
 
-            for ind, layer in enumerate( layer_array ):
-                layer = pg.transform.rotate( layer, angle * self.viewing_angle )
-                sprite_surf.blit( layer, ( 0, ind * attrs[ 'scale' ] ))
+                    for ind, layer in enumerate( frame_layers ):
+                        layer = pg.transform.rotate( layer, angle * self.viewing_angle )
+                        sprite_surf.blit( layer, ( 0, ind * attrs[ 'scale' ] ))
 
-                # get collision mask
-                if ind == mask_layer:
-                    surf = pg.transform.flip( sprite_surf, True, True )
-                    mask = pg.mask.from_surface( surf )
-                    self.stacked_sprite_cache[ obj_name ][ 'collision_masks' ][ angle ] = mask
+                        # get collision mask
+                        if ind == mask_layer:
+                            surf = pg.transform.flip( sprite_surf, True, True )
+                            mask = pg.mask.from_surface( surf )
+                            self.stacked_sprite_cache[ obj_name ][ 'collision_masks' ][ frame_index ][ angle ] = mask
 
-            # get outline
-            if outline:
-                outline_coords = pg.mask.from_surface( sprite_surf ).outline()
-                pg.draw.polygon( sprite_surf, 'black', outline_coords, self.outline_thickness )
+                    # get outline
+                    if outline:
+                        outline_coords = pg.mask.from_surface( sprite_surf ).outline()
+                        pg.draw.polygon( sprite_surf, 'black', outline_coords, self.outline_thickness )
 
-            # get alpha sprites
-            if transparency:  #
-                alpha_sprite = sprite_surf.copy()
-                alpha_sprite.set_alpha( self.alpha_value )
-                alpha_sprite = pg.transform.flip( alpha_sprite, True, True )
-                self.stacked_sprite_cache[ obj_name ][ 'alpha_sprites' ][ angle ] = alpha_sprite
+                    # get alpha sprites
+                    if transparency:  #
+                        alpha_sprite = sprite_surf.copy()
+                        alpha_sprite.set_alpha( self.alpha_value )
+                        alpha_sprite = pg.transform.flip( alpha_sprite, True, True )
+                        self.stacked_sprite_cache[ obj_name ][ 'alpha_sprites' ][ frame_index ][ angle ] = alpha_sprite
 
-            image = pg.transform.flip( sprite_surf, True, True )
-            self.stacked_sprite_cache[ obj_name ][ 'rotated_sprites' ][ angle ] = image
+                    image = pg.transform.flip( sprite_surf, True, True )
+                    self.stacked_sprite_cache[ obj_name ][ 'rotated_sprites' ][ frame_index ][ angle ] = image
+            
 
 
 
+    def get_frame_layer_array( self, attrs ):
+        # load sprite sheet
+        sprite_sheet = pg.image.load( attrs[ 'path' ] ).convert_alpha()
+        # scaling
+        sprite_sheet = pg.transform.scale( sprite_sheet,
+                                          vec2( sprite_sheet.get_size() ) * attrs[ 'scale' ] )
+        sheet_width = sprite_sheet.get_width()
+        sheet_height = sprite_sheet.get_height()
+        sprite_height = sheet_height // attrs[ 'num_layers' ]
+        # new height to prevent error
+        sheet_height = sprite_height * attrs[ 'num_layers' ]
+        
+        sprite_width = sheet_width // attrs[ 'num_frames' ]
+        sheet_width = sprite_width * attrs[ 'num_frames' ]
+
+        # get sprites
+        frame_layer_array = []
+        for x in range( 0, sheet_width, sprite_width):
+            sprite = []
+            layers = []
+            for y in range( 0, sheet_height, sprite_height ):
+                layer = sprite_sheet.subsurface( ( x, y, sprite_width, sprite_height ))
+                layers.append( layer )
+            sprite.append( layers[::-1] )    
+            frame_layer_array.append( sprite )
+        return frame_layer_array
+    
     def get_layer_array( self, attrs ):
         # load sprite sheet
         sprite_sheet = pg.image.load( attrs[ 'path' ] ).convert_alpha()

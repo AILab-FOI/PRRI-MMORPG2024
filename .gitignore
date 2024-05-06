@@ -168,3 +168,5 @@ cython_debug/
 # ZEO DB file
 Circus/db/players.*
 
+
+.vscode

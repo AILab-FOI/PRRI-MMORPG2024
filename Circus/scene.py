@@ -35,7 +35,9 @@ CH = 'chicken'
 
 CR = 'circus'
 
+AN = 'animacija'
 
+DR = 'deer'
 
 
 MAP = [ 
@@ -53,8 +55,8 @@ MAP = [
     [ T9, T9,T10,  0,  0,  0,  0, F6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, T8, T9,T10 ],
     [ T10,  0,  0,  0,  0, F5,  0,  0,  0,  0, F4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, T2, T3, T4 ],
     [ T4 ,T6, T7,  0,  0,  0, F3,  0,  0,  0,  0, F1, T4,  0, T3,  0,  0,  0,  U,  0,  0, UI,  0,  0, T6, T7, T8 ],
-    [ T11,T12, T1, T2,  0,  0,  0,  0,  B,  0,  0,  0,  0,  M,  0,  0, F2,  0,  0,  0,  0,  0,  0,  0,T11,T12, T1 ],
-    [ T5, T6, T9,  0, F2,  0,  0,  0,  0,  0,  R,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, T6, T7, T8 ],
+    [ T11,T12, T1, T2,  0,  0,  0,  0,  B,  0,  0,  DR,  DR,  M,  0,  0, F2,  0,  0,  0,  0,  0,  0,  0,T11,T12, T1 ],
+    [ T5, T6, T9,  0, F2,  0,  0,  0,  0,  0,  R,  DR,  AN,  DR,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, T6, T7, T8 ],
     [ T1, T9, T2,  0, T7,  0, F1,  0,  0,  0,  0, F6,  0,  P, T1, T2,  0,  0, F3,  0, F7,  0,  0,  0, T9,T10,T11 ],
     [ T6, T9,T10,  0,  0,  0,  0,  0,  0,  0,  0,  K,  K,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, T1, T2, T3, T4 ],
     [ T9, T4, T7,  0,  0, F3,  0, F3,  0,  0,  0,  0,  0,  0,  0,  T,  0,  0,  G,  0,  0,  0,  0,  0, T8, T9,T10 ],
@@ -102,6 +104,7 @@ class Scene:
                     self.transform_objects.append( obj )
                 elif name:
                     StackedSprite( self.app, name=name, pos=rand_pos( pos ), rot=rand_rot() )
+
 
         for pl in self.app.players_pos: 
             RemotePlayer( self.app, 'remote_player', self.app.players_pos[ pl ], pl )
