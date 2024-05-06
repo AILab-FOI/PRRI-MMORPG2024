@@ -19,14 +19,43 @@ func _ready():
 func _process(delta):
 	pass
 
-func add_layer(name):
+func _sort_by_order( a, b ) -> bool:
+	return a.order < b.order
+
+func _recalc_layer_order():
+	for index in layers.size():
+		layers[index].order = index
+	
+	for layer in layers:
+		var index = -1
+		for i in %LayerList.item_count:
+			if( %LayerList.get_item_text(i) == layer.name ):
+				index = i
+				break
+		%LayerList.move_item(index, %LayerList.item_count-layer.order-1)
+
+	for index in range( layers.size()-1, -1, -1):
+		remove_child(layers[index])
+		add_child(layers[index])
+
+func add_layer(name: String, type: String, order: int = -1):
 	var tile_layer = LayerInstance.instantiate()
-	tile_layer.name = "tiles_" + name
-	tile_layer.order = layers.size()
+	tile_layer.name = type + "_" + name
+	tile_layer.type = type
+	if( order == -1 ):
+		tile_layer.order = layers.size()
+	else:
+		tile_layer.order = order
 	Main.g_Layers.add_child(tile_layer)
 	
-	layers.push_back(tile_layer)
+	if( tile_layer.order < layers.size() ):
+		layers.insert(tile_layer.order, tile_layer)
+	else:
+		layers.push_back(tile_layer)
+	
+	layers.sort_custom(_sort_by_order)
 	%LayerList.add_item( tile_layer.name )
+	_recalc_layer_order()
 	
 	var width = Main.g_MapSize.x
 	var height = Main.g_MapSize.y
@@ -40,6 +69,30 @@ func add_layer(name):
 			tile_layer.add_child(newTile)
 			newTile.set_size( Vector2( tileSize, tileSize ) )
 			newTile.set_position( Vector2( x * tileSize, y * tileSize ) )
+
+func move_layer(name, direction):
+	if( direction > 0 ):
+		direction += 1
+	
+	var index = -1
+	
+	for i in range(layers.size()):
+		if( layers[i].name == name ):
+			index = i
+			break
+	
+	var layer = layers[index]
+	
+	var newIndex = max(0, min(index + direction, layers.size()))
+	
+	layers.insert( newIndex, layer )
+	
+	if( direction > 0 ):
+		layers.remove_at(index)
+	else:
+		layers.remove_at(index+1)
+	
+	_recalc_layer_order()
 
 func get_top_visible_layer() -> Node:
 	for index in range( get_child_count()-1, -1, -1 ):
@@ -85,3 +138,7 @@ func _on_gui_input(event:InputEvent):
 		
 		position += event.relative
 		self.set_position(position)
+
+
+func _on_new_layer_menu_new_layer_added(name: String, type: String):
+	add_layer(name, type)

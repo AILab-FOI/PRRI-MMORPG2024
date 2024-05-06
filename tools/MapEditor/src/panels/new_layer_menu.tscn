@@ -1,0 +1,88 @@
+[gd_scene load_steps=3 format=3 uid="uid://fxdl57sfmh8s"]
+
+[ext_resource type="Script" path="res://scripts/panels/new_layer_menu.gd" id="1_wuj8j"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vbmh6"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(0.164706, 0.164706, 0.164706, 1)
+
+[node name="NewLayerMenu" type="PopupPanel"]
+initial_position = 1
+size = Vector2i(600, 148)
+visible = true
+theme_override_styles/panel = SubResource("StyleBoxFlat_vbmh6")
+script = ExtResource("1_wuj8j")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 590.0
+offset_bottom = 138.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Create new layer"
+
+[node name="Input" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="NameContainer" type="HBoxContainer" parent="VBoxContainer/Input"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="NameLabel" type="Label" parent="VBoxContainer/Input/NameContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Name"
+
+[node name="NameInput" type="TextEdit" parent="VBoxContainer/Input/NameContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "new_layer"
+
+[node name="TypeContainer" type="HBoxContainer" parent="VBoxContainer/Input"]
+layout_mode = 2
+
+[node name="TypeLabel" type="Label" parent="VBoxContainer/Input/TypeContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Type"
+
+[node name="TypeInput" type="OptionButton" parent="VBoxContainer/Input/TypeContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+item_count = 2
+selected = 0
+allow_reselect = true
+popup/item_0/text = "tiles"
+popup/item_0/id = 0
+popup/item_1/text = "entities"
+popup/item_1/id = 1
+
+[node name="Buttons" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 8
+alignment = 1
+
+[node name="Ok" type="Button" parent="VBoxContainer/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Ok"
+
+[node name="Cancel" type="Button" parent="VBoxContainer/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+text = "Cancel"
+
+[connection signal="pressed" from="VBoxContainer/Buttons/Ok" to="." method="_on_ok_pressed"]
+[connection signal="pressed" from="VBoxContainer/Buttons/Cancel" to="." method="_on_cancel_pressed"]

@@ -36,7 +36,7 @@ func change_map_size(size: Vector2):
 	var layerList: ItemList = %LayerList
 	layerList.clear()
 	
-	g_Layers.add_layer("1")
+	g_Layers.add_layer("1", "tiles")
 	
 	for layer: Node in g_Layers.get_children():
 		g_Layers.move_child(layer, -1 - layer.order )

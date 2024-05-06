@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://ciet2ihaoxqo0"]
+[gd_scene load_steps=10 format=3 uid="uid://ciet2ihaoxqo0"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_e1med"]
 [ext_resource type="Script" path="res://scripts/TopMenu/file.gd" id="1_f6n8v"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://b8olwx5hdnym4" path="res://panels/size_menu.tscn" id="4_o2faq"]
 [ext_resource type="Script" path="res://Layers.gd" id="5_jnvlk"]
 [ext_resource type="Script" path="res://scripts/panels/LayerList.gd" id="7_wqiea"]
+[ext_resource type="PackedScene" uid="uid://fxdl57sfmh8s" path="res://panels/new_layer_menu.tscn" id="8_0a2d8"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gj82e"]
 bg_color = Color(0.352941, 0.32549, 0.537255, 1)
@@ -158,6 +159,9 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource("7_wqiea")
 
+[node name="NewLayerMenu" parent="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList" instance=ExtResource("8_0a2d8")]
+visible = false
+
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList"]
 layout_mode = 1
 anchors_preset = 12
@@ -172,6 +176,11 @@ grow_vertical = 0
 layout_mode = 2
 size_flags_horizontal = 3
 text = "⬆️"
+
+[node name="+" type="Button" parent="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "  +  "
 
 [node name="Down" type="Button" parent="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList/HBoxContainer"]
 layout_mode = 2
@@ -223,3 +232,7 @@ size_flags_horizontal = 3
 [connection signal="gui_input" from="VBoxContainer/MainWindow/MapItems/Map/Layers" to="VBoxContainer/MainWindow/MapItems/Map/Layers" method="_on_gui_input"]
 [connection signal="item_selected" from="VBoxContainer/MainWindow/MapItems/MapInfo/MaterialScroll/MaterialList" to="." method="_on_item_list_item_selected"]
 [connection signal="item_selected" from="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList" to="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList" method="_on_item_selected"]
+[connection signal="new_layer_added" from="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList/NewLayerMenu" to="VBoxContainer/MainWindow/MapItems/Map/Layers" method="_on_new_layer_menu_new_layer_added"]
+[connection signal="pressed" from="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList/HBoxContainer/Up" to="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList" method="_on_up_pressed"]
+[connection signal="pressed" from="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList/HBoxContainer/+" to="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList" method="_on_new_pressed"]
+[connection signal="pressed" from="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList/HBoxContainer/Down" to="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList" method="_on_down_pressed"]
