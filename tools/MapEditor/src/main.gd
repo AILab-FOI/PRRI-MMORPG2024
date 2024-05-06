@@ -33,6 +33,8 @@ func change_map_size(size: Vector2):
 	for child in g_Layers.get_children():
 		g_Layers.remove_child(child)
 	
+	g_Layers.layers.clear()
+	
 	var layerList: ItemList = %LayerList
 	layerList.clear()
 	

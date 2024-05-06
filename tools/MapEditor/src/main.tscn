@@ -127,15 +127,41 @@ script = ExtResource("5_jnvlk")
 
 [node name="MapInfo" type="VSplitContainer" parent="VBoxContainer/MainWindow/MapItems"]
 layout_mode = 2
+split_offset = 100
 
-[node name="MaterialScroll" type="ScrollContainer" parent="VBoxContainer/MainWindow/MapItems/MapInfo"]
+[node name="TabContainer" type="TabContainer" parent="VBoxContainer/MainWindow/MapItems/MapInfo"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Material" type="ScrollContainer" parent="VBoxContainer/MainWindow/MapItems/MapInfo/TabContainer"]
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="MaterialList" type="ItemList" parent="VBoxContainer/MainWindow/MapItems/MapInfo/MaterialScroll"]
+[node name="MaterialList" type="ItemList" parent="VBoxContainer/MainWindow/MapItems/MapInfo/TabContainer/Material"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 1
+max_columns = 3
+same_column_width = true
+fixed_column_width = 57
+icon_mode = 0
+fixed_icon_size = Vector2i(57, 57)
+metadata/_edit_use_anchors_ = true
+
+[node name="Entity" type="ScrollContainer" parent="VBoxContainer/MainWindow/MapItems/MapInfo/TabContainer"]
+visible = false
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="EntityList" type="ItemList" parent="VBoxContainer/MainWindow/MapItems/MapInfo/TabContainer/Entity"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -230,7 +256,8 @@ size_flags_horizontal = 3
 [connection signal="id_pressed" from="VBoxContainer/TopMenu/Map" to="VBoxContainer/TopMenu/Map" method="_on_id_pressed"]
 [connection signal="map_size_changed" from="VBoxContainer/TopMenu/Map/SizeMenu" to="VBoxContainer/TopMenu/Map" method="_on_size_menu_map_size_changed"]
 [connection signal="gui_input" from="VBoxContainer/MainWindow/MapItems/Map/Layers" to="VBoxContainer/MainWindow/MapItems/Map/Layers" method="_on_gui_input"]
-[connection signal="item_selected" from="VBoxContainer/MainWindow/MapItems/MapInfo/MaterialScroll/MaterialList" to="." method="_on_item_list_item_selected"]
+[connection signal="item_selected" from="VBoxContainer/MainWindow/MapItems/MapInfo/TabContainer/Material/MaterialList" to="." method="_on_item_list_item_selected"]
+[connection signal="item_selected" from="VBoxContainer/MainWindow/MapItems/MapInfo/TabContainer/Entity/EntityList" to="." method="_on_item_list_item_selected"]
 [connection signal="item_selected" from="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList" to="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList" method="_on_item_selected"]
 [connection signal="new_layer_added" from="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList/NewLayerMenu" to="VBoxContainer/MainWindow/MapItems/Map/Layers" method="_on_new_layer_menu_new_layer_added"]
 [connection signal="pressed" from="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList/HBoxContainer/Up" to="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList" method="_on_up_pressed"]

@@ -9,7 +9,7 @@ var clearing = false
 
 var Main = null
 
-var layers = []
+var layers = {}
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -19,42 +19,62 @@ func _ready():
 func _process(delta):
 	pass
 
-func _sort_by_order( a, b ) -> bool:
-	return a.order < b.order
-
 func _recalc_layer_order():
-	for index in layers.size():
-		layers[index].order = index
+	var sortedOrder = layers.keys()
+	sortedOrder.sort()
 	
-	for layer in layers:
+	print(sortedOrder)
+	
+	var localOrder = 0
+	for order in sortedOrder:
+		var layer = layers[order]
 		var index = -1
 		for i in %LayerList.item_count:
 			if( %LayerList.get_item_text(i) == layer.name ):
 				index = i
 				break
-		%LayerList.move_item(index, %LayerList.item_count-layer.order-1)
+		
+		%LayerList.move_item(index, localOrder)
+		localOrder += 1
 
-	for index in range( layers.size()-1, -1, -1):
+	for order in range( sortedOrder.size()-1, -1, -1):
+		var index = sortedOrder[order]
 		remove_child(layers[index])
 		add_child(layers[index])
+
+func put_layer_in_order( layer, order ):
+	var originalOrder = layer.order
+	layer.order = order
+
+	if( !layers.keys().is_empty() && layers.has(order) ):
+		if( originalOrder == -1 ):
+			for i in range( layers.keys().max(), order-1, -1 ):
+				layers[i+1] = layers[i]
+				layers[i+1].order = i+1
+		elif( originalOrder > layer.order ):
+			for i in range( originalOrder, layer.order, -1 ):
+				layers[i] = layers[i-1]
+				layers[i].order = i
+		elif( originalOrder < layer.order ):
+			for i in range( originalOrder, layer.order, 1 ):
+				layers[i] = layers[i+1]
+				layers[i].order = i
+	
+	layers[layer.order] = layer
 
 func add_layer(name: String, type: String, order: int = -1):
 	var tile_layer = LayerInstance.instantiate()
 	tile_layer.name = type + "_" + name
 	tile_layer.type = type
+	
 	if( order == -1 ):
-		tile_layer.order = layers.size()
-	else:
-		tile_layer.order = order
-	Main.g_Layers.add_child(tile_layer)
+		order = 0
 	
-	if( tile_layer.order < layers.size() ):
-		layers.insert(tile_layer.order, tile_layer)
-	else:
-		layers.push_back(tile_layer)
+	tile_layer.order = -1
 	
-	layers.sort_custom(_sort_by_order)
+	put_layer_in_order(tile_layer, order)
 	%LayerList.add_item( tile_layer.name )
+	
 	_recalc_layer_order()
 	
 	var width = Main.g_MapSize.x
@@ -71,26 +91,19 @@ func add_layer(name: String, type: String, order: int = -1):
 			newTile.set_position( Vector2( x * tileSize, y * tileSize ) )
 
 func move_layer(name, direction):
-	if( direction > 0 ):
-		direction += 1
+	var order = -1
 	
-	var index = -1
-	
-	for i in range(layers.size()):
-		if( layers[i].name == name ):
-			index = i
+	for layer in layers.values():
+		if( layer.name == name ):
+			order = layer.order
 			break
 	
-	var layer = layers[index]
+	var layer = layers[order]
 	
-	var newIndex = max(0, min(index + direction, layers.size()))
+	var newOrder = max(0, min(order + direction, layers.keys().max()))
 	
-	layers.insert( newIndex, layer )
-	
-	if( direction > 0 ):
-		layers.remove_at(index)
-	else:
-		layers.remove_at(index+1)
+	layers.erase( order )
+	put_layer_in_order(layer, newOrder)
 	
 	_recalc_layer_order()
 
