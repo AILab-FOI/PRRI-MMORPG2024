@@ -94,7 +94,8 @@ class TrnspStackedSprite( StackedSprite ):
         if self.alpha_trigger:
             if self.rect.centery > self.player.rect.top:
                 if self.rect.contains( self.player.rect ):
-                    self.image = self.alpha_objects[ self.frame_index ][ self.angle ]
+                    self.image = self.image.copy()
+                    self.image.set_alpha(70)
                     self.alpha_trigger = False
 
 
