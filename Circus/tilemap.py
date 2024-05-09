@@ -5,6 +5,9 @@ import os
 import json
 
 class MapData(object):
+
+	"""MapData base class
+	"""    
 	def __init__(self, file):
 		if( not os.path.isfile(file) ):
 			return
@@ -13,7 +16,7 @@ class MapData(object):
 			return
 	
 		raw = open(file)
-		
+
 		if( raw == None ):
 			return
 		
@@ -22,8 +25,14 @@ class MapData(object):
 
 		self.__dict__ = data.copy()
 
+
 #Tile class with an image, x and y
 class Tile( WorldObject ):
+	"""Tile base class with an image, x and y coordinates
+
+	Args:
+		WorldObject ( WorldObject ): Which class the tile inherits from
+	"""    
 	def __init__( self, material: Material, pos, group ):
 		# TODO: Da li da uzimamo direktan pos ili
 		# da uzimamo Tile pos pa onda izračunamo konkretan pos
@@ -50,7 +59,11 @@ class Tile( WorldObject ):
 		self.sprite.rect.y = self.pos.y
 
 	def update_screenpos(self):
+
+		"""Updates the screen position of the tile
+		"""     
 		self.sprite.image = self.material.image
+
 		self.sprite.image = pg.transform.rotate( self.sprite.image, self.screen_ang )
 		
 		self.sprite.rect = self.sprite.image.get_rect()
