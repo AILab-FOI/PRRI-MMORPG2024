@@ -129,6 +129,8 @@ class WorldObject(object):
         
         if( self.screen_pos.y < screen_start ):
             return False
+        
+        return True
 
     
     # Called every frame when in view

@@ -8,7 +8,7 @@ import json
 from ZEO.ClientStorage import ClientStorage
 from ZODB import DB
 import transaction
-from BTrees import OOBTree
+from BTrees.OOBTree import OOBTree
 import persistent
 
 from config import SHOST, SPORT, DBHOST, DBPORT
