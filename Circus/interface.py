@@ -2,6 +2,9 @@ from settings import *
 from interactible import Interactible
 import math
 
+#
+#   General Interface class for all Graphical elements for display and interaction with the player
+
 class Interface( pg.sprite.Sprite ):
     def __init__(self, app, name):
         self.app = app
