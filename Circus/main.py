@@ -39,6 +39,7 @@ class App:
         self.main_group = pg.sprite.LayeredUpdates()
         self.entity_group = pg.sprite.LayeredUpdates()
         self.collision_group = pg.sprite.Group()
+        self.clickable_group = []
         self.transparent_objects = []
 
         self.done_counter = 0

@@ -416,7 +416,13 @@ INTERFACE_ATTRS = {
         'pos': (0, 0),
         'size': (800, 450),
         'interactibles': {
-            'Ability1': (300, 400, 30, 30, 'a')
+            'Ability1': {
+                'x': 240,
+                'y': 352,
+                'width': 24,
+                'height': 24,
+                'interaction': 'a'
+                }
         }
     }
 }

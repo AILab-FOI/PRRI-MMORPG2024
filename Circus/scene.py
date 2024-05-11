@@ -91,6 +91,7 @@ class Scene:
                 print( name, pos )
                 if name == 'player':
                     self.app.player.offset = pos * TILE_SIZE
+                    Interface( self.app, 'hud')
                 elif name == 'kitty' or name == 'circus' or name == 'movement' or name == 'resource' or name == 'combat' or name == 'tetris' or name == 'globe' or name == 'upgrades' or name == 'ui':
                     Entity( self.app, name=name, pos=pos )
                 elif str( name ).startswith( 'tree' ) or name == 'bush':
@@ -106,7 +107,7 @@ class Scene:
 
         for pl in self.app.players_pos: 
             RemotePlayer( self.app, 'remote_player', self.app.players_pos[ pl ], pl )
-            Interface( self.app, 'hud')
+            
 
     def get_closest_object_to_player( self ):
         closest = sorted( self.app.transparent_objects, key=lambda e: e.dist_to_player )
