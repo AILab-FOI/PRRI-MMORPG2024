@@ -3,6 +3,7 @@ from random import uniform
 from entity import Entity, RemotePlayer
 from cache import Cache
 from player import Player
+from interface import Interface
 import threading
 
 P = 'player'
@@ -105,6 +106,7 @@ class Scene:
 
         for pl in self.app.players_pos: 
             RemotePlayer( self.app, 'remote_player', self.app.players_pos[ pl ], pl )
+            Interface( self.app, 'hud')
 
     def get_closest_object_to_player( self ):
         closest = sorted( self.app.transparent_objects, key=lambda e: e.dist_to_player )

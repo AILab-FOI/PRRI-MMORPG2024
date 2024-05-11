@@ -408,3 +408,17 @@ MAMA SC!!!
 
 
 
+# UI settings
+
+INTERFACE_ATTRS = {
+    'hud': {
+        'path': 'assets/images/hud.png',
+        'pos': (0, 0),
+        'size': (800, 450),
+        'interactibles': {
+            'Ability1': (300, 400, 30, 30, 'a')
+        }
+    }
+}
+
+

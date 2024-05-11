@@ -1,0 +1,47 @@
+{
+    // CTRL+SHIFT+B u VScode aplikaciji za runnanje pojedinih taskova
+    //OlakÅ¡ava pokretanje igre
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Start ZEO Server",
+            "type": "process",
+            "command": "runzeo",
+            "args": ["-C", "zeo.conf"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "options": {
+                "cwd": "./Circus"
+            }
+        },
+        {
+            "label": "Start WebSocket Server",
+            "type": "process",
+            "command": "python",
+            "args": ["server.py"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "options": {
+                "cwd": "./Circus"
+            }
+        },
+        {
+            "label": "Start Client",
+            "type": "process",
+            "command": "python",
+            "args": ["main.py", "--username", "USER", "--password", "PASS"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "options": {
+                "cwd": "./Circus"
+            }
+        }
+    ]
+}
+  
