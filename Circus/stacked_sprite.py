@@ -68,8 +68,16 @@ class StackedSprite( pg.sprite.Sprite ):
         self.frame_timer += self.app.delta_time
         if self.frame_timer >= 1000 / self.animation_speed:  # Convert fps to ms
             self.frame_timer = 0
-            index = self.sequence.index( self.frame_index )
-            self.frame_index = self.sequence[ index + 1 ]
+            index = self.sequence[ 'seq' ].index( self.frame_index )
+            
+            if index == len(self.sequence[ 'seq' ]) - 1:
+                if self.sequence[ 'looping' ] == True:
+                    index = self.sequence[ 'seq' ].index( self.sequence[ 0 ] )
+                self.frame_index = self.sequence[ 'seq' ][ index ]
+            else:
+                self.frame_index = self.sequence[ 'seq' ][ index + 1 ]
+            
+            
     
     def change_animation( self, sequence ):
         self.sequence = self.sequences[ sequence ]

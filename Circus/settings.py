@@ -388,7 +388,10 @@ STACKED_SPRITE_ATTRS = {
             'num_frames': 4,
             'animation_speed': 2,
             'sequence': {
-                'idle': [ 0, 1, 2, 3 ]
+                'idle': {
+                    'seq': [ 0, 1, 2, 3 ],
+                    'looping': True,
+                },
             },
         },
         'scale': 8,
@@ -411,7 +414,10 @@ STACKED_SPRITE_ATTRS = {
             'num_frames': 4,
             'animation_speed': 10,
             'sequence': {
-                'idle': [ 0, 1, 2, 3 ]
+                'idle': {
+                    'seq': [ 0, 1, 2, 3 ],
+                    'looping': True,
+                },
             },
         },
         'scale': 8,
