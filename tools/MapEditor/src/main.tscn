@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://ciet2ihaoxqo0"]
+[gd_scene load_steps=12 format=3 uid="uid://ciet2ihaoxqo0"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_e1med"]
 [ext_resource type="Script" path="res://scripts/TopMenu/file.gd" id="1_f6n8v"]
@@ -6,6 +6,8 @@
 [ext_resource type="PackedScene" uid="uid://dx2fmkcllu0bi" path="res://panels/save_file.tscn" id="3_rm61t"]
 [ext_resource type="PackedScene" uid="uid://b8olwx5hdnym4" path="res://panels/size_menu.tscn" id="4_o2faq"]
 [ext_resource type="Script" path="res://Layers.gd" id="5_jnvlk"]
+[ext_resource type="PackedScene" uid="uid://6xi1ulr3j5tn" path="res://panels/ent_values.tscn" id="6_b430y"]
+[ext_resource type="Script" path="res://scripts/panels/EntityList.gd" id="7_iuxqx"]
 [ext_resource type="Script" path="res://scripts/panels/LayerList.gd" id="7_wqiea"]
 [ext_resource type="PackedScene" uid="uid://fxdl57sfmh8s" path="res://panels/new_layer_menu.tscn" id="8_0a2d8"]
 
@@ -115,6 +117,10 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
+[node name="EntValues" parent="VBoxContainer/MainWindow/MapItems/Map" instance=ExtResource("6_b430y")]
+unique_name_in_owner = true
+visible = false
+
 [node name="Layers" type="Control" parent="VBoxContainer/MainWindow/MapItems/Map"]
 unique_name_in_owner = true
 layout_mode = 1
@@ -132,8 +138,10 @@ split_offset = 100
 [node name="TabContainer" type="TabContainer" parent="VBoxContainer/MainWindow/MapItems/MapInfo"]
 layout_mode = 2
 size_flags_vertical = 3
+current_tab = 1
 
 [node name="Material" type="ScrollContainer" parent="VBoxContainer/MainWindow/MapItems/MapInfo/TabContainer"]
+visible = false
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 size_flags_horizontal = 8
@@ -154,24 +162,18 @@ fixed_icon_size = Vector2i(57, 57)
 metadata/_edit_use_anchors_ = true
 
 [node name="Entity" type="ScrollContainer" parent="VBoxContainer/MainWindow/MapItems/MapInfo/TabContainer"]
-visible = false
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="EntityList" type="ItemList" parent="VBoxContainer/MainWindow/MapItems/MapInfo/TabContainer/Entity"]
+[node name="EntityList" type="HFlowContainer" parent="VBoxContainer/MainWindow/MapItems/MapInfo/TabContainer/Entity"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-mouse_filter = 1
-max_columns = 3
-same_column_width = true
-fixed_column_width = 57
-icon_mode = 0
-fixed_icon_size = Vector2i(57, 57)
+script = ExtResource("7_iuxqx")
 metadata/_edit_use_anchors_ = true
 
 [node name="LayerScroll" type="ScrollContainer" parent="VBoxContainer/MainWindow/MapItems/MapInfo"]
@@ -195,6 +197,7 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_top = -31.0
+offset_right = 31.0
 grow_horizontal = 2
 grow_vertical = 0
 
@@ -257,7 +260,6 @@ size_flags_horizontal = 3
 [connection signal="map_size_changed" from="VBoxContainer/TopMenu/Map/SizeMenu" to="VBoxContainer/TopMenu/Map" method="_on_size_menu_map_size_changed"]
 [connection signal="gui_input" from="VBoxContainer/MainWindow/MapItems/Map/Layers" to="VBoxContainer/MainWindow/MapItems/Map/Layers" method="_on_gui_input"]
 [connection signal="item_selected" from="VBoxContainer/MainWindow/MapItems/MapInfo/TabContainer/Material/MaterialList" to="." method="_on_item_list_item_selected"]
-[connection signal="item_selected" from="VBoxContainer/MainWindow/MapItems/MapInfo/TabContainer/Entity/EntityList" to="." method="_on_item_list_item_selected"]
 [connection signal="item_selected" from="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList" to="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList" method="_on_item_selected"]
 [connection signal="new_layer_added" from="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList/NewLayerMenu" to="VBoxContainer/MainWindow/MapItems/Map/Layers" method="_on_new_layer_menu_new_layer_added"]
 [connection signal="pressed" from="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList/HBoxContainer/Up" to="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList" method="_on_up_pressed"]

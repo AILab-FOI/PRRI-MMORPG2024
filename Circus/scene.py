@@ -1,3 +1,4 @@
+from importlib import import_module
 from shared import *
 from stacked_sprite import *
 from random import uniform
@@ -44,9 +45,7 @@ CH = 'chicken'
 CR = 'circus'
 
 
-
-
-MAP = [ 
+MAP_OLD = [
     [ T1, T2, T3, T4, T5, T6, T7, T8, T9,T10,T11,T12, T1, T2, T3, T4, T5, T6, T7, T8, T9,T10,T11,T12, T1, T2, T3 ],
     [ T4, T5, T6, T7, T8, T9,T10,T11,T12, T1, T2, T3, T4, T5, T6, T7, T8, T9,T10,T11,T12, T1, T2, T3, T4, T5, T6 ],
     [ T7, T8, T9,T10,T11,T12, T1, T2, T3, T4, T5, T6, T7, T8, T9,T10,T11,T12, T1, T2, T3, T4, T5, T6, T7, T8, T9 ],
@@ -74,24 +73,59 @@ MAP = [
     [ T1, T2, T3, T4, T5, T6, T7, T8, T9,T10,T11,T12, T1, T2, T3, T4, T5, T6, T7, T8, T9,T10,T11,T12, T1, T2, T3 ],
     [ T4, T5, T6, T7, T8, T9,T10,T11,T12, T1, T2, T3, T4, T5, T6, T7, T8, T9,T10,T11,T12, T1, T2, T3, T4, T5, T6 ],
     [ T7, T8, T9,T10,T11,T12, T1, T2, T3, T4, T5, T6, T7, T8, T9,T10,T11,T12, T1, T2, T3, T4, T5, T6, T7, T8, T9 ],
- ]
+]
+
+MAP_EMPTY = [ 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, P, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+]
+
+# Koju map datoteku da ucita
+# koristite SCENE_MAPNAME = "" ako ne zelite da se ista ucita
+SCENE_MAPNAME = "new" # new.map
+
+# Koji map array da se ucita ( gledaj gore )
+# MAP_EMPTY samo pozicionira igraca
+MAP = MAP_EMPTY 
 
 MAP_SIZE = MAP_WIDTH, MAP_HEIGHT = vec2( len( MAP ), len( MAP[ 0 ] ))
 MAP_CENTER = MAP_SIZE / 2
 
-
 class Scene:
     def __init__( self ):
         self.transform_objects = []
-        self.load_scene("new")
+        self.load_scene(SCENE_MAPNAME)
         clientApp().message.set_message( clientApp().player.message )
         clientApp().message.active = True
 
     def load_scene( self, mapname: str ):
-        if( mapname.endswith(".map") ):
-            mapname = mapname.replace(".map", "")
-        
-        mapObj = MapData("assets/maps/" + mapname + ".map")
+
+        self.load_map_file( mapname )
         
         rand_rot = lambda: uniform( 0, 360 )
         rand_pos = lambda pos: pos + vec2( uniform( -0.25, 0.25 ))
@@ -115,26 +149,59 @@ class Scene:
                 elif name:
                     StackedSprite( name=name, pos=rand_pos( pos ), rot=rand_rot() )
 
-        for layerName in mapObj.layers.keys():
-            layer = mapObj.layers[layerName]
-            if layerName.startswith("tiles_"):
-                for posStr in layer:
-                    pos = strToVec(posStr)
-                    material: Material = clientApp().material_system.register_material( "assets/" + layer[posStr] )
-                    Tile( material, pos * TILE_SIZE, clientApp().draw_manager.layer_masks["tile_layer"] )
-            elif layerName.startswith("entities_"):
-                for obj in layer:
-                    pos = strToVec(posStr)
-                    material: Material = clientApp().material_system.register_material( "assets/" + layer[posStr] )
-                    Tile( material, pos * TILE_SIZE, clientApp().draw_manager.layer_masks["tile_layer"] )
-
         for pl in clientApp().players_pos: 
             RemotePlayer( 'remote_player', clientApp().players_pos[ pl ], pl )
 
+    def load_map_file( self, mapname ):
+        if( len(mapname) <= 0 ):
+            return
+
+        if( mapname.endswith(".map") ):
+            mapname = mapname.replace(".map", "")
+
+        mapObj = MapData("assets/maps/" + mapname + ".map")
+
+        for layerName in mapObj.layers.keys():
+            layer = mapObj.layers[layerName]
+            if layerName.startswith("tiles_"):
+                layerData = layer["data"]
+                for posStr in layerData:
+                    pos = strToVec(posStr)
+                    material: Material = clientApp().material_system.register_material( "assets/" + layerData[posStr] )
+                    Tile( material, pos * TILE_SIZE, clientApp().draw_manager.layer_masks["tile_layer"] )
+            elif layerName.startswith("entities_"):
+                layerData = layer["data"]
+                for key in layerData:
+                    attr:dict = layerData[key]
+
+                    startIndex = max(0, key.find("_")+1)
+                    entType = key[startIndex::]
+                    classStr: str = entType
+
+                    entClass = None
+                    try:
+                        module_path, class_name = classStr.rsplit('.', 1)
+                        module = import_module(module_path)
+                        entClass = getattr(module, class_name)
+                    except (ImportError, AttributeError) as e:
+                        raise ImportError(classStr)
+                    
+                    name = "kitty"
+
+                    if( "name" in attr ):
+                        name = attr["name"]
+                    
+                    newEnt = entClass(name)
+                    if( "pos" in attr ):
+                        newEnt.set_pos( strToVec(attr["pos"]) * TILE_SIZE )
+
+                    print(newEnt)
+
     def get_closest_object_to_player( self ):
         closest = sorted( clientApp().transparent_objects, key=lambda e: e.dist_to_player )
-        closest[ 0 ].alpha_trigger = True
-        closest[ 1 ].alpha_trigger = True
+        if( len(closest) > 0 ):
+            closest[ 0 ].alpha_trigger = True
+            closest[ 1 ].alpha_trigger = True
 
     def transform( self ):
         for obj in self.transform_objects:

@@ -63,19 +63,22 @@ func put_layer_in_order( layer, order ):
 	layers[layer.order] = layer
 
 func add_layer(name: String, type: String, order: int = -1):
-	var tile_layer = LayerInstance.instantiate()
-	tile_layer.name = type + "_" + name
-	tile_layer.type = type
+	var layer = LayerInstance.instantiate()
+	layer.name = type + "_" + name
+	layer.type = type
 	
 	if( order == -1 ):
 		order = 0
 	
-	tile_layer.order = -1
+	layer.order = -1
 	
-	put_layer_in_order(tile_layer, order)
-	%LayerList.add_item( tile_layer.name )
+	put_layer_in_order( layer, order )
+	%LayerList.add_item( layer.name )
 	
 	_recalc_layer_order()
+	
+	if( type != "tiles" ):
+		return layer
 	
 	var width = Main.g_MapSize.x
 	var height = Main.g_MapSize.y
@@ -86,9 +89,11 @@ func add_layer(name: String, type: String, order: int = -1):
 		for x in range( 0, width ):
 			var newTile = TileInstance.instantiate()
 			newTile.name = str( (y * width) + x )
-			tile_layer.add_child(newTile)
+			layer.add_child(newTile)
 			newTile.set_size( Vector2( tileSize, tileSize ) )
 			newTile.set_position( Vector2( x * tileSize, y * tileSize ) )
+	
+	return layer
 
 func move_layer(name, direction):
 	var order = -1
@@ -141,6 +146,7 @@ func _on_gui_input(event:InputEvent):
 	elif event is InputEventMouseMotion:
 		var mouse_pos = get_local_mouse_position()
 		mouse_pos /= Main.g_TileSize
+		Main.g_MousePos = mouse_pos
 		%Info_Label_XPos.text = "X: " + str(mouse_pos.x)
 		%Info_Label_YPos.text = "Y: " + str(mouse_pos.y)
 		

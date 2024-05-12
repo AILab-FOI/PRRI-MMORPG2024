@@ -444,4 +444,4 @@ def strToVec(string: str) -> vec2:
     ret = ret.replace(")","")
     ret = ret.replace(" ","")
     strVals: list = ret.split(",")
-    return vec2(int(strVals[0]),int(strVals[1]))
+    return vec2(float(strVals[0]),float(strVals[1]))

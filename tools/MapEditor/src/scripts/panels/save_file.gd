@@ -17,12 +17,12 @@ func _process(delta):
 func _on_ok_pressed():
 	self.hide()
 	
-	var fileNameInput: TextEdit = %FileNameInput
+	var fileNameInput: LineEdit = %FileNameInput
 	save_file.emit( fileNameInput.text )
 
 func _on_cancel_pressed():
 	self.hide()
 
-
 func _on_about_to_popup():
 	$VBoxContainer/Input/Label.text = Main.g_AssetPath + "/maps/"
+	%FileNameInput.grab_focus()

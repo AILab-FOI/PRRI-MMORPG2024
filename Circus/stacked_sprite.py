@@ -33,6 +33,9 @@ class StackedSprite( pg.sprite.Sprite ):
             self.message = self.attrs[ 'message' ]
         except:
             self.message = ''
+    
+    def set_pos( self, pos ):
+        self.pos = vec2( pos )
 
     def change_layer( self ):
         self.group.change_layer( self, self.screen_pos.y )

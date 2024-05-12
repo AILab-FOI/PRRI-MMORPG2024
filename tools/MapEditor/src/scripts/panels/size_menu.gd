@@ -25,3 +25,7 @@ func _on_ok_pressed():
 
 func _on_cancel_pressed():
 	self.hide()
+
+
+func _on_about_to_popup():
+	%WidthInput.grab_focus()
