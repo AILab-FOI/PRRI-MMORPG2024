@@ -5,7 +5,7 @@ vec2 = pg.math.Vector2
 
 RES = WIDTH, HEIGHT = vec2( 800, 450 ) #vec2( 1600, 900 )
 CENTER = H_WIDTH, H_HEIGHT = RES // 2
-TILE_SIZE = 16  #
+TILE_SIZE = 250  #
 
 PLAYER_SPEED = 0.4
 PLAYER_ROT_SPEED = 0.0015
@@ -423,6 +423,32 @@ STACKED_SPRITE_ATTRS = {
         'scale': 8,
         'y_offset': -100,
         'mask_layer': 1,
+        'outline': False,
+    },
+    'dog': {
+        'path': 'assets/stacked_sprites/dog.png',
+        'num_layers': 27,
+        'animation': {
+            'num_frames': 19,
+            'animation_speed': 6,
+            'sequence': {
+                'idle': {
+                    'seq': [ 0, 1, 2, 3, 4, 5, 6, 7 ],
+                    'looping': True,
+                },
+                'walk': {
+                    'seq': [ 8, 9, 10, 11 ],
+                    'looping': True,
+                },
+                'run': {
+                    'seq': [ 12, 13, 14, 15, 16, 17, 18 ],
+                    'looping': True,
+                },
+            },
+        },
+        'scale': 8,
+        'y_offset': -100,
+        'mask_layer': 8,
         'outline': False,
     },
     'chicken': {

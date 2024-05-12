@@ -44,7 +44,11 @@ class Cache:
                 'collision_masks': {}
             }
             attrs = STACKED_SPRITE_ATTRS[ obj_name ]
-            for frame_index in range(attrs[ 'num_frames' ]):
+            if 'animation' in attrs:
+                frames = attrs[ 'animation' ][ 'num_frames' ]
+            else:
+                frames = 1
+            for frame_index in range(0, frames):
                 self.stacked_sprite_cache[ obj_name ][ 'rotated_sprites' ][ frame_index ] = {}
                 self.stacked_sprite_cache[ obj_name ][ 'collision_masks' ][ frame_index ] = {}
                 self.stacked_sprite_cache[ obj_name ][ 'alpha_sprites' ][ frame_index ] = {}
@@ -108,9 +112,9 @@ class Cache:
         # new height to prevent error
         sheet_height = sprite_height * attrs[ 'num_layers' ]
         
-        if 'animated' in attrs:
-            sprite_width = sheet_width // attrs[ 'animated' ][ 'num_frames' ]
-            sheet_width = sprite_width * attrs[ 'animated' ][ 'num_frames' ]
+        if 'animation' in attrs:
+            sprite_width = sheet_width // attrs[ 'animation' ][ 'num_frames' ]
+            sheet_width = sprite_width * attrs[ 'animation' ][ 'num_frames' ]
         else:
             sprite_width = sheet_width
         # get sprites

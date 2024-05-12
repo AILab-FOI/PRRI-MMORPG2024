@@ -1,6 +1,6 @@
 from settings import *
 import math
-
+import logging
 
 class StackedSprite( pg.sprite.Sprite ):
     def __init__( self, app, name, pos, rot=0, collision=True ):
@@ -16,7 +16,7 @@ class StackedSprite( pg.sprite.Sprite ):
 
         self.attrs = STACKED_SPRITE_ATTRS[ name ]
         self.y_offset = vec2( 0, self.attrs[ 'y_offset' ] )
-
+        self.frame_index = 0
         if 'animation' in self.attrs:
             self.animated = True
 
@@ -27,8 +27,8 @@ class StackedSprite( pg.sprite.Sprite ):
 
             self.sequences = self.attrs[ 'animation' ][ 'sequence' ]
             self.sequence = self.sequences[ 'idle' ]
-            self.frame_index = self.sequence[ 0 ]
-
+            self.frame_index = self.sequence[ 'seq' ][ 0 ]
+            self.state = 0
         else:
             self.animated = False
 
@@ -72,7 +72,7 @@ class StackedSprite( pg.sprite.Sprite ):
             
             if index == len(self.sequence[ 'seq' ]) - 1:
                 if self.sequence[ 'looping' ] == True:
-                    index = self.sequence[ 'seq' ].index( self.sequence[ 0 ] )
+                    index = self.sequence[ 'seq' ].index( self.sequence[ 'seq' ][ 0 ] )
                 self.frame_index = self.sequence[ 'seq' ][ index ]
             else:
                 self.frame_index = self.sequence[ 'seq' ][ index + 1 ]
@@ -81,17 +81,29 @@ class StackedSprite( pg.sprite.Sprite ):
     
     def change_animation( self, sequence ):
         self.sequence = self.sequences[ sequence ]
-        self.frame_index = self.sequence[ 0 ]
+        self.frame_index = self.sequence[ 'seq' ][ 0 ]
+
+        self.state = (self.state + 1) % 3
 
     def update( self ):
         self.transform()
         if self.animated:
             self.update_animation()
         self.get_angle()
+        #logging.info("self.name:")
+        #logging.info(self.name)
+        #logging.info("self.frame_index:")
+        #logging.info(self.frame_index)
+        #logging.info("self.angle:")
+        #logging.info(self.angle)
         self.get_image()
         self.change_layer()
 
     def get_image( self ):
+        #logging.info("self.rotated_sprites:")
+        #logging.info(self.rotated_sprites)
+        #logging.info("self.angle:")
+        #logging.info(self.angle)
         self.image = self.rotated_sprites[ self.frame_index ][ self.angle ]
         self.mask = self.collision_masks[ self.frame_index ][ self.angle ]
         self.rect = self.image.get_rect( center=self.screen_pos + self.y_offset )
