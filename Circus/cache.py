@@ -108,9 +108,11 @@ class Cache:
         # new height to prevent error
         sheet_height = sprite_height * attrs[ 'num_layers' ]
         
-        sprite_width = sheet_width // attrs[ 'num_frames' ]
-        sheet_width = sprite_width * attrs[ 'num_frames' ]
-
+        if 'animated' in attrs:
+            sprite_width = sheet_width // attrs[ 'animated' ][ 'num_frames' ]
+            sheet_width = sprite_width * attrs[ 'animated' ][ 'num_frames' ]
+        else:
+            sprite_width = sheet_width
         # get sprites
         frame_layer_array = []
         for x in range( 0, sheet_width, sprite_width):

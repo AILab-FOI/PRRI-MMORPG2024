@@ -16,9 +16,22 @@ class StackedSprite( pg.sprite.Sprite ):
 
         self.attrs = STACKED_SPRITE_ATTRS[ name ]
         self.y_offset = vec2( 0, self.attrs[ 'y_offset' ] )
-        self.animation_speed = self.attrs.get('animation_speed', 2)
-        self.frame_index = 0
-        self.frame_timer = 0
+
+        if 'animation' in self.attrs:
+            self.animated = True
+
+            self.animation_speed = self.attrs[ 'animation' ][ 'animation_speed' ]
+            self.frame_timer = 0
+
+            self.num_frames = self.attrs[ 'animation' ][ 'num_frames' ]
+
+            self.sequences = self.attrs[ 'animation' ][ 'sequence' ]
+            self.sequence = self.sequences[ 'idle' ]
+            self.frame_index = self.sequence[ 0 ]
+
+        else:
+            self.animated = False
+
         self.cache = app.cache.stacked_sprite_cache
         self.viewing_angle = app.cache.viewing_angle
         self.rotated_sprites = self.cache[ name ][ 'rotated_sprites' ]
@@ -51,15 +64,21 @@ class StackedSprite( pg.sprite.Sprite ):
         self.angle = -math.degrees( self.player.angle ) // self.viewing_angle + self.rot
         self.angle = int( self.angle % NUM_ANGLES )
 
-    def update_animation(self):
+    def update_animation( self ):
         self.frame_timer += self.app.delta_time
         if self.frame_timer >= 1000 / self.animation_speed:  # Convert fps to ms
             self.frame_timer = 0
-            self.frame_index = (self.frame_index + 1) % self.attrs['num_frames']
+            index = self.sequence.index( self.frame_index )
+            self.frame_index = self.sequence[ index + 1 ]
+    
+    def change_animation( self, sequence ):
+        self.sequence = self.sequences[ sequence ]
+        self.frame_index = self.sequence[ 0 ]
 
     def update( self ):
         self.transform()
-        self.update_animation()
+        if self.animated:
+            self.update_animation()
         self.get_angle()
         self.get_image()
         self.change_layer()

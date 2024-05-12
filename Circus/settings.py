@@ -296,7 +296,6 @@ STACKED_SPRITE_ATTRS = {
     'tree4': {
         'path': 'assets/stacked_sprites/tree4.png',
         'num_layers': 46,
-        'num_frames': 1,
         'scale': 8,
         'y_offset': -130,
         'transparency': True,
@@ -305,7 +304,6 @@ STACKED_SPRITE_ATTRS = {
     'tree5': {
         'path': 'assets/stacked_sprites/tree5.png',
         'num_layers': 60,
-        'num_frames': 1,
         'scale': 8,
         'y_offset': -130,
         'transparency': True,
@@ -314,7 +312,6 @@ STACKED_SPRITE_ATTRS = {
     'tree6': {
         'path': 'assets/stacked_sprites/tree6.png',
         'num_layers': 46,
-        'num_frames': 1,
         'scale': 8,
         'y_offset': -130,
         'transparency': True,
@@ -323,7 +320,6 @@ STACKED_SPRITE_ATTRS = {
     'tree7': {
         'path': 'assets/stacked_sprites/tree7.png',
         'num_layers': 48,
-        'num_frames': 1,
         'scale': 8,
         'y_offset': -130,
         'transparency': True,
@@ -332,7 +328,6 @@ STACKED_SPRITE_ATTRS = {
     'flower1': {
         'path': 'assets/stacked_sprites/flower1.png',
         'num_layers': 9,
-        'num_frames': 1,
         'scale': 8,
         'y_offset': 10,
         'mask_layer': 3,
@@ -341,7 +336,6 @@ STACKED_SPRITE_ATTRS = {
     'flower2': {
         'path': 'assets/stacked_sprites/flower2.png',
         'num_layers': 8,
-        'num_frames': 1,
         'scale': 8,
         'y_offset': 10,
         'mask_layer': 3,
@@ -350,7 +344,6 @@ STACKED_SPRITE_ATTRS = {
     'flower3': {
         'path': 'assets/stacked_sprites/flower3.png',
         'num_layers': 10,
-        'num_frames': 1,
         'scale': 8,
         'y_offset': 10,
         'mask_layer': 3,
@@ -359,7 +352,6 @@ STACKED_SPRITE_ATTRS = {
     'flower4': {
         'path': 'assets/stacked_sprites/flower4.png',
         'num_layers': 9,
-        'num_frames': 1,
         'scale': 8,
         'y_offset': 10,
         'mask_layer': 3,
@@ -368,7 +360,6 @@ STACKED_SPRITE_ATTRS = {
     'flower5': {
         'path': 'assets/stacked_sprites/flower5.png',
         'num_layers': 8,
-        'num_frames': 1,
         'scale': 8,
         'y_offset': 10,
         'mask_layer': 3,
@@ -377,7 +368,6 @@ STACKED_SPRITE_ATTRS = {
     'flower6': {
         'path': 'assets/stacked_sprites/flower6.png',
         'num_layers': 9,
-        'num_frames': 1,
         'scale': 8,
         'y_offset': 10,
         'mask_layer': 3,
@@ -386,7 +376,6 @@ STACKED_SPRITE_ATTRS = {
     'flower7': {
         'path': 'assets/stacked_sprites/flower7.png',
         'num_layers': 9,
-        'num_frames': 1,
         'scale': 8,
         'y_offset': 10,
         'mask_layer': 3,
@@ -395,7 +384,13 @@ STACKED_SPRITE_ATTRS = {
     'animacija': {
         'path': 'assets/stacked_sprites/animacija.png',
         'num_layers': 4,
-        'num_frames': 4,
+        'animation': {
+            'num_frames': 4,
+            'animation_speed': 2,
+            'sequence': {
+                'idle': [ 0, 1, 2, 3 ]
+            },
+        },
         'scale': 8,
         'y_offset': -8,
         'mask_layer': 1,
@@ -404,7 +399,6 @@ STACKED_SPRITE_ATTRS = {
     'wall': {
         'path': 'assets/stacked_sprites/wall.png',
         'num_layers': 8,
-        'num_frames': 1,
         'scale': 16,
         'y_offset': -30,
         'mask_layer': 4,
@@ -413,8 +407,13 @@ STACKED_SPRITE_ATTRS = {
     'deer': {
         'path': 'assets/stacked_sprites/deer.png',
         'num_layers': 27,
-        'num_frames': 4,
-        'animation_speed': 10,
+        'animation': {
+            'num_frames': 4,
+            'animation_speed': 10,
+            'sequence': {
+                'idle': [ 0, 1, 2, 3 ]
+            },
+        },
         'scale': 8,
         'y_offset': -100,
         'mask_layer': 1,
@@ -423,7 +422,6 @@ STACKED_SPRITE_ATTRS = {
     'chicken': {
         'path': 'assets/stacked_sprites/chicken.png',
         'num_layers': 15,
-        'num_frames': 1,
         'scale': 10,
         'y_offset': 10,
         'message':'''You have found the Easterchick!!! Go to the professor in private and say the magic words: 
