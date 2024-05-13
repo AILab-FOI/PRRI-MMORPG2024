@@ -1,0 +1,28 @@
+{
+	"base":	{
+		"attr":		{
+			"name": "str",
+			"pos": "vec2"
+		}
+	},
+	
+	"entity.WorldObject":	{
+		"base": "base"
+	},
+	
+	"entity.BaseSpriteEntity":	{
+		"base": "entity.WorldObject"		
+	},
+	
+	"entity.Entity":	{
+		"base": "entity.BaseSpriteEntity"		
+	},
+	
+	"stacked_sprite.StackedSprite":	{
+		"base": "base",
+		"attr":		{
+			"rot": "float",
+			"collision": "bool"
+		}
+	}
+}

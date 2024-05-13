@@ -1,28 +1,23 @@
 extends PopupPanel
 
-signal save_file
-
-var Main = null
+signal new_layer_added
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	Main = get_tree().root.get_child(0)
+	pass # Replace with function body.
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	pass
 
-
 func _on_ok_pressed():
 	self.hide()
 	
-	var fileNameInput: LineEdit = %FileNameInput
-	save_file.emit( fileNameInput.text )
+	var nameInput: TextEdit = %NameInput
+	var typeInput: OptionButton = %TypeInput
+
+	new_layer_added.emit( nameInput.text, typeInput.get_item_text(typeInput.selected) )
 
 func _on_cancel_pressed():
 	self.hide()
-
-func _on_about_to_popup():
-	$VBoxContainer/Input/Label.text = Main.g_AssetPath + "/maps/"
-	%FileNameInput.grab_focus()

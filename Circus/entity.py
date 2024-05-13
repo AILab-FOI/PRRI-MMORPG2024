@@ -175,8 +175,9 @@ class BaseSpriteEntity( WorldObject ):
         self.ent_index = -1 # -1 means unassigned entindex
 
         self.group = None
-
-        if name == 'player' or name == 'bullet' or name == 'explosion':
+        import player
+        import bullet
+        if isinstance( self, player.Player ) or isinstance( self, bullet.Bullet) or isinstance( self, bullet.Explosion ):
             self.group = clientApp().draw_manager.layer_masks["main_layer"]
         else:
             self.group = clientApp().draw_manager.layer_masks["entity_layer"]
@@ -231,7 +232,7 @@ class Entity( BaseSpriteEntity ):
     """    
     def __init__( self, name, pos=( 0, 0 ) ):
         super().__init__( name )
-        self.pos = vec2( pos ) * TILE_SIZE
+        self.set_pos( vec2( pos ) * TILE_SIZE )
         self.player = clientApp().player
         self.y_offset = vec2( 0, self.attrs[ 'y_offset' ] )
 

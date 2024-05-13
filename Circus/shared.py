@@ -1,5 +1,6 @@
 import pygame as pg
 import sys
+import re
 
 vec2 = pg.math.Vector2
 
@@ -409,6 +410,23 @@ MAMA SC!!!
     },
 }
 
+# NOTE NOTE: Only use this with strings that *we* made, not something the user can edit
+#            and ESPECIALLY not something an user can send to others
+#            This can cause unwanted code execution
+
+def getVarFromString( string: str ):
+    match = re.search("^(.+)\((.*)\)$", string)
+
+    type = match.group(1)
+    args = match.group(2)
+    
+    try:
+        val = eval(type + "(" + args + ")" )
+    except:
+        val = string
+    
+    return val
+
 class _globals:
     app = None
 
@@ -426,4 +444,4 @@ def strToVec(string: str) -> vec2:
     ret = ret.replace(")","")
     ret = ret.replace(" ","")
     strVals: list = ret.split(",")
-    return vec2(int(strVals[0]),int(strVals[1]))
+    return vec2(float(strVals[0]),float(strVals[1]))

@@ -1,0 +1,76 @@
+[gd_scene load_steps=5 format=3 uid="uid://banjh545hykvb"]
+
+[ext_resource type="Script" path="res://scripts/panels/entity_in_world.gd" id="1_tu4iv"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pe8b1"]
+bg_color = Color(0, 0, 0, 0.572549)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+
+[sub_resource type="LabelSettings" id="LabelSettings_nns76"]
+font_size = 10
+
+[sub_resource type="LabelSettings" id="LabelSettings_fkyda"]
+font_size = 7
+
+[node name="EntityInWorld" type="Button"]
+custom_minimum_size = Vector2(10, 10)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pe8b1")
+script = ExtResource("1_tu4iv")
+
+[node name="Border" type="Panel" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -4.0
+offset_top = -4.0
+offset_right = 4.0
+offset_bottom = 4.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Name" type="Label" parent="VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_vertical = 3
+text = "Name"
+label_settings = SubResource("LabelSettings_nns76")
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="EntityType" type="Label" parent="VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(30, 0)
+layout_mode = 2
+text = "EntType"
+label_settings = SubResource("LabelSettings_fkyda")
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
