@@ -31,7 +31,7 @@ class Bullet( Entity ):
         self.pos /= TILE_SIZE
         self.player = clientApp().player
 
-        self.speed = 40
+        self.speed = 10
         self.life_time_cycles = 20
         self.cycles = 0
         self.bullet_direction = self.player.forward()
