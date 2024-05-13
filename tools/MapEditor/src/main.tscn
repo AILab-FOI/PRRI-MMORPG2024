@@ -138,10 +138,8 @@ split_offset = 100
 [node name="TabContainer" type="TabContainer" parent="VBoxContainer/MainWindow/MapItems/MapInfo"]
 layout_mode = 2
 size_flags_vertical = 3
-current_tab = 1
 
 [node name="Material" type="ScrollContainer" parent="VBoxContainer/MainWindow/MapItems/MapInfo/TabContainer"]
-visible = false
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 size_flags_horizontal = 8
@@ -162,6 +160,7 @@ fixed_icon_size = Vector2i(57, 57)
 metadata/_edit_use_anchors_ = true
 
 [node name="Entity" type="ScrollContainer" parent="VBoxContainer/MainWindow/MapItems/MapInfo/TabContainer"]
+visible = false
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 size_flags_horizontal = 8
