@@ -1,5 +1,5 @@
 from entity import *
-
+import logging
 
 class Explosion( Entity ):
     def __init__( self, name='explosion', pos=( 0, 0 )):
@@ -46,6 +46,16 @@ class Bullet( Entity ):
                                       dokill=False, collided=pg.sprite.collide_mask )
         if hits:
             Explosion( pos=( self.pos + self.player.offset ) / TILE_SIZE )
+
+            # animation switching testing
+            if hits[0].name == 'dog':
+                if hits[0].state == 0:
+                    hits[0].change_animation('run')
+                elif hits[0].state == 1:
+                    hits[0].change_animation('walk')
+                elif hits[0].state == 2:
+                    hits[0].change_animation('idle')
+
             self.kill()
 
     def check_life_time( self ):

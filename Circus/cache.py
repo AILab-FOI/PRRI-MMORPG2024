@@ -18,7 +18,7 @@ class Cache:
         self.alpha_value = 70  #
 
         #self.get_stacked_sprite_cache()
-        #self.get_entity_sprite_cache()
+        #self.cache_entity_sprite_data()
 
     # This method should be called when a scene loads
     # It takes all our sprite data and saves it into the cache
@@ -75,8 +75,18 @@ class Cache:
                 'collision_masks': {}
             }
             attrs = STACKED_SPRITE_ATTRS[ obj_name ]
-            layer_array = self.create_stack_layer_array( attrs )
-            self.compile_stacked_sprite_angles( obj_name, layer_array, attrs )
+            if 'animation' in attrs:
+                frames = attrs[ 'animation' ][ 'num_frames' ]
+            else:
+                frames = 1
+            for frame_index in range(0, frames):
+                self.stacked_sprite_layer_cache[ obj_name ][ 'rotated_sprites' ][ frame_index ] = {}
+                self.stacked_sprite_layer_cache[ obj_name ][ 'collision_masks' ][ frame_index ] = {}
+                self.stacked_sprite_layer_cache[ obj_name ][ 'alpha_sprites' ][ frame_index ] = {}
+            frame_layer_array = self.get_frame_layer_array( attrs )
+            self.compile_stacked_sprite_angles( obj_name, frame_layer_array, attrs )
+            #layer_array = self.create_stack_layer_array( attrs )
+            #self.compile_stacked_sprite_angles( obj_name, layer_array, attrs )
             clientApp().done_counter += 1
             yield 1
         yield 'done'
@@ -92,42 +102,72 @@ class Cache:
         outline = attrs.get( 'outline', 0 )
         transparency = attrs.get( 'transparency', False )
         mask_layer = attrs.get( 'mask_layer', attrs[ 'num_layers' ] // 2 )
-
         for angle in range( NUM_ANGLES ):
-            layer_size = layer_array[ 0 ].get_size()
-            surf = pg.Surface( layer_size )
-            surf = pg.transform.rotate( surf, angle * self.viewing_angle )
-            sprite_surf = pg.Surface( [ surf.get_width(), surf.get_height()
-                                      + attrs[ 'num_layers' ] * attrs[ 'scale' ]] )
-            sprite_surf.fill( 'khaki' )
-            sprite_surf.set_colorkey( 'khaki' )
+            for frame_index, frame_array in enumerate(layer_array):
+                for frame_layers in frame_array:
+                    surf = pg.Surface( frame_layers[ 0 ].get_size() )
+                    surf = pg.transform.rotate( surf, angle * self.viewing_angle )
+                    sprite_surf = pg.Surface( [ surf.get_width(), surf.get_height()
+                                            + attrs[ 'num_layers' ] * attrs[ 'scale' ]] )
+                    sprite_surf.fill( 'khaki' )
+                    sprite_surf.set_colorkey( 'khaki' )
 
-            for layer_index, layer in enumerate( layer_array ):
-                layer = pg.transform.rotate( layer, angle * self.viewing_angle )
-                sprite_surf.blit( layer, ( 0, layer_index * attrs[ 'scale' ] ))
+                    for ind, layer in enumerate( frame_layers ):
+                        layer = pg.transform.rotate( layer, angle * self.viewing_angle )
+                        sprite_surf.blit( layer, ( 0, ind * attrs[ 'scale' ] ))
 
-                # get collision mask
-                if layer_index == mask_layer:
-                    surf = pg.transform.flip( sprite_surf, True, True )
-                    mask = pg.mask.from_surface( surf )
-                    self.stacked_sprite_layer_cache[ obj_name ][ 'collision_masks' ][ angle ] = mask
+                        # get collision mask
+                        if ind == mask_layer:
+                            surf = pg.transform.flip( sprite_surf, True, True )
+                            mask = pg.mask.from_surface( surf )
+                            self.stacked_sprite_layer_cache[ obj_name ][ 'collision_masks' ][ frame_index ][ angle ] = mask
 
-            # get outline
-            if outline:
-                outline_coords = pg.mask.from_surface( sprite_surf ).outline()
-                pg.draw.polygon( sprite_surf, 'black', outline_coords, outline )
+                    # get outline
+                    if outline:
+                        outline_coords = pg.mask.from_surface( sprite_surf ).outline()
+                        pg.draw.polygon( sprite_surf, 'black', outline_coords, outline )
 
-            # get alpha sprites
-            if transparency:  #
-                alpha_sprite = sprite_surf.copy()
-                alpha_sprite.set_alpha( self.alpha_value )
-                alpha_sprite = pg.transform.flip( alpha_sprite, True, True )
-                self.stacked_sprite_layer_cache[ obj_name ][ 'alpha_sprites' ][ angle ] = alpha_sprite
+                    # get alpha sprites
+                    if transparency:  #
+                        alpha_sprite = sprite_surf.copy()
+                        alpha_sprite.set_alpha( self.alpha_value )
+                        alpha_sprite = pg.transform.flip( alpha_sprite, True, True )
+                        self.stacked_sprite_layer_cache[ obj_name ][ 'alpha_sprites' ][ frame_index ][ angle ] = alpha_sprite
 
-            image = pg.transform.flip( sprite_surf, True, True )
-            self.stacked_sprite_layer_cache[ obj_name ][ 'rotated_sprites' ][ angle ] = image
+                    image = pg.transform.flip( sprite_surf, True, True )
+                    self.stacked_sprite_layer_cache[ obj_name ][ 'rotated_sprites' ][ frame_index ][ angle ] = image
+            
 
 
+
+    def get_frame_layer_array( self, attrs ):
+        # load sprite sheet
+        sprite_sheet = pg.image.load( attrs[ 'path' ] ).convert_alpha()
+        # scaling
+        sprite_sheet = pg.transform.scale( sprite_sheet,
+                                          vec2( sprite_sheet.get_size() ) * attrs[ 'scale' ] )
+        sheet_width = sprite_sheet.get_width()
+        sheet_height = sprite_sheet.get_height()
+        sprite_height = sheet_height // attrs[ 'num_layers' ]
+        # new height to prevent error
+        sheet_height = sprite_height * attrs[ 'num_layers' ]
+        
+        if 'animation' in attrs:
+            sprite_width = sheet_width // attrs[ 'animation' ][ 'num_frames' ]
+            sheet_width = sprite_width * attrs[ 'animation' ][ 'num_frames' ]
+        else:
+            sprite_width = sheet_width
+        # get sprites
+        frame_layer_array = []
+        for x in range( 0, sheet_width, sprite_width):
+            sprite = []
+            layers = []
+            for y in range( 0, sheet_height, sprite_height ):
+                layer = sprite_sheet.subsurface( ( x, y, sprite_width, sprite_height ))
+                layers.append( layer )
+            sprite.append( layers[::-1] )    
+            frame_layer_array.append( sprite )
+        return frame_layer_array
 
     def create_stack_layer_array( self, attrs: dict ) -> list:
         """Creates a stack sprite layer array, returns the layer array in reverse order

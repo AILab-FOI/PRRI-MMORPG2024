@@ -386,6 +386,76 @@ STACKED_SPRITE_ATTRS = {
         'mask_layer': 3,
         'outline': False,
     },
+    'animacija': {
+        'path': 'assets/stacked_sprites/animacija.png',
+        'num_layers': 4,
+        'animation': {
+            'num_frames': 4,
+            'animation_speed': 2,
+            'sequence': {
+                'idle': {
+                    'seq': [ 0, 1, 2, 3 ],
+                    'looping': True,
+                },
+            },
+        },
+        'scale': 8,
+        'y_offset': -8,
+        'mask_layer': 1,
+        'outline': False,
+    },
+    'wall': {
+        'path': 'assets/stacked_sprites/wall.png',
+        'num_layers': 8,
+        'scale': 16,
+        'y_offset': -30,
+        'mask_layer': 4,
+        'outline': True,
+    },
+    'deer': {
+        'path': 'assets/stacked_sprites/deer.png',
+        'num_layers': 27,
+        'animation': {
+            'num_frames': 4,
+            'animation_speed': 10,
+            'sequence': {
+                'idle': {
+                    'seq': [ 0, 1, 2, 3 ],
+                    'looping': True,
+                },
+            },
+        },
+        'scale': 8,
+        'y_offset': -100,
+        'mask_layer': 1,
+        'outline': False,
+    },
+    'dog': {
+        'path': 'assets/stacked_sprites/dog.png',
+        'num_layers': 27,
+        'animation': {
+            'num_frames': 19,
+            'animation_speed': 6,
+            'sequence': {
+                'idle': {
+                    'seq': [ 0, 1, 2, 3, 4, 5, 6, 7 ],
+                    'looping': True,
+                },
+                'walk': {
+                    'seq': [ 8, 9, 10, 11 ],
+                    'looping': True,
+                },
+                'run': {
+                    'seq': [ 12, 13, 14, 15, 16, 17, 18 ],
+                    'looping': True,
+                },
+            },
+        },
+        'scale': 8,
+        'y_offset': -100,
+        'mask_layer': 8,
+        'outline': False,
+    },
     'chicken': {
         'path': 'assets/stacked_sprites/chicken.png',
         'num_layers': 15,
@@ -405,6 +475,7 @@ MAMA SC!!!
     'bike': {
         'path': 'assets/stacked_sprites/bike.png',
         'num_layers': 14,
+        'num_frames': 1,
         'scale': 10,
         'y_offset': 10,
     },
