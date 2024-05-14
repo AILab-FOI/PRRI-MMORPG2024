@@ -1,0 +1,79 @@
+[gd_scene load_steps=3 format=3 uid="uid://dx2fmkcllu0bi"]
+
+[ext_resource type="Script" path="res://scripts/panels/save_file.gd" id="1_pfh1t"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vbmh6"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(0.164706, 0.164706, 0.164706, 1)
+
+[node name="SaveFile" type="PopupPanel"]
+initial_position = 1
+size = Vector2i(900, 90)
+visible = true
+theme_override_styles/panel = SubResource("StyleBoxFlat_vbmh6")
+script = ExtResource("1_pfh1t")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 890.0
+offset_bottom = 80.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Input" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="VBoxContainer/Input"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "D:/FUnny"
+
+[node name="FileNameInput" type="LineEdit" parent="VBoxContainer/Input"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+focus_neighbor_left = NodePath("../../Buttons/Cancel")
+focus_neighbor_top = NodePath("../../Buttons/Cancel")
+focus_neighbor_right = NodePath("../../Buttons/Ok")
+focus_neighbor_bottom = NodePath("../../Buttons/Ok")
+focus_next = NodePath("../../Buttons/Ok")
+focus_previous = NodePath("../../Buttons/Cancel")
+placeholder_text = "filename"
+context_menu_enabled = false
+
+[node name="Buttons" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 8
+alignment = 1
+
+[node name="Ok" type="Button" parent="VBoxContainer/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 0
+focus_neighbor_left = NodePath("../../Input/FileNameInput")
+focus_neighbor_top = NodePath("../../Input/FileNameInput")
+focus_neighbor_right = NodePath("../Cancel")
+focus_neighbor_bottom = NodePath("../Cancel")
+focus_next = NodePath("../Cancel")
+focus_previous = NodePath("../../Input/FileNameInput")
+text = "Ok"
+
+[node name="Cancel" type="Button" parent="VBoxContainer/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+focus_neighbor_left = NodePath("../Ok")
+focus_neighbor_top = NodePath("../../Input/FileNameInput")
+focus_neighbor_right = NodePath("../../Input/FileNameInput")
+focus_neighbor_bottom = NodePath("../../Input/FileNameInput")
+focus_next = NodePath("../../Input/FileNameInput")
+focus_previous = NodePath("../Ok")
+text = "Cancel"
+
+[connection signal="about_to_popup" from="." to="." method="_on_about_to_popup"]
+[connection signal="pressed" from="VBoxContainer/Buttons/Ok" to="." method="_on_ok_pressed"]
+[connection signal="pressed" from="VBoxContainer/Buttons/Cancel" to="." method="_on_cancel_pressed"]

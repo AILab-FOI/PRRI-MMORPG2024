@@ -1,0 +1,69 @@
+[gd_scene load_steps=5 format=3 uid="uid://dr65e7ov82k8m"]
+
+[ext_resource type="Script" path="res://scripts/panels/entity_display.gd" id="1_0aggp"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pe8b1"]
+bg_color = Color(0, 0, 0, 0.572549)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+
+[sub_resource type="LabelSettings" id="LabelSettings_nns76"]
+font_size = 10
+
+[sub_resource type="LabelSettings" id="LabelSettings_fkyda"]
+font_size = 7
+
+[node name="EntityDisplay" type="Button"]
+custom_minimum_size = Vector2(64, 64)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -1088.0
+offset_bottom = -584.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pe8b1")
+toggle_mode = true
+script = ExtResource("1_0aggp")
+
+[node name="Border" type="Panel" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -4.0
+offset_top = -4.0
+offset_right = 4.0
+offset_bottom = 4.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="EntityName" type="Label" parent="VBoxContainer"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_vertical = 3
+text = "Entity"
+label_settings = SubResource("LabelSettings_nns76")
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="ModuleName" type="Label" parent="VBoxContainer"]
+custom_minimum_size = Vector2(30, 0)
+layout_mode = 2
+text = "module"
+label_settings = SubResource("LabelSettings_fkyda")
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3

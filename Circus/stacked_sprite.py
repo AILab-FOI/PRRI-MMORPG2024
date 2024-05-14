@@ -1,18 +1,17 @@
-from settings import *
+from shared import *
 import math
 import logging
 
 class StackedSprite( pg.sprite.Sprite ):
-    def __init__( self, app, name, pos, rot=0, collision=True ):
-        self.app = app
+    def __init__( self, name="", pos=vec2(0,0), rot=0, collision=True ):
         self.name = name
         self.pos = vec2( pos ) * TILE_SIZE
-        self.player = app.player
-        self.group = app.main_group
+        self.player = clientApp().player
+        self.group = clientApp().draw_manager.layer_masks["main_layer"]
         super().__init__( self.group )
 
         if collision:
-            self.app.collision_group.add( self )
+            clientApp().collision_group.add( self )
 
         self.attrs = STACKED_SPRITE_ATTRS[ name ]
         self.y_offset = vec2( 0, self.attrs[ 'y_offset' ] )
@@ -32,8 +31,8 @@ class StackedSprite( pg.sprite.Sprite ):
         else:
             self.animated = False
 
-        self.cache = app.cache.stacked_sprite_cache
-        self.viewing_angle = app.cache.viewing_angle
+        self.cache = clientApp().cache.stacked_sprite_layer_cache
+        self.viewing_angle = clientApp().cache.viewing_angle
         self.rotated_sprites = self.cache[ name ][ 'rotated_sprites' ]
         self.collision_masks = self.cache[ name ][ 'collision_masks' ]
         #self.animated_sprites = self.cache[ name ][ 'animated_sprites' ]
@@ -51,6 +50,9 @@ class StackedSprite( pg.sprite.Sprite ):
             self.message = self.attrs[ 'message' ]
         except:
             self.message = ''
+    
+    def set_pos( self, pos ):
+        self.pos = vec2( pos )
 
     def change_layer( self ):
         self.group.change_layer( self, self.screen_pos.y )
@@ -65,7 +67,7 @@ class StackedSprite( pg.sprite.Sprite ):
         self.angle = int( self.angle % NUM_ANGLES )
 
     def update_animation( self ):
-        self.frame_timer += self.app.delta_time
+        self.frame_timer += clientApp().delta_time
         if self.frame_timer >= 1000 / self.animation_speed:  # Convert fps to ms
             self.frame_timer = 0
             index = self.sequence[ 'seq' ].index( self.frame_index )
@@ -112,14 +114,14 @@ class StackedSprite( pg.sprite.Sprite ):
 class TrnspStackedSprite( StackedSprite ):
     def __init__( self, *args, **kwargs ):
         super().__init__( *args, **kwargs )
-        self.app.transparent_objects.append( self )
+        clientApp().transparent_objects.append( self )
 
         self.alpha_trigger = False
         self.alpha_objects = self.cache[ self.name ][ 'alpha_sprites' ]
         self.dist_to_player = 0.0
 
     def get_dist_to_player( self ):
-        self.dist_to_player = self.screen_pos.distance_to( self.player.rect.center )
+        self.dist_to_player = self.pos.distance_to( self.player.pos )
 
     def update( self ):
         super().update()
@@ -130,25 +132,12 @@ class TrnspStackedSprite( StackedSprite ):
         self.get_alpha_image()
 
     def get_alpha_image( self ):
+        if( self.player.sprite == None ):
+            return
+
         if self.alpha_trigger:
-            if self.rect.centery > self.player.rect.top:
-                if self.rect.contains( self.player.rect ):
+            if self.rect.centery > self.player.sprite.rect.top:
+                if self.rect.contains( self.player.sprite.rect ):
                     self.image = self.image.copy()
                     self.image.set_alpha(70)
                     self.alpha_trigger = False
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

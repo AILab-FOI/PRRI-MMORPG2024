@@ -30,6 +30,11 @@ def setup_database():
 
 # Player position model
 class Player( persistent.Persistent ):
+    """Player's position model on the server
+
+    Args:
+        persistent ( persistent ): _description_
+    """    
     def __init__( self, username, password ):
         self.username = username
         self.password = password
@@ -37,7 +42,15 @@ class Player( persistent.Persistent ):
         self.y = 0
         self.logged_in = False
 
-    def login( self, password ):
+    def login( self, password: str ) -> bool:
+        """Logins the player
+
+        Args:
+            password ( str ): player's password
+
+        Returns:
+            bool: whether login was successful
+        """        
         if password == self.password:
             self.logged_in = True
             return True
@@ -56,10 +69,18 @@ class Player( persistent.Persistent ):
 connected_clients = set()
 
 # WebSocket server handling
-async def handle_connection( websocket, path ):
+async def handle_connection( websocket, path: str ):
+    """Websocket server handling
+
+    Args:
+        websocket ( websocket ): _description_
+        path ( string ): _description_
+    """    
     # Register websocket connection
     connected_clients.add( websocket )
+    
     try:
+        
         async for message in websocket:
             data = json.loads( message )
             try:
@@ -95,7 +116,13 @@ async def handle_connection( websocket, path ):
         except:
             print( 'Error: Player already logged out', data )
 
-async def handle_connection(websocket, path):
+async def handle_connection(websocket, path: str):
+    """Handles websocket connection
+
+    Args:
+        websocket ( websocket ): _description_
+        path (string ): _description_
+    """    
     logging.info( f"New connection: {path}" )
     connected_clients.add( websocket )
     try:
@@ -139,7 +166,18 @@ async def handle_connection(websocket, path):
 
 
 # Register player
-def register_player( player_id, password ):
+def register_player( player_id: str, password: str ) -> bool:
+    """Registers the player
+    
+    Note: last 4 lines will never be executed, connection to db won't be closed and transaction won't be committed.
+
+    Args:
+        player_id ( str ): player username
+        password ( str ): password string
+
+    Returns:
+        bool: whether registration was successful
+    """    
     print( f"Registering player {player_id}" )
     db = setup_database()
     connection = db.open()
@@ -157,7 +195,16 @@ def register_player( player_id, password ):
     return authenticated
 
 # Login player
-def login_player( player_id, password ):
+def login_player( player_id: str, password: str ) -> bool:
+    """Logins the player
+
+    Args:
+        player_id ( str): player's username
+        password ( str ): player's password
+
+    Returns:
+        bool: login success
+    """    
     print( f"Checking player credentials for {player_id}" )
     db = setup_database()
     connection = db.open()
@@ -168,7 +215,13 @@ def login_player( player_id, password ):
     db.close()
     return authenticated
 
-def logout_player( player_id, password ):
+def logout_player( player_id: str, password: str ):
+    """Logs out the player
+
+    Args:
+        player_id ( str ): player's username
+        password ( str ): player's password
+    """    
     print( f"Logging out player {player_id}" )
     db = setup_database()
     connection = db.open()
@@ -179,7 +232,14 @@ def logout_player( player_id, password ):
     db.close()
 
 # Update player position in the database
-def update_player_position( player_id, x, y ):
+def update_player_position( player_id: str, x: float, y: float ):
+    """_summary_
+
+    Args:
+        player_id (str): player's username
+        x (float): x coordinate
+        y (float): y coordinate
+    """  
     #print( f"Updating position of player {player_id} to {x},{y}" ) # Too much clutter
     db = setup_database()
     connection = db.open()
@@ -194,6 +254,8 @@ def update_player_position( player_id, x, y ):
 
 # Broadcast positions to all clients
 async def broadcast_positions():
+    """broadcasts the positions to all clients
+    """    
     #print( "Broadcasting positions" ) # Too much clutter
     db = setup_database()
     connection = db.open()

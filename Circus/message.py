@@ -1,25 +1,24 @@
 
-from settings import *
+from shared import *
 import textwrap
 from itertools import chain
 
 class Message:
-    def __init__( self, app, alpha=156, border_radius=10, border_color=( 150, 150, 150 )):
-        self.app = app
+    def __init__( self, pos, screen_size, alpha=156, border_radius=10, border_color=( 150, 150, 150 ), font_size=39):
         self.alpha = alpha
-        self.x, self.y = self.app.screen.get_size()
-        self.y //= 2
+        self.x, self.y = pos
+        self.w, self.h = screen_size
         self.border = 10
         self.border_radius = border_radius
         self.border_color = border_color
-        self.overlay_surface = pg.Surface( (self.x - 2 * self.border, self.y - 2 * self.border ), pg.SRCALPHA )
+        self.overlay_surface = pg.Surface( (self.w - 2 * self.border, self.h - 2 * self.border ), pg.SRCALPHA )
         self.overlay_surface.fill( (0, 0, 0, self.alpha ))
         self.inner_border = 20  # Define the inner padding
         self.inner_surface = self.empty_surface()
         #self.overlay_surface.fill( (0, 0, 0, 255 ))
         self.active = False
         self.shown = False
-        self.font = pg.font.Font( "assets/PressStart2P-Regular.ttf", 39 )
+        self.font = pg.font.Font( "assets/PressStart2P-Regular.ttf", font_size )
         self.message = """About
 
 Press Start 2P is a bitmap font based on the font design from 1980s Namco arcade games. It works best at sizes of 8px, 16px and other multiples of 8. Although the design of uppercase letters and digits dates back to Atari's "Sprint" ( 1977 ), the specific glyph forms in this TrueType conversion are based on those from "Return of Ishtar" ( 1986 ), one of the first games to include and regularly use lowercase as well as uppercase letters in its screen font.
@@ -78,7 +77,7 @@ To contribute to the project contact Cody "CodeMan38" Boisclair."""
         if self.active:
             self.draw_border()
             self.draw_message()
-            self.app.screen.blit( self.overlay_surface, ( self.border, self.y + self.border ))
+            clientApp().screen.blit( self.overlay_surface, ( self.border, self.y + self.border ))
         else:
             if 'CREDITS' in ''.join( self.wrapped_text ) and self.shown:
                 if __import__( "sys" ).platform != "emscripten":

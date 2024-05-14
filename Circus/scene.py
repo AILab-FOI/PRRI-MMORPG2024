@@ -1,9 +1,18 @@
+from importlib import import_module
+from shared import *
 from stacked_sprite import *
 from random import uniform
 from entity import Entity, RemotePlayer
 from cache import Cache
 from player import Player
 import threading
+from tilemap import Tile, MapData
+from materialsystem import Material
+import json
+
+vartypes = {
+    "vec2": vec2
+}
 
 P = 'player'
 K = 'kitty'  # entity
@@ -43,7 +52,7 @@ WALL = 'wall'
 
 DOG = 'dog'
 
-MAP = [ 
+MAP_OLD = [
     [ T1, T2, T3, T4, T5, T6, T7, T8, T9,T10,T11,T12, T1, T2, T3, T4, T5, T6, T7, T8, T9,T10,T11,T12, T1, T2, T3 ],
     [ T4, T5, T6, T7, T8, T9,T10,T11,T12, T1, T2, T3, T4, T5, T6, T7, T8, T9,T10,T11,T12, T1, T2, T3, T4, T5, T6 ],
     [ T7, T8, T9,T10,T11,T12, T1, T2, T3, T4, T5, T6, T7, T8, T9,T10,T11,T12, T1, T2, T3, T4, T5, T6, T7, T8, T9 ],
@@ -71,55 +80,138 @@ MAP = [
     [ T1, T2, T3, T4, T5, T6, T7, T8, T9,T10,T11,T12, T1, T2, T3, T4, T5, T6, T7, T8, T9,T10,T11,T12, T1, T2, T3 ],
     [ T4, T5, T6, T7, T8, T9,T10,T11,T12, T1, T2, T3, T4, T5, T6, T7, T8, T9,T10,T11,T12, T1, T2, T3, T4, T5, T6 ],
     [ T7, T8, T9,T10,T11,T12, T1, T2, T3, T4, T5, T6, T7, T8, T9,T10,T11,T12, T1, T2, T3, T4, T5, T6, T7, T8, T9 ],
- ]
+]
+
+MAP_EMPTY = [ 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, P, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+]
+
+# Koju map datoteku da ucita
+# koristite SCENE_MAPNAME = "" ako ne zelite da se ista ucita
+SCENE_MAPNAME = "new" # new.map
+
+# Koji map array da se ucita ( gledaj gore )
+# MAP_EMPTY samo pozicionira igraca
+MAP = MAP_EMPTY 
 
 MAP_SIZE = MAP_WIDTH, MAP_HEIGHT = vec2( len( MAP ), len( MAP[ 0 ] ))
 MAP_CENTER = MAP_SIZE / 2
 
-
 class Scene:
-    def __init__( self, app ):
-        self.app = app
+    def __init__( self ):
         self.transform_objects = []
-        self.load_scene()
-        self.app.message.set_message( self.app.player.message )
-        self.app.message.active = True
+        self.load_scene(SCENE_MAPNAME)
+        clientApp().message.set_message( clientApp().player.message )
+        clientApp().message.active = True
 
-    def load_scene( self ):
+    def load_scene( self, mapname: str ):
+        self.load_map_file( mapname )
+        
         rand_rot = lambda: uniform( 0, 360 )
         rand_pos = lambda pos: pos + vec2( uniform( -0.25, 0.25 ))
 
         for j, row in enumerate( MAP ):
             for i, name in enumerate( row ):
                 pos = vec2( i, j ) + vec2( 0.5 )
-                print( name, pos )
                 if name == 'player':
-                    self.app.player.offset = pos * TILE_SIZE
+                    clientApp().player.offset = pos * TILE_SIZE
+                    player_pos = clientApp().player.offset
                 elif name == 'kitty' or name == 'circus' or name == 'movement' or name == 'resource' or name == 'combat' or name == 'tetris' or name == 'globe' or name == 'upgrades' or name == 'ui':
-                    Entity( self.app, name=name, pos=pos )
+                    Entity( name=name, pos=pos )
                 elif str( name ).startswith( 'tree' ) or name == 'bush':
-                    TrnspStackedSprite( self.app, name=name, pos=rand_pos( pos ), rot=rand_rot() )
+                    TrnspStackedSprite( name=name, pos=rand_pos( pos ), rot=rand_rot() )
                 elif name == 'grass' or str( name ).startswith( 'flower' ):
-                    StackedSprite( self.app, name=name, pos=rand_pos( pos ), rot=rand_rot(),
+                    StackedSprite( name=name, pos=rand_pos( pos ), rot=rand_rot(),
                                   collision=False )
                 elif name == 'sphere':
-                    obj = StackedSprite( self.app, name=name, pos=rand_pos( pos ), rot=rand_rot() )
+                    obj = StackedSprite( name=name, pos=rand_pos( pos ), rot=rand_rot() )
                     self.transform_objects.append( obj )
                 elif name:
-                    StackedSprite( self.app, name=name, pos=pos, rot=0 )
+                    StackedSprite( name=name, pos=rand_pos( pos ), rot=rand_rot() )
 
+        for pl in clientApp().players_pos: 
+            RemotePlayer( 'remote_player', clientApp().players_pos[ pl ], pl )
 
-        for pl in self.app.players_pos: 
-            RemotePlayer( self.app, 'remote_player', self.app.players_pos[ pl ], pl )
+    def load_map_file( self, mapname ):
+        if( len(mapname) <= 0 ):
+            return
+
+        if( mapname.endswith(".map") ):
+            mapname = mapname.replace(".map", "")
+
+        mapObj = MapData("assets/maps/" + mapname + ".map")
+
+        for layerName in mapObj.layers.keys():
+            layer = mapObj.layers[layerName]
+            if layerName.startswith("tiles_"):
+                layerData = layer["data"]
+                for posStr in layerData:
+                    pos = strToVec(posStr)
+                    material: Material = clientApp().material_system.register_material( "assets/" + layerData[posStr] )
+                    Tile( material, pos * TILE_SIZE, clientApp().draw_manager.layer_masks["tile_layer"] )
+            elif layerName.startswith("entities_"):
+                layerData = layer["data"]
+                for key in layerData:
+                    attr:dict = layerData[key]
+
+                    startIndex = max(0, key.find("_")+1)
+                    entType = key[startIndex::]
+                    classStr: str = entType
+
+                    entClass = None
+                    try:
+                        module_path, class_name = classStr.rsplit('.', 1)
+                        module = import_module(module_path)
+                        entClass = getattr(module, class_name)
+                    except (ImportError, AttributeError) as e:
+                        raise ImportError(classStr)
+                    
+                    name = "kitty"
+
+                    if( "name" in attr ):
+                        name = attr["name"]
+                    
+                    newEnt = entClass(name)
+                    if( "pos" in attr ):
+                        newEnt.set_pos( strToVec(attr["pos"]) * TILE_SIZE )
+
+                    print(newEnt)
 
     def get_closest_object_to_player( self ):
-        closest = sorted( self.app.transparent_objects, key=lambda e: e.dist_to_player )
-        closest[ 0 ].alpha_trigger = True
-        closest[ 1 ].alpha_trigger = True
+        closest = sorted( clientApp().transparent_objects, key=lambda e: e.dist_to_player )
+        if( len(closest) > 0 ):
+            closest[ 0 ].alpha_trigger = True
+            closest[ 1 ].alpha_trigger = True
 
     def transform( self ):
         for obj in self.transform_objects:
-            obj.rot = 30 * self.app.time
+            obj.rot = 30 * clientApp().time
 
     def update( self ):
         self.get_closest_object_to_player()
@@ -146,8 +238,7 @@ def run_in_thread( func, args=None, kwargs=None, callback=None ):
         
 
 class LoadingScene:
-    def __init__( self, app ):
-        self.app = app
+    def __init__( self ):
         self.font = pg.font.Font( "assets/PressStart2P-Regular.ttf", 16 )
         self.progress = 0
         self.messages = [ 
@@ -173,9 +264,9 @@ class LoadingScene:
         self.bar_height = int( HEIGHT / 56.33 )
         self.MAX = len( STACKED_SPRITE_ATTRS )
         self.done = False
-        self.app.cache = Cache( self.app )
-        self.app.cache.get_entity_sprite_cache()
-        self.stacked_sprite_iterator = self.app.cache.get_stacked_sprite_cache()
+        clientApp().cache = Cache()
+        clientApp().cache.cache_entity_sprite_data()
+        self.stacked_sprite_iterator = clientApp().cache.cache_stacked_sprite_data()
 
     def done_cache( self ):
         self.done = True
@@ -188,39 +279,40 @@ class LoadingScene:
         
         if self.done:
             # Switch to the game scene after loading is complete
-            self.app.player = Player( self.app )
-            self.app.scene = Scene( self.app )
+            clientApp().set_local_player( Player() )
+            clientApp().set_active_scene( Scene() )
         else:
             # Simulate loading progress
-            self.progress = self.app.done_counter / self.MAX * len( self.messages )
+            self.progress = clientApp().done_counter / self.MAX * len( self.messages )
 
+        print(self.progress)
 
 
     def draw( self ):
-        #self.app.screen.fill( BG_COLOR )
-        self.bg_img = pg.image.load( 'assets/images/circus.png' )
-        self.bg_img = pg.transform.smoothscale( self.bg_img, self.app.screen.get_size() )
-        self.app.screen.blit( self.bg_img, self.bg_img.get_rect() )
-        screen_center_x = self.app.screen.get_width() // 2
-        screen_center_y = self.app.screen.get_height() // 100 * 85
+        #client_app.screen.fill( BG_COLOR )
+        self.bg_img = pg.image.load( 'assets/images/png' )
+        self.bg_img = pg.transform.smoothscale( self.bg_img, clientApp().screen.get_size() )
+        clientApp().screen.blit( self.bg_img, self.bg_img.get_rect() )
+        screen_center_x = clientApp().screen.get_width() // 2
+        screen_center_y = clientApp().screen.get_height() // 100 * 85
 
         # Display the current message based on progress
         current_message_index = min( int( self.progress ), len( self.messages ) - 1 )
         msg = self.messages[ current_message_index ]
         text = self.font.render( msg, True, ( 0, 0, 0 ))
         text_rect = text.get_rect( center=( screen_center_x, screen_center_y + 80 ))
-        self.app.screen.blit( text, text_rect )
+        clientApp().screen.blit( text, text_rect )
 
         # Draw the progress bar background
         bar_bg_rect = pg.Rect( 0, 0, self.bar_width, self.bar_height )
         bar_bg_rect.center = ( screen_center_x, screen_center_y + 40 )
-        pg.draw.rect( self.app.screen, ( 204, 239, 253 ), bar_bg_rect )
+        pg.draw.rect( clientApp().screen, ( 204, 239, 253 ), bar_bg_rect )
 
         # Draw the progress bar
         progress_width = int( self.progress / len( self.messages ) * self.bar_width )
         bar_rect = pg.Rect( 0, 0, progress_width, self.bar_height )
         bar_rect.midleft = bar_bg_rect.midleft
-        pg.draw.rect( self.app.screen, ( 221, 220, 79 ), bar_rect )
+        pg.draw.rect( clientApp().screen, ( 221, 220, 79 ), bar_rect )
 
 
 

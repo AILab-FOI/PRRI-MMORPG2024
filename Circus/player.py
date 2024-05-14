@@ -1,18 +1,21 @@
-from settings import *
+from shared import *
 import math
-from entity import BaseEntity
+from entity import BaseSpriteEntity
 from bullet import Bullet
 from itertools import cycle
 import json
 
+from viewpoint import Viewpoint
 
-class Player( BaseEntity ):
-    def __init__( self, app, name='player' ):
-        super().__init__( app, name )
 
-        self.group.change_layer( self, CENTER.y )
+class Player( BaseSpriteEntity ):
+    """Player base class
 
-        self.rect = self.image.get_rect( center=CENTER )
+    Args:
+        BaseSpriteEntity ( BaseSpriteEntity ): Sprite entity to create the player from
+    """    
+    def __init__( self, name='player' ):
+        super().__init__( name )
 
         self.offset = vec2( 0 )
         self.last_offset = vec2( 0 )
@@ -22,6 +25,8 @@ class Player( BaseEntity ):
         self.last_inc = vec2( 0 )
         self.angle = 0
         self.diag_move_corr = 1 / math.sqrt( 2 )
+
+        self.viewpoint = Viewpoint()
 
         self.down_ind = [ 3, 7, 11, 15 ]
         self.down_list = cycle( self.down_ind )
@@ -50,9 +55,26 @@ It can include branching storylines, dialogue choices, moral and ethical choices
 Let us walk through the circus and I show you some of our performers!
 
 """
-                
+    def on_start_drawing(self):
+        super().on_start_drawing()
+        self.sprite.groups()[0].change_layer( self.sprite, CENTER.y )
+
+        self.sprite.rect = self.sprite.image.get_rect( center=CENTER )
+
+    def forward( self ):
+        ret = vec2()
+        ret.x = math.cos(-self.angle-(math.pi/2))
+        ret.y = math.sin(-self.angle-(math.pi/2))
+        return ret
+    
+    def right( self ):
+        ret = vec2()
+        ret.x = math.cos(-self.angle)
+        ret.y = math.sin(-self.angle)
+        return ret
+
     def animate( self ):
-        if self.app.anim_trigger:
+        if clientApp().anim_trigger:
             if self.direction == 'DOWN':
                 if self.moving:
                     self.frame_index = next( self.down_list )
@@ -74,14 +96,14 @@ Let us walk through the circus and I show you some of our performers!
                 else:
                     self.frame_index = self.right_ind[ 1 ]
 
-            self.image = self.images[ self.frame_index ]
+            self.sprite.image = self.images[ self.frame_index ]
 
 
     def control( self ):
         self.moving = False
         self.inc = vec2( 0 )
-        speed = PLAYER_SPEED * self.app.delta_time
-        rot_speed = PLAYER_ROT_SPEED * self.app.delta_time
+        speed = PLAYER_SPEED * clientApp().delta_time
+        rot_speed = PLAYER_ROT_SPEED * clientApp().delta_time
 
         key_state = pg.key.get_pressed()
 
@@ -112,14 +134,17 @@ Let us walk through the circus and I show you some of our performers!
 
     def single_fire( self, event ):
         if event.key == pg.K_UP:
-            Bullet( app=self.app )
+            Bullet( "bullet", self.pos )
         if event.key == pg.K_SPACE:
-            self.app.message.handle_input()
+            clientApp().message.handle_input()
 
     def check_collision( self ):
-        hitobst = pg.sprite.spritecollide( self, self.app.collision_group,
+        if( self.sprite == None ):
+            return
+
+        hitobst = pg.sprite.spritecollide( self.sprite, clientApp().collision_group,
                                       dokill=False, collided=pg.sprite.collide_mask )
-        hit = pg.sprite.spritecollide( self, self.app.entity_group,
+        hit = pg.sprite.spritecollide( self.sprite, clientApp().draw_manager.layer_masks['entity_layer'],
                                       dokill=False, collided=pg.sprite.collide_mask )
         if not hitobst and not hit:
             if self.inc.x or self.inc.y:
@@ -127,11 +152,11 @@ Let us walk through the circus and I show you some of our performers!
         else:
             self.inc = -self.prev_inc
             if hit:
-                self.app.message.set_message( hit[ 0 ].message )
-                self.app.message.active = True
+                clientApp().message.set_message( hit[ 0 ].entity.message )
+                clientApp().message.active = True
             if hitobst and hitobst[ 0 ].message != '':
-                self.app.message.set_message( hitobst[ 0 ].message )
-                self.app.message.active = True
+                clientApp().message.set_message( hitobst[ 0 ].entity.message )
+                clientApp().message.active = True
 
 
     def move( self ):
@@ -141,13 +166,23 @@ Let us walk through the circus and I show you some of our performers!
         x1 = self.last_offset[ 0 ] // TILE_SIZE + 0.5
         y1 = self.last_offset[ 1 ] // TILE_SIZE + 0.5
         if x != x1 or y != y1:
-            message = json.dumps( { "command":"update", "id": self.app.username, "position": { "x": x, "y": y } } )
-            self.app.ws.send( message )
+            message = json.dumps( { "command":"update", "id": clientApp().username, "position": { "x": x, "y": y } } )
+            if( not clientApp().closed ):
+                clientApp().ws.send( message )
+
             self.last_offset[ 0 ] = int( self.offset[ 0 ] )
             self.last_offset[ 1 ] = int( self.offset[ 1 ] )
 
-    def update( self ):
+    def should_think(self) -> bool:
+        return True
+    
+    def update_visuals(self):
         self.animate()
+        self.pos = self.offset
+        self.viewpoint.set_ang( self.angle )
+        self.viewpoint.set_pos( self.offset )
+
+    def think( self ):
         self.control()
         self.check_collision()
         self.move()

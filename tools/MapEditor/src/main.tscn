@@ -1,0 +1,266 @@
+[gd_scene load_steps=12 format=3 uid="uid://ciet2ihaoxqo0"]
+
+[ext_resource type="Script" path="res://main.gd" id="1_e1med"]
+[ext_resource type="Script" path="res://scripts/TopMenu/file.gd" id="1_f6n8v"]
+[ext_resource type="Script" path="res://scripts/TopMenu/map.gd" id="3_jdc2b"]
+[ext_resource type="PackedScene" uid="uid://dx2fmkcllu0bi" path="res://panels/save_file.tscn" id="3_rm61t"]
+[ext_resource type="PackedScene" uid="uid://b8olwx5hdnym4" path="res://panels/size_menu.tscn" id="4_o2faq"]
+[ext_resource type="Script" path="res://Layers.gd" id="5_jnvlk"]
+[ext_resource type="PackedScene" uid="uid://6xi1ulr3j5tn" path="res://panels/ent_values.tscn" id="6_b430y"]
+[ext_resource type="Script" path="res://scripts/panels/EntityList.gd" id="7_iuxqx"]
+[ext_resource type="Script" path="res://scripts/panels/LayerList.gd" id="7_wqiea"]
+[ext_resource type="PackedScene" uid="uid://fxdl57sfmh8s" path="res://panels/new_layer_menu.tscn" id="8_0a2d8"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gj82e"]
+bg_color = Color(0.352941, 0.32549, 0.537255, 1)
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_e1med")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_gj82e")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+
+[node name="TopMenu" type="MenuBar" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 0
+
+[node name="File" type="PopupMenu" parent="VBoxContainer/TopMenu"]
+size = Vector2i(165, 100)
+item_count = 4
+item_0/text = "Set Asset Folder..."
+item_0/id = 0
+item_1/text = ""
+item_1/id = 3
+item_1/separator = true
+item_2/text = "Save"
+item_2/id = 1
+item_2/disabled = true
+item_3/text = "Open..."
+item_3/id = 2
+item_3/disabled = true
+script = ExtResource("1_f6n8v")
+
+[node name="AssetDialog" type="FileDialog" parent="VBoxContainer/TopMenu/File"]
+title = "Open a Directory"
+initial_position = 2
+size = Vector2i(800, 500)
+popup_window = true
+ok_button_text = "Select Current Folder"
+file_mode = 2
+access = 2
+
+[node name="SaveFile" parent="VBoxContainer/TopMenu/File" instance=ExtResource("3_rm61t")]
+visible = false
+
+[node name="OpenFile" type="FileDialog" parent="VBoxContainer/TopMenu/File"]
+title = "Open a File"
+initial_position = 2
+size = Vector2i(800, 500)
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.map")
+
+[node name="Map" type="PopupMenu" parent="VBoxContainer/TopMenu"]
+title = "Map"
+item_count = 1
+item_0/text = "New Map..."
+item_0/id = 0
+item_0/disabled = true
+script = ExtResource("3_jdc2b")
+
+[node name="SizeMenu" parent="VBoxContainer/TopMenu/Map" instance=ExtResource("4_o2faq")]
+visible = false
+
+[node name="MainWindow" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 0
+
+[node name="MapItems" type="HBoxContainer" parent="VBoxContainer/MainWindow"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Map" type="Control" parent="VBoxContainer/MainWindow/MapItems"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="Panel" type="Panel" parent="VBoxContainer/MainWindow/MapItems/Map"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="EntValues" parent="VBoxContainer/MainWindow/MapItems/Map" instance=ExtResource("6_b430y")]
+unique_name_in_owner = true
+visible = false
+
+[node name="Layers" type="Control" parent="VBoxContainer/MainWindow/MapItems/Map"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("5_jnvlk")
+
+[node name="MapInfo" type="VSplitContainer" parent="VBoxContainer/MainWindow/MapItems"]
+layout_mode = 2
+split_offset = 100
+
+[node name="TabContainer" type="TabContainer" parent="VBoxContainer/MainWindow/MapItems/MapInfo"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Material" type="ScrollContainer" parent="VBoxContainer/MainWindow/MapItems/MapInfo/TabContainer"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="MaterialList" type="ItemList" parent="VBoxContainer/MainWindow/MapItems/MapInfo/TabContainer/Material"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 1
+max_columns = 3
+same_column_width = true
+fixed_column_width = 57
+icon_mode = 0
+fixed_icon_size = Vector2i(57, 57)
+metadata/_edit_use_anchors_ = true
+
+[node name="Entity" type="ScrollContainer" parent="VBoxContainer/MainWindow/MapItems/MapInfo/TabContainer"]
+visible = false
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="EntityList" type="HFlowContainer" parent="VBoxContainer/MainWindow/MapItems/MapInfo/TabContainer/Entity"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("7_iuxqx")
+metadata/_edit_use_anchors_ = true
+
+[node name="LayerScroll" type="ScrollContainer" parent="VBoxContainer/MainWindow/MapItems/MapInfo"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="LayerList" type="ItemList" parent="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("7_wqiea")
+
+[node name="NewLayerMenu" parent="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList" instance=ExtResource("8_0a2d8")]
+visible = false
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -31.0
+offset_right = 31.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Up" type="Button" parent="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "⬆️"
+
+[node name="+" type="Button" parent="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "  +  "
+
+[node name="Down" type="Button" parent="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "⬇️"
+
+[node name="Info" type="HBoxContainer" parent="VBoxContainer/MainWindow"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Info_Label_XPos" type="Label" parent="VBoxContainer/MainWindow/Info"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+text = "x: 100"
+
+[node name="Panel" type="Panel" parent="VBoxContainer/MainWindow/Info/Info_Label_XPos"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Info_Label_YPos" type="Label" parent="VBoxContainer/MainWindow/Info"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+text = "y: 100"
+
+[node name="Panel" type="Panel" parent="VBoxContainer/MainWindow/Info/Info_Label_YPos"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="Panel" parent="VBoxContainer/MainWindow/Info"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[connection signal="id_pressed" from="VBoxContainer/TopMenu/File" to="VBoxContainer/TopMenu/File" method="_on_id_pressed"]
+[connection signal="dir_selected" from="VBoxContainer/TopMenu/File/AssetDialog" to="VBoxContainer/TopMenu/File" method="_on_file_dialog_dir_selected"]
+[connection signal="save_file" from="VBoxContainer/TopMenu/File/SaveFile" to="." method="_on_save_file_save_file"]
+[connection signal="file_selected" from="VBoxContainer/TopMenu/File/OpenFile" to="VBoxContainer/TopMenu/File" method="_on_open_file_file_selected"]
+[connection signal="id_pressed" from="VBoxContainer/TopMenu/Map" to="VBoxContainer/TopMenu/Map" method="_on_id_pressed"]
+[connection signal="map_size_changed" from="VBoxContainer/TopMenu/Map/SizeMenu" to="VBoxContainer/TopMenu/Map" method="_on_size_menu_map_size_changed"]
+[connection signal="gui_input" from="VBoxContainer/MainWindow/MapItems/Map/Layers" to="VBoxContainer/MainWindow/MapItems/Map/Layers" method="_on_gui_input"]
+[connection signal="item_selected" from="VBoxContainer/MainWindow/MapItems/MapInfo/TabContainer/Material/MaterialList" to="." method="_on_item_list_item_selected"]
+[connection signal="item_selected" from="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList" to="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList" method="_on_item_selected"]
+[connection signal="new_layer_added" from="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList/NewLayerMenu" to="VBoxContainer/MainWindow/MapItems/Map/Layers" method="_on_new_layer_menu_new_layer_added"]
+[connection signal="pressed" from="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList/HBoxContainer/Up" to="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList" method="_on_up_pressed"]
+[connection signal="pressed" from="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList/HBoxContainer/+" to="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList" method="_on_new_pressed"]
+[connection signal="pressed" from="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList/HBoxContainer/Down" to="VBoxContainer/MainWindow/MapItems/MapInfo/LayerScroll/LayerList" method="_on_down_pressed"]
