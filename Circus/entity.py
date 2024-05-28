@@ -30,7 +30,7 @@ class WorldObject(object):
 
         self.pos = newPos
 
-        if( self.sprite ):
+        if( self.is_drawing ):
             self.update_screenpos()
 
     def calculate_viewpoint_position( self ):
@@ -215,7 +215,6 @@ class BaseSpriteEntity( WorldObject ):
         del self
 
     def animate( self ):
-        
         if clientApp().anim_trigger:
             self.frame_index = ( self.frame_index + 1 ) % len( self.images )
             self.sprite.image = self.images[ self.frame_index ]
@@ -338,7 +337,7 @@ class RemotePlayer( Entity ):
 
     
     def move( self ): # TODO: Ovdje bi trebalo staviti promjenu pozicije temeljem poruke
-        self.pos = clientApp().players_pos[ self.username ]
+        self.set_pos( clientApp().players_pos[ self.username ] )
 
     def should_think(self) -> bool:
         """Checks whether the entity has behaviour to be called every frame
@@ -350,6 +349,3 @@ class RemotePlayer( Entity ):
 
     def think(self):
         self.move()
-
-    def update_visuals( self ):
-        super().update_visuals()

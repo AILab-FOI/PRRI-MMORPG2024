@@ -161,17 +161,16 @@ Let us walk through the circus and I show you some of our performers!
 
     def move( self ):
         self.offset += self.inc
-        x = int( self.offset[ 0 ] ) // TILE_SIZE + 0.5
-        y = int( self.offset[ 1 ] ) // TILE_SIZE + 0.5
-        x1 = self.last_offset[ 0 ] // TILE_SIZE + 0.5
-        y1 = self.last_offset[ 1 ] // TILE_SIZE + 0.5
+        x = self.offset[ 0 ]
+        y = self.offset[ 1 ]
+        x1 = self.last_offset[ 0 ]
+        y1 = self.last_offset[ 1 ]
         if x != x1 or y != y1:
-            message = json.dumps( { "command":"update", "id": clientApp().username, "position": { "x": x, "y": y } } )
-            if( not clientApp().closed ):
-                clientApp().ws.send( message )
+            message = { "command":"update", "id": clientApp().username, "position": { "x": x, "y": y } }
+            clientApp().push_websocket_message( message )
 
-            self.last_offset[ 0 ] = int( self.offset[ 0 ] )
-            self.last_offset[ 1 ] = int( self.offset[ 1 ] )
+            self.last_offset[ 0 ] = self.offset[ 0 ]
+            self.last_offset[ 1 ] = self.offset[ 1 ]
 
     def should_think(self) -> bool:
         return True

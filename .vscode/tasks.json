@@ -41,6 +41,19 @@
             "options": {
                 "cwd": "./Circus"
             }
+        },
+        {
+            "label": "Start Second Client",
+            "type": "process",
+            "command": "python",
+            "args": ["main.py", "--username", "USER2", "--password", "PASS2"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "options": {
+                "cwd": "./Circus"
+            }
         }
     ]
 }

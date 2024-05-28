@@ -55,7 +55,10 @@ class ClientApp:
         self.password = password
 
         # server connection
+
+        self.messages_to_send : list = []
         self.closing = False
+        self.closed = False
         self.connect()
     
         self.players_pos = {}
@@ -111,6 +114,9 @@ class ClientApp:
     def update( self ):
         """Updates the systems
         """        
+        # Send our input first and foremost
+        self.websocket_loop()
+
         if self.scene:
             self.scene.update()
             pg.display.set_caption( 'The Circus of Game Mechanics' ) #( f'{self.clock.get_fps(): .1f}' )
@@ -165,8 +171,32 @@ class ClientApp:
                                          on_message=self.on_message,
                                          on_error=self.on_error,
                                          on_close=self.on_close )
-        self.thread = threading.Thread( target=lambda: self.ws.run_forever( ping_interval=60 ) )
-        self.thread.start()
+        self.websocket_thread = threading.Thread( target=lambda: self.ws.run_forever( ping_interval=0.25 ) )
+        self.websocket_thread.start()
+        
+
+    def websocket_loop( self ):
+        while len(self.messages_to_send) > 0 and not self.closed:
+            message = self.messages_to_send[0]
+            try:
+                print(f"Sending message: {message}")
+                self.ws.send( json.dumps(message) )
+                self.messages_to_send.pop(0)
+            # If we fail to send because the connection closed, break
+            except:
+                print("Connection closed!!")
+                break
+
+    def push_websocket_message( self, message: object, override = True ):
+        print(f"Adding message: {message}")
+
+        if( override ):
+            for i in range(len(self.messages_to_send)):
+                if( self.messages_to_send[i]["command"] == message["command"] ):
+                    self.messages_to_send[i] = message
+                    return
+
+        self.messages_to_send.append( message )
 
     def on_message( self, ws: websocket, message: Message ):
         """On message received from websocket, updates the player based on message
@@ -178,14 +208,27 @@ class ClientApp:
         logging.info( f"Message received: {message}" )
         if not self.scene:
             self.scene = LoadingScene()
-        data = json.loads( message )
-        for player in data:
-            if player != self.username:
-                x = data[ player ][ 'x' ]
-                y = data[ player ][ 'y' ]
-                print( player, x, y )
-                pos = vec2( x * TILE_SIZE, y * TILE_SIZE ) + vec2( 0.5 )
-                self.players_pos[ player ] = pos
+        
+        json_message = json.loads( message )
+
+        print(json_message)
+
+        match json_message["command"]:
+            case "player_pos":
+                data = json_message["data"]
+                for player in data:
+                    if player != self.username:
+                        x = data[ player ][ 'x' ]
+                        y = data[ player ][ 'y' ]
+                        print( player, x, y )
+                        pos = vec2( x, y )
+                        self.players_pos[ player ] = pos
+            case "login_failed":
+                data = json_message["data"]
+                if data == "player_doesnt_exist":
+                    message = {"command":"register", "id": self.username, "password": self.password }
+                    self.push_websocket_message(message)
+                    logging.info( f"Sent: {message}" )
 
     def on_error( self, ws: websocket, error ):
         """On error
@@ -197,9 +240,13 @@ class ClientApp:
         logging.error( f"Connection error: {error}" )
 
     def on_close( self, ws: websocket, close_status_code, close_msg ):
-    
+
+        logging.info(close_status_code)
+        logging.info(close_msg)
+
         logging.warning( "Connection to server closed" )
         self.closed = True
+
         if not self.closing:
             logging.info( "Attempting to reconnect..." )
             self.connect()
@@ -212,13 +259,10 @@ class ClientApp:
         """        
         self.closed = False
         logging.info( "Connection established" )
-        message = json.dumps( {"command":"register", "id": self.username, "password": self.password } )
-        ws.send( message )
-        logging.info( f"Sent: {message}" )
 
-        # In case that fails, try to log them in
-        message = json.dumps( {"command":"login", "id": self.username, "password": self.password } )
-        ws.send( message )
+        # Try to log in
+        message = {"command":"login", "id": self.username, "password": self.password }
+        self.push_websocket_message(message)
         logging.info( f"Sent: {message}" )
 
         logging.info( "Login sequence finished..." )
