@@ -72,6 +72,7 @@ class Player( persistent.Persistent ):
 connected_clients = set()
 
 # WebSocket server handling
+# Unutar funkcije handle_connection, nakon logike koja već obrađuje dolazne poruke
 async def handle_connection(websocket, path: str):
     """Handles websocket connection
 
@@ -117,6 +118,14 @@ async def handle_connection(websocket, path: str):
                         continue
 
                     update_player_position( player_id, position[ 'x' ], position[ 'y' ] )
+                elif data[ 'command' ] == 'chat_message':
+                    # Dodajte logiku za distribuciju chat poruke ostalim klijentima
+                    sender = data['sender']
+                    message = data['message']
+                    logging.info(f"Received chat message from {sender}: {message}")
+
+                    # Ovdje dodajte logiku za distribuciju poruke ostalim klijentima
+                    await broadcast_message_to_all(json.dumps(data))
                 else:
                     print( 'Invalid command', data )
             except Exception as e:
