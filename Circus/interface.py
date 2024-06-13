@@ -22,3 +22,7 @@ class Interface( pg.sprite.Sprite ):
         self.rect = self.image.get_rect()
 
         self.group.change_layer( self, 900)
+    
+    def __del__( self ):
+        for interaction in self.interactibles:
+            del interaction
