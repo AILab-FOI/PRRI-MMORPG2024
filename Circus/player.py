@@ -35,21 +35,7 @@ class Player( BaseEntity ):
         self.direction = 'DOWN'
         self.moving = False
 
-        self.message = """Welcome to the Circus of Game Mechanics! Where everything is important, but nothing realy matters.
-
-What are game mechanics, you ask? Well, let me show you!
-
-Game Mechanics are the rules and systems that govern player interactions within a game.
-
-They are important because they provide structure, challenge, and variety in games.
-
-As a first, I am the ring master, the narrator of this game. This is our first mechanic related to story and narrative. 
-
-It can include branching storylines, dialogue choices, moral and ethical choices, and quest systems which provide narrative depth and immersion.
-
-Let us walk through the circus and I show you some of our performers!
-
-"""
+        self.message = ""
                 
     def animate( self ):
         if self.app.anim_trigger:
@@ -111,10 +97,12 @@ Let us walk through the circus and I show you some of our performers!
             self.inc *= self.diag_move_corr
 
     def single_fire( self, event ):
-        if event.key == pg.K_UP:
-            Bullet( app=self.app )
-        if event.key == pg.K_SPACE:
-            self.app.message.handle_input()
+        if event.type == pg.MOUSEBUTTONDOWN:
+            if event.button == 1:  
+                Bullet(app=self.app)
+        elif event.type == pg.KEYDOWN:
+            if event.key == pg.K_SPACE:
+                self.app.message.handle_input()
 
     def check_collision( self ):
         hitobst = pg.sprite.spritecollide( self, self.app.collision_group,

@@ -28,11 +28,11 @@ class Interactible:
         #   Method to attempt interacting with an interactible area, if succesful it will return the interaction
         #   else returns empty string, on mouse clicking event before doing anything else check if its interacting
 
-        def try_interact( self ):
-            mx, my = pg.mouse.get_pos()
-            x = self.x - mx
-            y = self.y - my
-            if x < self.width and y < self.height:
-                return self.interaction
-            else:
-                return ''
+    def try_interact( self ):
+        mx, my = pg.mouse.get_pos()
+        x = self.x - mx
+        y = self.y - my
+        if x < self.width and y < self.height:
+            return self.interaction
+        else:
+            return ''
