@@ -85,7 +85,7 @@ class ClientApp:
         self.cache = None
         self.scene = None
         self.message = Message([self.screen.get_size()[0], self.screen.get_size()[1] / 2], self.screen.get_size(), font_size=20)
-        self.fps_counter = Message([0, 0], [200, 80], font_size=10)
+        self.fps_counter = Message([self.screen.get_size()[0]-200, 0], [200, 80], font_size=10)
 
         self.active_viewpoint: Viewpoint = None
     
