@@ -99,10 +99,12 @@ async def handle_connection(websocket, path: str):
     try:
         # Existing connection handling logic...
         async for message in websocket:
-            logging.info( f"Messages left: {len(websocket.messages)}" )
-            logging.info( f"Message received: {message}" )
             # Handle incoming messages...
             data = json.loads( message )
+
+            if( data[ 'command' ] != "keep_connection" ):
+                logging.info( f"Messages left: {len(websocket.messages)}" )
+                logging.info( f"Message received: {message}" )
 
             try:
                 if data[ 'command' ] == 'register':
@@ -116,9 +118,10 @@ async def handle_connection(websocket, path: str):
                 elif data[ 'command' ] == 'login':
                     if not login_player( data[ 'id' ], data[ 'password' ] ):
                         await send_message_to_player( websocket, {"command": "login_failed", "data":"player_doesnt_exist"} )
-                    else:
-                        await send_message_to_player(websocket, {"command": "login_successful"})
                         logging.info( f'Invalid login attempt {data}' )							  
+                    else:
+                        await send_message_to_player(websocket, {"command": "login_successful"})      
+                        await broadcast_positions()                  
                 elif data[ 'command' ] == 'logout':
                     logout_player( data[ 'id' ], data[ 'password' ] )
                     logging.info( f'User logged out {data}' )
@@ -134,6 +137,7 @@ async def handle_connection(websocket, path: str):
                         continue
 
                     update_player_position( player_id, position[ 'x' ], position[ 'y' ] )
+                    await broadcast_positions()
                 elif data[ 'command' ] == 'chat_message':
                     # Dodajte logiku za distribuciju chat poruke ostalim klijentima
                     sender = data['sender']
@@ -142,13 +146,13 @@ async def handle_connection(websocket, path: str):
 
                     # Ovdje dodajte logiku za distribuciju poruke ostalim klijentima
                     await broadcast_message_to_all(data)
+                elif data['command'] == 'keep_connection':
+                    pass
                 else:
                     print( 'Invalid command', data )
             except Exception as e:
                 connected_clients.remove( websocket )
                 logging.info( f'Invalid message {data} {str(e)}' )
-            
-            await broadcast_positions()
             #await websocket.ping()  
     except websockets.exceptions.ConnectionClosedOK as e:
         logging.warning(f"Connection handled successfully: {e.reason} {e.code}")

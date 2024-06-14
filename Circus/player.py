@@ -165,7 +165,9 @@ Let us walk through the circus and I show you some of our performers!
         y = self.offset[ 1 ]
         x1 = self.last_offset[ 0 ]
         y1 = self.last_offset[ 1 ]
-        if x != x1 or y != y1:
+
+
+        if (x != x1 or y != y1) and clientApp().scene.done:
             message = { "command":"update", "id": clientApp().username, "position": { "x": x, "y": y } }
             clientApp().push_websocket_message( message )
 
@@ -186,7 +188,9 @@ Let us walk through the circus and I show you some of our performers!
         self.check_collision()
         self.move()
 
-
+    def set_pos(self, newPos):
+        super().set_pos(newPos)
+        self.offset = newPos
 
 
 

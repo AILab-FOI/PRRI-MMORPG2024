@@ -247,10 +247,15 @@ class ClientApp:
         self.websocket_thread.start()
 
     def websocket_loop(self):
+        if( len(self.messages_to_send) <= 0 ):
+            self.push_websocket_message({"command": "keep_connection"})
+
         while len(self.messages_to_send) > 0 and not self.closed:
             message = self.messages_to_send[0]
             try:
-                print(f"Sending message: {message}")
+                if( message['command'] != "keep_connection" ):
+                    print(f"Sending message: {message}")
+                
                 self.ws.send(json.dumps(message))
                 self.messages_to_send.pop(0)
             # If we fail to send because the connection closed, break
@@ -259,7 +264,8 @@ class ClientApp:
                 break
 
     def push_websocket_message(self, message: object, override=True):
-        print(f"Adding message: {message}")
+        if( message["command"] != "keep_connection" ):
+            print(f"Adding message: {message}")
 
         if override:
             for i in range(len(self.messages_to_send)):
@@ -286,12 +292,11 @@ class ClientApp:
             case "player_pos":
                 data = json_message["data"]
                 for player in data:
-                    if player != self.username:
-                        x = data[player]['x']
-                        y = data[player]['y']
-                        print(player, x, y)
-                        pos = vec2(x, y)
-                        self.players_pos[player] = pos
+                    x = data[player]['x']
+                    y = data[player]['y']
+                    print(player, x, y)
+                    pos = vec2(x, y)
+                    self.players_pos[player] = pos
             case "login_failed":
                 data = json_message["data"]
                 if data == "player_doesnt_exist":
