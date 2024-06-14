@@ -221,69 +221,42 @@ In the end, I give you a few secret best practices in game mechanics design:
         'num_layers': 74,
         'scale': 1,
         'y_offset': 20,
-        'message':"""This is our movement performer. 
-
-Movement mechanics are different types of movement mechanics, such as walking, running, jumping, climbing, swimming, and flying, allow players to navigate the game world. 
-
-And now move, move, move!!!""",
     },
     'resource': {
         'path': 'assets/entities/resource/resource-crafting.png',
         'num_layers': 16,
         'scale': 1,
         'y_offset': 20,
-        'message':"""And here is our master craftsman! 
-
-This is a special type of resource management mechanic.
-
-Other types include inventory systems, gathering resources, trading, the afore mentioned crafting and economics which govern the acquisition and use of in-game items and resources.""",
     },
     'combat': {
         'path': 'assets/entities/combat/combat.png',
         'num_layers': 69,
         'scale': 1,
         'y_offset': 20,
-        'message':"""And here for some combat mechanics. 
-
-There are multiple types of combat mechanics including melee combat, ranged combat, magic systems, and stealth mechanics which provide various ways for players to engage in battles and confrontations- 
-
-If you use the up arrow you can see a ranged combat mechanic.""",
-    },
+   },
     'tetris': {
         'path': 'assets/entities/tetris/tetris.png',
         'num_layers': 239,
         'scale': 1,
         'y_offset': 20,
-        'message':"""How about a puzzle? 
-
-Physics-based puzzles, logic puzzles, pattern recognition, and environmental manipulation challenge players' problem-solving skills.""",
     },
     'globe': {
         'path': 'assets/entities/globe/globe.png',
         'num_layers': 86,
         'scale': 2,
         'y_offset': 20,
-        'message':"""Do you want to explore the world? 
-
-Exploration game mechanichs include open-world exploration, procedurally generated worlds, non-linear level design, and hidden areas encourage players to discover new locations and secrets.""",
     },
     'upgrades': {
         'path': 'assets/entities/upgrades/upgrades.png',
         'num_layers': 24,
         'scale': 1,
         'y_offset': 20,
-        'message':"""And here is the upgradable trio!!! They are quite fun!
-
-Character progression like leveling up, skill trees, ability unlocks, and equipment upgrades allow players to develop and customize their characters.""",
     },
     'ui': {
         'path': 'assets/entities/ui/ui.png',
         'num_layers': 7,
         'scale': 1,
         'y_offset': 20,
-        'message':"""Another important game mechanic is related to the user interface and controls. 
-
-It might include  HUD elements, camera perspectives, control schemes, and accessibility options that ensure that players can effectively interact with the game.""",
     },
 }
 
@@ -456,16 +429,7 @@ STACKED_SPRITE_ATTRS = {
         'num_layers': 15,
         'scale': 10,
         'y_offset': 10,
-        'message':'''You have found the Easterchick!!! Go to the professor in private and say the magic words: 
-
-MAMA SC!!!
----------------------------------------
----------------------------------------
----------------------------------------
----------------------------------------
----------------------------------------
----------------------------------------
-''' + CREDITS
+        'message': CREDITS
     },
     'bike': {
         'path': 'assets/stacked_sprites/bike.png',
@@ -499,3 +463,6 @@ INTERFACE_ATTRS = {
 }
 
 
+QUEST_ATTRS = {
+
+}

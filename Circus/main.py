@@ -97,8 +97,15 @@ class App:
                     sys.exit()
             elif e.type == self.anim_event:
                 self.anim_trigger = True
-            elif e.type == pg.KEYDOWN:
-                self.player.single_fire( event=e )
+            elif e.type == pg.MOUSEBUTTONDOWN:
+                clicked = False
+                for clickable in self.clickable_group:
+                    interaction = clickable.try_interact()
+                    if interaction != '':
+                        logging.info( interaction )
+                        clicked = True
+                if not clicked:
+                    self.player.single_fire( event=e )
 
     def get_time( self ):
         self.time = pg.time.get_ticks() * 0.001
