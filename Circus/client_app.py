@@ -173,7 +173,6 @@ class ClientApp:
                                          on_close=self.on_close )
         self.websocket_thread = threading.Thread( target=lambda: self.ws.run_forever( ping_interval=0.25 ) )
         self.websocket_thread.start()
-        
 
     def websocket_loop( self ):
         while len(self.messages_to_send) > 0 and not self.closed:
@@ -206,8 +205,6 @@ class ClientApp:
             message ( Message ): Message
         """        
         logging.info( f"Message received: {message}" )
-        if not self.scene:
-            self.scene = LoadingScene()
         
         json_message = json.loads( message )
 
@@ -229,6 +226,9 @@ class ClientApp:
                     message = {"command":"register", "id": self.username, "password": self.password }
                     self.push_websocket_message(message)
                     logging.info( f"Sent: {message}" )
+            case "login_successful":
+                if not self.scene:
+                    self.scene = LoadingScene()
 
     def on_error( self, ws: websocket, error ):
         """On error
