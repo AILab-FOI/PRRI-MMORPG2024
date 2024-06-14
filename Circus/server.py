@@ -11,10 +11,20 @@ import transaction
 from BTrees.OOBTree import OOBTree
 import persistent
 
+import atexit
+
 from config import SHOST, SPORT, DBHOST, DBPORT
 
 class dbGlobal:
     db = None
+    connection = None
+    root = None
+
+    def start_edit():
+        pass
+    
+    def end_edit():
+        transaction.commit()
 
 def setup_database():
     print( 'Connecting to ZEO server' ) # Too much clutter
@@ -22,6 +32,9 @@ def setup_database():
     db = DB( storage )
     connection: Connection = db.open()
     root = connection.root()
+
+    dbGlobal.connection = connection
+    dbGlobal.root = root
 
     if not hasattr( root, 'players' ):
         print( 'Creating new database' )
@@ -94,14 +107,17 @@ async def handle_connection(websocket, path: str):
             try:
                 if data[ 'command' ] == 'register':
                     if register_player( data[ 'id' ], data[ 'password' ] ):
-                        login_player( data[ 'id' ], data[ 'password' ] )
+                        if( login_player( data[ 'id' ], data[ 'password' ] ) ):
+                            await send_message_to_player(websocket, {"command": "login_successful"})
+                        
                         await broadcast_positions()
                     else:
                         logging.info( f'Error registring: username already taken {data}' )
                 elif data[ 'command' ] == 'login':
-                    if login_player( data[ 'id' ], data[ 'password' ] ):
-                        await broadcast_positions()
+                    if not login_player( data[ 'id' ], data[ 'password' ] ):
+                        await send_message_to_player( websocket, {"command": "login_failed", "data":"player_doesnt_exist"} )
                     else:
+                        await send_message_to_player(websocket, {"command": "login_successful"})
                         logging.info( f'Invalid login attempt {data}' )							  
                 elif data[ 'command' ] == 'logout':
                     logout_player( data[ 'id' ], data[ 'password' ] )
@@ -176,17 +192,17 @@ def register_player( player_id: str, password: str ) -> bool:
         bool: whether registration was successful
     """    
     print( f"Registering player {player_id}" )
-    root = dbGlobal.root
-    if not player_id in root.players:
-        root.players[ player_id ] = Player( player_id, password )
-        transaction.commit()
+    dbGlobal.start_edit()
+    if not player_id in dbGlobal.root.players:
+        print("Added player!")
+        dbGlobal.root.players[ player_id ] = Player( player_id, password )
+        dbGlobal.end_edit()
         return True
     else:
         print( 'Error: username already taken!' )
+        dbGlobal.end_edit()
         return False
-    transaction.commit()
-    connection.close()
-    db.close()
+    
     return authenticated
 
 # Login player
@@ -201,13 +217,13 @@ def login_player( player_id: str, password: str ) -> bool:
         bool: login success
     """    
     print( f"Checking player credentials for {player_id}" )
-    root = dbGlobal.root
+    dbGlobal.start_edit()
 
-    if not root.players.has_key(player_id):
+    if not dbGlobal.root.players.has_key(player_id):
         return False
 
-    authenticated = root.players[ player_id ].login( password )
-    transaction.commit()
+    authenticated = dbGlobal.root.players[ player_id ].login( password )
+    dbGlobal.end_edit()
     return authenticated
 
 def logout_player( player_id: str, password: str ):
@@ -218,9 +234,9 @@ def logout_player( player_id: str, password: str ):
         password ( str ): player's password
     """    
     print( f"Logging out player {player_id}" )
-    root = dbGlobal.root
-    root.players[ player_id ].logout( password )
-    transaction.commit()
+    dbGlobal.start_edit()
+    dbGlobal.root.players[ player_id ].logout( password )
+    dbGlobal.end_edit()
 
 # Update player position in the database
 def update_player_position( player_id: str, x: float, y: float ):
@@ -232,19 +248,22 @@ def update_player_position( player_id: str, x: float, y: float ):
         y (float): y coordinate
     """  
     #print( f"Updating position of player {player_id} to {x},{y}" ) # Too much clutter
-    root = dbGlobal.root
+    dbGlobal.start_edit()
     try:
-        root.players[ player_id ].update( x, y )
+        dbGlobal.root.players[ player_id ].update( x, y )
     except KeyError:
         print( f'No such player {player_id}' )
-    transaction.commit()
+    dbGlobal.end_edit()
 
 # Broadcast positions to all clients
-async def send_message_to_player( client, message ):  
+async def send_message_to_player( client, object ):  
     # Send to all connected clients
-    await asyncio.gather( *( client.send( message ) ) )
+    message = json.dumps( object )
+    logging.info(f"Sending message{message} to client {client}")
+    await client.send( message )
 
-async def broadcast_message_to_all( message ):
+async def broadcast_message_to_all( object ):
+    message = json.dumps( object )
     await asyncio.gather( *( client.send( message ) for client in connected_clients ) )
 
 # Broadcast positions to all clients
@@ -252,30 +271,35 @@ async def broadcast_positions():
     """broadcasts the positions to all clients
     """    
     print( "Broadcasting positions" ) # Too much clutter
-    root = dbGlobal.root
+    dbGlobal.start_edit()
     object_to_send = {"command": "player_pos"}
-    positions = {player_id: {'x': position.x, 'y': position.y} for player_id, position in root.players.items()}
+    positions = {player_id: {'x': position.x, 'y': position.y} for player_id, position in dbGlobal.root.players.items()}
     object_to_send["data"] = positions
 
-    message = json.dumps( object_to_send )
-    print(message)
     # Send to all connected clients
-    await broadcast_message_to_all( message )
+    await broadcast_message_to_all( object_to_send )
+    dbGlobal.end_edit()
 
 # Run the server
 async def main():
     print( "Setting up database" )
     dbGlobal.db = setup_database()  # Initialize database
-    dbGlobal.connection = dbGlobal.db.open()
-    dbGlobal.root = dbGlobal.connection.root()
+    dbGlobal.start_edit()
+    dbGlobal.end_edit()
+
     print( "Starting websocket server" )
     async with websockets.serve( handle_connection, SHOST, SPORT ):
         await asyncio.Future()  # run forever
 
-    dbGlobal.connection.close()
     dbGlobal.db.close()
+
+def exit_handler():
+    if( dbGlobal.db != None ):
+        dbGlobal.connection.close()
+        dbGlobal.db.close()
 
 if __name__ == "__main__":
     print( "Server starting" )
+    atexit.register(exit_handler)
     asyncio.run( main() )
 
