@@ -8,6 +8,7 @@ class TestQuest (quest.Quest):
         super().__init__()
         self.title = "The Testiest Quest"
         self.id = 0
+        self.text = "This is the testiest quest."
         self.entity : entity.Entity = quest_giver
     
     def check_quest_finished( self ):

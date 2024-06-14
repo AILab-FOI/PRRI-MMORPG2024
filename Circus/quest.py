@@ -1,12 +1,5 @@
 from shared import *
-import math
-from entity import BaseSpriteEntity
-from bullet import Bullet
-from itertools import cycle
-import json
 import player
-
-from viewpoint import Viewpoint
 
 
 class Quest ( object ):
@@ -17,11 +10,12 @@ class Quest ( object ):
         super().__init__( )
         self.id = -1
         self.title = ""
+        self.text = ""
 
     def check_quest_finished( self ):
         has_quest_finished = bool(False)
-        # send to server?
-        #return bool
+        # has the player been to x tile
+
         return has_quest_finished
     
     def check_quest_conditions( self ):
