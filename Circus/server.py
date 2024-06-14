@@ -141,7 +141,7 @@ async def handle_connection(websocket, path: str):
                     logging.info(f"Received chat message from {sender}: {message}")
 
                     # Ovdje dodajte logiku za distribuciju poruke ostalim klijentima
-                    await broadcast_message_to_all(json.dumps(data))
+                    await broadcast_message_to_all(data)
                 else:
                     print( 'Invalid command', data )
             except Exception as e:

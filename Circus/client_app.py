@@ -303,7 +303,7 @@ class ClientApp:
                 sender = json_message["sender"]
                 chat_message = json_message["message"]
                 self.chat_messages.append(f"{sender}: {chat_message}")
-				logging.info(f"Sent: {message}")
+                logging.info(f"Sent: {message}")
             case "login_successful":
                 if not self.scene:
                     self.scene = LoadingScene()
