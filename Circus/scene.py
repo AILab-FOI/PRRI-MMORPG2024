@@ -159,11 +159,11 @@ class Scene:
 
         for pl in clientApp().players_pos: 
             if( pl != clientApp().username ):
-                RemotePlayer( 'remote_player', clientApp().players_pos[ pl ], pl )
+                RemotePlayer( 'remote_player', clientApp().players_pos[ pl ]['position'], pl )
             # U edge case-u da je vec 0 nekako, ovo nece raditi
             # But it will do for now
-            elif( clientApp().players_pos[ pl ] != vec2(0) ):
-                player_pos = clientApp().players_pos[ pl ]
+            elif( clientApp().players_pos[ pl ]['position'] != vec2(0) ):
+                player_pos = clientApp().players_pos[ pl ]['position']
                 print("YIPEE THE RIGHGT ONE")
         
         clientApp().player.offset = player_pos

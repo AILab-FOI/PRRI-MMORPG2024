@@ -101,6 +101,8 @@ Let us walk through the circus and I show you some of our performers!
 
     def control( self ):
         self.moving = False
+        self.last_inc[0] = self.inc[0]
+        self.last_inc[1] = self.inc[1]
         self.inc = vec2( 0 )
         speed = PLAYER_SPEED * clientApp().delta_time
         rot_speed = PLAYER_ROT_SPEED * clientApp().delta_time
@@ -158,21 +160,35 @@ Let us walk through the circus and I show you some of our performers!
                 clientApp().message.set_message( hitobst[ 0 ].entity.message )
                 clientApp().message.active = True
 
-
-    def move( self ):
-        self.offset += self.inc
+    def has_moved_this_frame(self) -> bool:
         x = self.offset[ 0 ]
         y = self.offset[ 1 ]
         x1 = self.last_offset[ 0 ]
         y1 = self.last_offset[ 1 ]
 
+        return (x != x1 or y != y1)
 
-        if (x != x1 or y != y1) and clientApp().scene.done:
-            message = { "command":"update", "id": clientApp().username, "position": { "x": x, "y": y } }
+    def has_velocity_changed( self ):
+        x = self.inc[ 0 ]
+        y = self.inc[ 1 ]
+        x1 = self.last_inc[ 0 ]
+        y1 = self.last_inc[ 1 ]
+
+        return (x != x1 or y != y1)
+
+    def move( self ):
+        self.offset += self.inc
+        
+        if self.has_velocity_changed() or self.has_moved_this_frame():
+            message = { "command":"update",
+                        "id": clientApp().username,
+                        "position": { "x": self.offset.x, "y": self.offset.y },
+                        'velocity': { "x":self.inc.x, "y":self.inc.y } }
             clientApp().push_websocket_message( message )
 
-            self.last_offset[ 0 ] = self.offset[ 0 ]
-            self.last_offset[ 1 ] = self.offset[ 1 ]
+        self.last_offset[ 0 ] = self.offset[ 0 ]
+        self.last_offset[ 1 ] = self.offset[ 1 ]
+
 
     def should_think(self) -> bool:
         return True

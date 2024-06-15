@@ -1,4 +1,3 @@
-import time
 from shared import *
 from message import Message
 from config import URI
@@ -14,6 +13,9 @@ from entity_system import EntitySystem
 from materialsystem import MaterialSystem
 import sys
 import pygame as pg  
+
+from entity import RemotePlayer
+
 
 class ClientApp:
     """Client app base class
@@ -109,9 +111,7 @@ class ClientApp:
 
     def tick(self):
         """A single game tick
-        """        
-        start = time.time()
-
+        """
         if self.player:
             self.check_events()
         
@@ -119,14 +119,10 @@ class ClientApp:
         self.update()
         self.draw()
 
-        end = time.time()
-        delta_time = end - start
-        fps = "Inf"
-        if delta_time != 0:
-            fps = 1 / max(delta_time, 0.000000000001)
+        self.delta_time = self.clock.tick()
 
-        self.fps_counter.set_message("Fps: " + str(fps))
-        self.fps_counter.active = True
+        clientApp().fps_counter.set_message( "Fps: " + str(self.clock.get_fps()) )
+        clientApp().fps_counter.active = True
     
     def update(self):
         """Updates the systems
@@ -137,8 +133,7 @@ class ClientApp:
         if self.scene:
             self.scene.update()
             pg.display.set_caption('The Circus of Game Mechanics')
-            self.delta_time = self.clock.tick()
-
+        
         self.entity_system.think()
         self.draw_manager.update()
 
@@ -235,6 +230,12 @@ class ClientApp:
         """        
         self.time = pg.time.get_ticks() * 0.001
 
+    def get_delta_time_ms(self) -> int:
+        return self.delta_time
+
+    def get_delta_time_sec(self):
+        return self.delta_time * 0.001
+
     def connect(self):
         """Connects self to websocket
         """        
@@ -282,21 +283,38 @@ class ClientApp:
             ws (Websocket): Websocket
             message (Message): Message
         """        
-        logging.info( f"Message received: {message}" )
+        #logging.info( f"Message received: {message}" )
         
         json_message = json.loads(message)
 
-        print(json_message)
+        #print(json_message)
 
         match json_message["command"]:
             case "player_pos":
                 data = json_message["data"]
                 for player in data:
-                    x = data[player]['x']
-                    y = data[player]['y']
-                    print(player, x, y)
-                    pos = vec2(x, y)
-                    self.players_pos[player] = pos
+                    player_data = data[ player ]
+                    player_exists = player in self.players_pos
+
+                    position = player_data[ 'position' ]
+                    velocity = player_data[ 'velocity' ]
+
+                    if(player != self.username):
+                        print( player, position, velocity )
+
+                    pos = vec2( position['x'], position['y'] )
+                    vel = vec2( velocity['x'], velocity['y'] )
+
+                    player_info = {}
+                    player_info["time"] = self.time
+                    player_info["position"] = pos
+                    player_info["velocity"] = vel
+
+                    if self.scene.done and player != self.username and not player_exists: 
+                        RemotePlayer( 'remote_player', pos, player )
+
+                    self.players_pos[ player ] = player_info
+                    
             case "login_failed":
                 data = json_message["data"]
                 if data == "player_doesnt_exist":

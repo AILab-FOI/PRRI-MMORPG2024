@@ -31,6 +31,7 @@ class WorldObject(object):
         self.pos = newPos
 
         if( self.is_drawing ):
+            self.calculate_viewpoint_position()
             self.update_screenpos()
 
     def calculate_viewpoint_position( self ):
@@ -272,6 +273,9 @@ class RemotePlayer( Entity ):
         self.right_ind = [ 1, 5, 9 ]
         self.right_list = cycle( self.right_ind )
 
+        self.networked_pos = vec2(0)
+        self.networked_frame = 0
+
         self.direction = 'DOWN'
         self.moving = False  
           
@@ -337,7 +341,28 @@ class RemotePlayer( Entity ):
 
     
     def move( self ): # TODO: Ovdje bi trebalo staviti promjenu pozicije temeljem poruke
-        self.set_pos( clientApp().players_pos[ self.username ] )
+        self.networked_pos = vec2(clientApp().players_pos[ self.username ]['position'])
+
+        velocity = vec2(clientApp().players_pos[ self.username ]['velocity'])
+
+        last_update = clientApp().players_pos[ self.username ]['time']
+        currtime = clientApp().time
+
+        frames_since_update = (currtime-last_update) / clientApp().get_delta_time_sec()
+
+        # Predict how many frames we moved since our last position update
+        predicted_movement = velocity * frames_since_update
+
+        # Add predicted movement to our last network pos
+        target_pos = self.networked_pos + predicted_movement
+
+        lerp = clientApp().get_delta_time_sec()
+        lerp *= 4
+        # Lerp has to be between 0 and 1 ofc
+        lerp = min( max( lerp, 0 ), 1)
+
+        self.set_pos( self.pos.lerp(target_pos, lerp) )
+       
 
     def should_think(self) -> bool:
         """Checks whether the entity has behaviour to be called every frame
