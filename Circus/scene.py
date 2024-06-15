@@ -9,7 +9,7 @@ import threading
 from tilemap import Tile, MapData
 from materialsystem import Material
 import json
-
+from interface import Interface
 vartypes = {
     "vec2": vec2
 }
@@ -142,6 +142,7 @@ class Scene:
                 if name == 'player':
                     clientApp().player.offset = pos * TILE_SIZE
                     player_pos = clientApp().player.offset
+                    Interface('hud')
                 elif name == 'kitty' or name == 'circus' or name == 'movement' or name == 'resource' or name == 'combat' or name == 'tetris' or name == 'globe' or name == 'upgrades' or name == 'ui':
                     Entity( name=name, pos=pos )
                 elif str( name ).startswith( 'tree' ) or name == 'bush':

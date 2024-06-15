@@ -43,6 +43,8 @@ class ClientApp:
         self.material_system = MaterialSystem()
         self.collision_group = pg.sprite.Group()
         
+        self.clickable_group = []
+
         self.transparent_objects = []
 
         self.done_counter = 0
@@ -148,8 +150,15 @@ class ClientApp:
                     sys.exit()
             elif e.type == self.anim_event:
                 self.anim_trigger = True
-            elif e.type == pg.KEYDOWN:
-                self.player.single_fire( event=e )
+            elif e.type == pg.MOUSEBUTTONDOWN:
+                clicked = False
+                for clickable in self.clickable_group:
+                    interaction = clickable.try_interact()
+                    if interaction != '':
+                        logging.info( interaction )
+                        clicked = True
+                if not clicked:
+                    self.player.single_fire( event=e )
 
     def get_time( self ):
         """Gets the time
