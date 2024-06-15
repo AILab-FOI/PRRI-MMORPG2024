@@ -14,7 +14,7 @@ class Interface( pg.sprite.Sprite ):
         self.size = vec2( self.attrs[ 'size' ] )
         self.interactibles = INTERFACE_ATTRS[ name ][ 'interactibles' ]
         for interaction in self.interactibles:
-            Interactible(self.app, self.name, interaction)
+            Interactible(self.name, interaction)
         
         self.image = pg.image.load( self.attrs[ 'path' ] ).convert_alpha()
         self.rect = self.image.get_rect()

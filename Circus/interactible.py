@@ -7,6 +7,7 @@ import logging
 
 class Interactible:
     def __init__(self, name, interaction='default'):
+        self.app = clientApp()
         self.attrs = INTERFACE_ATTRS[ name ][ 'interactibles' ][ interaction ]
         self.x = self.attrs['x']
         self.y = self.attrs['y']

@@ -144,7 +144,7 @@ class Scene:
                 pos = vec2( i, j ) + vec2( 0.5 )
                 if name == 'player':
                     player_pos = pos * TILE_SIZE
-					Interface('hud')
+                    Interface('hud')
                 elif name == 'kitty' or name == 'circus' or name == 'movement' or name == 'resource' or name == 'combat' or name == 'tetris' or name == 'globe' or name == 'upgrades' or name == 'ui':
                     Entity( name=name, pos=pos )
                 elif str( name ).startswith( 'tree' ) or name == 'bush':

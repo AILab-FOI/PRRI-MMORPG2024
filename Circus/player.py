@@ -124,10 +124,10 @@ class Player( BaseSpriteEntity ):
     def single_fire( self, event ):
         if event.type == pg.MOUSEBUTTONDOWN:
             if event.button == 1:  
-                Bullet(app=self.app)
+                Bullet(pos=self.pos)
         elif event.type == pg.KEYDOWN:
             if event.key == pg.K_SPACE:
-                self.app.message.handle_input()
+                clientApp().message.handle_input()
 
     def check_collision( self ):
         if( self.sprite == None ):
