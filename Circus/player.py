@@ -88,6 +88,8 @@ class Player( BaseSpriteEntity ):
 
     def control( self ):
         self.moving = False
+        self.last_inc[0] = self.inc[0]
+        self.last_inc[1] = self.inc[1]
         self.inc = vec2( 0 )
         speed = PLAYER_SPEED * clientApp().delta_time
         rot_speed = PLAYER_ROT_SPEED * clientApp().delta_time
@@ -147,20 +149,35 @@ class Player( BaseSpriteEntity ):
                 clientApp().message.set_message( hitobst[ 0 ].entity.message )
                 clientApp().message.active = True
 
+    def has_moved_this_frame(self) -> bool:
+        x = self.offset[ 0 ]
+        y = self.offset[ 1 ]
+        x1 = self.last_offset[ 0 ]
+        y1 = self.last_offset[ 1 ]
+
+        return (x != x1 or y != y1)
+
+    def has_velocity_changed( self ):
+        x = self.inc[ 0 ]
+        y = self.inc[ 1 ]
+        x1 = self.last_inc[ 0 ]
+        y1 = self.last_inc[ 1 ]
+
+        return (x != x1 or y != y1)
 
     def move( self ):
         self.offset += self.inc
-        x = int( self.offset[ 0 ] ) // TILE_SIZE + 0.5
-        y = int( self.offset[ 1 ] ) // TILE_SIZE + 0.5
-        x1 = self.last_offset[ 0 ] // TILE_SIZE + 0.5
-        y1 = self.last_offset[ 1 ] // TILE_SIZE + 0.5
-        if x != x1 or y != y1:
-            message = json.dumps( { "command":"update", "id": clientApp().username, "position": { "x": x, "y": y } } )
-            if( not clientApp().closed ):
-                clientApp().ws.send( message )
+        
+        if self.has_velocity_changed() or self.has_moved_this_frame():
+            message = { "command":"update",
+                        "id": clientApp().username,
+                        "position": { "x": self.offset.x, "y": self.offset.y },
+                        'velocity': { "x":self.inc.x, "y":self.inc.y } }
+            clientApp().push_websocket_message( message )
 
-            self.last_offset[ 0 ] = int( self.offset[ 0 ] )
-            self.last_offset[ 1 ] = int( self.offset[ 1 ] )
+        self.last_offset[ 0 ] = self.offset[ 0 ]
+        self.last_offset[ 1 ] = self.offset[ 1 ]
+
 
     def should_think(self) -> bool:
         return True
@@ -176,7 +193,9 @@ class Player( BaseSpriteEntity ):
         self.check_collision()
         self.move()
 
-
+    def set_pos(self, newPos):
+        super().set_pos(newPos)
+        self.offset = newPos
 
 
 

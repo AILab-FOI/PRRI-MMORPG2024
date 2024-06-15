@@ -29,7 +29,8 @@ class EntitySystem(object):
         Args:
             index (int): index/id of the entity in the dictionary to remove
         """        
-        self.entity_list.pop(index)
+        if( index in self.entity_list.keys() ):
+            self.entity_list.pop(index)
 
     def think( self ):
         """Entity function that executes every frame
