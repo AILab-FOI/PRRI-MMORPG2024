@@ -132,7 +132,7 @@ Incomprehensibility or readability? That is the question.
 
 # Koju map datoteku da ucita
 # koristite SCENE_MAPNAME = "" ako ne zelite da se ista ucita
-SCENE_MAPNAME = "new" # new.map
+SCENE_MAPNAME = "mapaTest" # new.map
 
 # Koji map array da se ucita ( gledaj gore )
 # MAP_EMPTY samo pozicionira igraca
