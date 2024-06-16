@@ -4,10 +4,8 @@ import quest
 import entity
 
 class PositionQuest(quest.Quest):
-    def __init__( self, id, position, reward = None, owner=None ):
-        super().__init__( id=id, reward=reward, owner=owner )
-        self.title = "The Testiest Quest"
-        self.text = "This is the testiest quest."
+    def __init__( self, id, position, reward = None, owner=None, text="", title="" ):
+        super().__init__( id=id, reward=reward, owner=owner, text=text, title=title )
         self.position : vec2 = position
         self.progress['distance'] = -1
     
@@ -19,8 +17,6 @@ class PositionQuest(quest.Quest):
         self.progress['distance'] = abs(self.position.distance_to(clientApp().player.pos))
         required_distance = 200
         self.update_info()
-
-        print(self.progress['distance'])
 
         # Got to pos, finished!
         if self.progress['distance'] <= required_distance:

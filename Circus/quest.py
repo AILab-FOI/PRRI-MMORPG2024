@@ -9,6 +9,9 @@ class Reward( object ):
     def give_reward(self):
         pass
 
+    def reward_string(self) -> str:
+        return "Nothing"
+
 class ItemReward( Reward ):
     def __init__(self, *items) -> None:
         super().__init__()
@@ -20,16 +23,19 @@ class ItemReward( Reward ):
     def give_reward(self):
         print("Granted items: ")
         print(self.items)
+    
+    def reward_string(self) -> str:
+        return str(self.items)
 
 class Quest ( object ):
     """Quest base class
 
     """    
-    def __init__( self, id = None, owner = None, reward=None ):
+    def __init__( self, id = None, owner = None, reward=None, text="", title="" ):
         super().__init__( )
         self.id = id
-        self.title = ""
-        self.text = ""
+        self.title = title
+        self.text = text
         self.accepted = False
         self.finished = False
         self.progress = {}
@@ -98,7 +104,7 @@ class Quest ( object ):
         message['finished'] = self.finished
         message['progress'] = self.progress
 
-        clientApp().push_websocket_message(message)
+        clientApp().push_websocket_message(message, False)
 
 
 

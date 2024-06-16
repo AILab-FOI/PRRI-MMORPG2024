@@ -8,9 +8,11 @@ NPCS = {
     'test_npc': {
         'name': 'Guggy',
         'entity': 'kitty',
-        'quests': PositionQuest(id="TEST_QUEST_WITH_REWARD", 
+        'quests': PositionQuest(id="TEST_QUEST_POSITION", 
                 position=vec2( 16 * TILE_SIZE, 20 * TILE_SIZE ),
-                reward=ItemReward("Apple(+doctor resistance)","Outdated Magazine") ),
+                reward=ItemReward("Apple(+doctor resistance)","Outdated Magazine"),
+                title = "The Testiest Quest",
+                text = "Move to the lower right tree." ),
     },
 }
 

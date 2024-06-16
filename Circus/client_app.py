@@ -15,6 +15,8 @@ from materialsystem import MaterialSystem
 import sys
 import pygame as pg  
 
+import quest
+
 from entity import RemotePlayer
 
 
@@ -193,6 +195,18 @@ class ClientApp:
         pg.draw.rect(self.screen, self.BLACK, self.chat_display_box, 2)
         pg.draw.rect(self.screen, self.BLACK, self.input_box, 2)
 
+    def print_quests( self ):
+        for id, quest in self.quest_list.items():
+            print(f"{id}: {quest.title}")
+            print(f"{quest.text}")
+            print(f"\tAccepted: {quest.accepted}")
+            print(f"\tFinished: {quest.finished}")
+            if( quest.reward ):
+                print(f"\tRewards: {quest.reward.reward_string()}")
+            print(f"\tProgress:")
+            for progress_type, progress in quest.progress.items():
+                print(f"\t\t{progress_type}: {progress}")
+
     def check_events(self):
         """Checks events
         """        
@@ -215,6 +229,9 @@ class ClientApp:
                     if interaction != '':
                         logging.info( interaction )
                         clicked = True
+                    
+                    if( callable(interaction) ):
+                        interaction()
                 if not clicked:
                     self.player.single_fire( event=e )
             
@@ -370,7 +387,7 @@ class ClientApp:
         quest_id = json_message['quest']
 
         if( not quest_id in self.quest_list ):
-            self.quest_list[quest_id] = {}
+            self.quest_list[quest_id] = quest.Quest(quest_id)
         
         self.quest_list[quest_id].accepted = json_message['accepted']
         self.quest_list[quest_id].finished = json_message['finished']

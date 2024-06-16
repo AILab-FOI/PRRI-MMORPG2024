@@ -18,6 +18,26 @@ pg.mixer.init()
 pg.mixer.music.load( "assets/bgm/bgm.ogg" )
 pg.mixer.music.play( loops=-1 )
 
+class _globals:
+    app = None
+    tmp_quest_list = {}
+
+def clientApp():
+    return _globals.app
+
+def setClientApp( app ):
+    _globals.app = app
+
+def strToVec(string: str) -> vec2:
+    ret = string
+    ret = ret.replace("Vector2", "")
+    ret = ret.replace("vec2", "")
+    ret = ret.replace("(","")
+    ret = ret.replace(")","")
+    ret = ret.replace(" ","")
+    strVals: list = ret.split(",")
+    return vec2(float(strVals[0]),float(strVals[1]))
+
 
 CREDITS = """
 CREDITS
@@ -328,7 +348,7 @@ STACKED_SPRITE_ATTRS = {
 
 
 
-# UI settings
+# UI settings    
 
 INTERFACE_ATTRS = {
     'hud': {
@@ -343,7 +363,14 @@ INTERFACE_ATTRS = {
                 'width': 24,
                 'height': 24,
                 'interaction': 'a'
-                }
+                },
+            'CheckQuests':{
+                'x': 800-100,
+                'y': 0,
+                'width': 100,
+                'height': 1,
+                'interaction': lambda : clientApp().print_quests()
+            }
         }
     }
 }
@@ -364,23 +391,3 @@ def getVarFromString( string: str ):
         val = string
     
     return val
-
-class _globals:
-    app = None
-    tmp_quest_list = {}
-
-def clientApp():
-    return _globals.app
-
-def setClientApp( app ):
-    _globals.app = app
-
-def strToVec(string: str) -> vec2:
-    ret = string
-    ret = ret.replace("Vector2", "")
-    ret = ret.replace("vec2", "")
-    ret = ret.replace("(","")
-    ret = ret.replace(")","")
-    ret = ret.replace(" ","")
-    strVals: list = ret.split(",")
-    return vec2(float(strVals[0]),float(strVals[1]))

@@ -127,19 +127,31 @@ async def handle_connection(websocket, path: str):
                 if data['command'] == 'skip':
                     notify_message = False
                 elif data[ 'command' ] == 'register':
-                    if register_player( data[ 'id' ], data[ 'password' ] ):
-                        if( login_player( data[ 'id' ], data[ 'password' ] ) ):
+                    player_id = data[ 'id' ]
+
+                    if register_player( player_id, data[ 'password' ] ):
+                        if( login_player( player_id, data[ 'password' ] ) ):
                             await send_message_to_player(websocket, {"command": "login_successful"})
+                        
+                        player: Player = dbGlobal.root.players[ player_id ]
+                        for quest_id in player.quests:
+                            await send_quest_info_to_player(websocket, quest_id, player)
                         
                         await broadcast_positions()
                     else:
                         logging.info( f'Error registring: username already taken {data}' )
                 elif data[ 'command' ] == 'login':
-                    if not login_player( data[ 'id' ], data[ 'password' ] ):
+                    player_id = data[ 'id' ]
+
+                    if not login_player( player_id, data[ 'password' ] ):
                         await send_message_to_player( websocket, {"command": "login_failed", "data":"player_doesnt_exist"} )
                         logging.info( f'Invalid login attempt {data}' )
                     else:
                         await send_message_to_player(websocket, {"command": "login_successful"})      
+
+                        player: Player = dbGlobal.root.players[ player_id ]
+                        for quest_id in player.quests:
+                            await send_quest_info_to_player(websocket, quest_id, player)
                         await broadcast_positions()                  
                 elif data[ 'command' ] == 'logout':
                     logout_player( data[ 'id' ], data[ 'password' ] )
@@ -177,20 +189,11 @@ async def handle_connection(websocket, path: str):
                     player: Player = dbGlobal.root.players[ player_id ]
                     
                     if( quest_id in player.quests ):
-                        send_message = { 'command': 'quest_info', 'quest': quest_id }
-                        send_message['accepted'] = player.quests[quest_id]['accepted']
-                        send_message['finished'] = player.quests[quest_id]['finished']
-                        send_message['progress'] = player.quests[quest_id]['progress']
-
-                        await send_message_to_player(websocket, send_message)
+                        await send_quest_info_to_player(websocket, quest_id, player)
                     else:
-                        player.quests[quest_id] = {}
-                        player.quests[quest_id]['accepted'] = False
-                        player.quests[quest_id]['finished'] = False
-                        player.quests[quest_id]['progress'] = {}
-                        transaction.commit()
+                        create_quest_info(quest_id, player)
                 elif data['command'] == 'update_quest_info':
-                    notify_message = False
+                    notify_message = True
                     player_id = data[ 'player' ]
                     quest_id = data['quest']
                     player: Player = dbGlobal.root.players[ player_id ]
@@ -226,6 +229,21 @@ async def handle_connection(websocket, path: str):
         logging.error(f"Unhandled exception: {str(e)}", exc_info=True)
     finally:
         logging.info("Connection handler exiting")
+
+def create_quest_info(quest_id, player):
+    player.quests[quest_id] = {}
+    player.quests[quest_id]['accepted'] = False
+    player.quests[quest_id]['finished'] = False
+    player.quests[quest_id]['progress'] = {}
+    transaction.commit()
+
+async def send_quest_info_to_player(websocket, quest_id, player):
+    send_message = { 'command': 'quest_info', 'quest': quest_id }
+    send_message['accepted'] = player.quests[quest_id]['accepted']
+    send_message['finished'] = player.quests[quest_id]['finished']
+    send_message['progress'] = player.quests[quest_id]['progress']
+
+    await send_message_to_player(websocket, send_message)
 
 def get_next_message( websocket ):
     messages = websocket.messages

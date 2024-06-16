@@ -29,10 +29,14 @@ class WorldObject(object):
             self.load_attribute( attributeName, attributeValue )
 
     def load_attribute( self, name, value ):
-        if( not hasattr(self, name ) ):
+        if( not hasattr( self, name ) ):
             return
 
-        setattr(name, value)
+        match name:
+            case "pos":
+                self.set_pos( strToVec(value) * TILE_SIZE )
+            case _:
+                setattr(self, name, value)
 
     def set_pos( self, newPos ):
         if( newPos == self.pos ):
