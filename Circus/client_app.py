@@ -8,6 +8,7 @@ import websocket
 import json
 from draw_manager import DrawManager
 from player import Player
+from shared import _globals
 from viewpoint import Viewpoint
 from entity_system import EntitySystem
 from materialsystem import MaterialSystem
@@ -86,7 +87,13 @@ class ClientApp:
     
         self.players_pos = {}
         self.quest_list = {}
+
+        for id in _globals.tmp_quest_list.keys():
+            quest = _globals.tmp_quest_list[id]
+            self.add_quest(id, quest)
         
+        _globals.tmp_quest_list = {}
+
         self.cache = None
         self.scene = None
         self.message = Message([self.screen.get_size()[0], self.screen.get_size()[1] / 2], self.screen.get_size(), font_size=20)

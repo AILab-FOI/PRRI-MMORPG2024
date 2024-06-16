@@ -4,13 +4,12 @@ import quest
 import entity
 
 class PositionQuest(quest.Quest):
-    def __init__( self, id, npc, position ):
+    def __init__( self, id, position ):
+        self.id = id
         super().__init__()
         self.title = "The Testiest Quest"
-        self.id = id
         self.text = "This is the testiest quest."
         self.position : vec2 = position
-        self.npc = npc
         self.progress['distance'] = -1
     
     def check_quest_finished( self ):
@@ -22,7 +21,7 @@ class PositionQuest(quest.Quest):
         required_distance = 200
         self.update_info()
 
-        #print(self.progress['distance'])
+        print(self.progress['distance'])
 
         # Got to pos, finished!
         if self.progress['distance'] <= required_distance:
@@ -31,8 +30,11 @@ class PositionQuest(quest.Quest):
     
     def check_quest_conditions( self ):
         has_quest_condition = bool(False)
+
+        if( self.owner == None ):
+            return has_quest_condition
         
-        distance = abs(self.npc.pos.distance_to(clientApp().player.pos))
+        distance = abs(self.owner.pos.distance_to(clientApp().player.pos))
         required_distance = 200
 
         # Close to NPC, accept

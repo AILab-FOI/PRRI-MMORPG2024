@@ -172,9 +172,7 @@ class Scene:
         
         clientApp().player.offset = player_pos
 
-        npc = NPCBase("frank", MAP_CENTER )
-        kitty = Entity( name="kitty", pos=MAP_CENTER+vec2(0, 2) )
-        npc.add_quest( PositionQuest("ID_TEST_QUEST", npc, kitty.pos ) )
+        NPCBase("test_npc", MAP_CENTER )
 
         self.done = True
             

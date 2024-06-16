@@ -367,6 +367,7 @@ def getVarFromString( string: str ):
 
 class _globals:
     app = None
+    tmp_quest_list = {}
 
 def clientApp():
     return _globals.app
