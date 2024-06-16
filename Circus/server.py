@@ -222,12 +222,14 @@ async def handle_connection(websocket, path: str):
     except websockets.exceptions.ConnectionClosedOK as e:
         logging.warning(f"Connection handled successfully: {e.reason} {e.code}")
         logging.warning(f"Command: {data}")
+        connected_clients.remove( websocket )
     except websockets.exceptions.ConnectionClosed as e:
         logging.warning(f"Connection closed: {e.reason} {e.code}")
         logging.warning(f"Command: {data}")
         connected_clients.remove( websocket )
     except Exception as e:
         logging.error(f"Unhandled exception: {str(e)}", exc_info=True)
+        connected_clients.remove( websocket )
     finally:
         logging.info("Connection handler exiting")
 

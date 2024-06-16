@@ -81,14 +81,14 @@ University of Zagreb
 # entity settings
 ENTITY_SPRITE_ATTRS = {
     'player': {
-        'path': 'assets/entities/player/ringmaster.png',
+        'path': 'assets/entities/player/player.png',
         'mask_path': 'assets/entities/player/mask.png',
         'num_layers': 16,
         'scale': 1,
         'y_offset': 0,
     },
     'remote_player': {
-        'path': 'assets/entities/player/ringmaster.png',
+        'path': 'assets/entities/player/player.png',
         'mask_path': 'assets/entities/player/mask.png',
         'num_layers': 16,
         'scale': 1,
