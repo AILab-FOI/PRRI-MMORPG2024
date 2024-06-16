@@ -4,9 +4,8 @@ import quest
 import entity
 
 class PositionQuest(quest.Quest):
-    def __init__( self, id, position ):
-        self.id = id
-        super().__init__()
+    def __init__( self, id, position, reward = None, owner=None ):
+        super().__init__( id=id, reward=reward, owner=owner )
         self.title = "The Testiest Quest"
         self.text = "This is the testiest quest."
         self.position : vec2 = position

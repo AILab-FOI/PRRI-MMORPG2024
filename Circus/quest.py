@@ -2,15 +2,32 @@ from shared import *
 import player
 from shared import _globals
 
+class Reward( object ):
+    def __init__(self) -> None:
+        pass
+
+    def give_reward(self):
+        pass
+
+class ItemReward( Reward ):
+    def __init__(self, *items) -> None:
+        super().__init__()
+
+        self.items = []
+        for item in items:
+            self.items.append(item)
+        
+    def give_reward(self):
+        print("Granted items: ")
+        print(self.items)
+
 class Quest ( object ):
     """Quest base class
 
     """    
-    def __init__( self, owner = None ):
+    def __init__( self, id = None, owner = None, reward=None ):
         super().__init__( )
-        if( not hasattr(self, 'id') ):
-            self.id = None
-        
+        self.id = id
         self.title = ""
         self.text = ""
         self.accepted = False
@@ -18,6 +35,7 @@ class Quest ( object ):
         self.progress = {}
         # Who handles the quest, not which player does it!!
         self.owner = owner
+        self.reward : Reward = reward
 
         if( clientApp() != None ):
             clientApp().add_quest( self.id, self )
@@ -59,6 +77,8 @@ class Quest ( object ):
         self.finished = True
 
         self.on_quest_finished()
+        if( self.reward ):
+            self.reward.give_reward()
 
         self.update_info()
     

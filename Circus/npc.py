@@ -1,6 +1,6 @@
 from shared import *
 import entity
-from quest import Quest
+from quest import Quest, ItemReward
 from quests.test_quest import PositionQuest
 from typing import List
 
@@ -8,8 +8,9 @@ NPCS = {
     'test_npc': {
         'name': 'Guggy',
         'entity': 'kitty',
-        'quests': PositionQuest("TEST_QUEST_2", 
-                vec2( 16 * TILE_SIZE, 20 * TILE_SIZE ) ),
+        'quests': PositionQuest(id="TEST_QUEST_WITH_REWARD", 
+                position=vec2( 16 * TILE_SIZE, 20 * TILE_SIZE ),
+                reward=ItemReward("Apple(+doctor resistance)","Outdated Magazine") ),
     },
 }
 
