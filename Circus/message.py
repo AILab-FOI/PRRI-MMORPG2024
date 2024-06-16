@@ -44,7 +44,7 @@ To contribute to the project contact Cody "CodeMan38" Boisclair."""
         return s
         
     def draw_border( self ):
-        border_rect = pg.Rect( 0, 0, self.x - 2 * self.border, self.y - 2 * self.border )
+        border_rect = pg.Rect( 0, 0, self.w - 2 * self.border, self.h - 2 * self.border )
         pg.draw.rect( self.overlay_surface, self.border_color, border_rect, border_radius=self.border_radius, width=10 )
 
     def set_message( self, msg ):
@@ -77,7 +77,7 @@ To contribute to the project contact Cody "CodeMan38" Boisclair."""
         if self.active:
             self.draw_border()
             self.draw_message()
-            clientApp().screen.blit( self.overlay_surface, ( self.border, self.y + self.border ))
+            clientApp().screen.blit( self.overlay_surface, ( self.x + self.border, self.y + self.border ))
         else:
             if 'CREDITS' in ''.join( self.wrapped_text ) and self.shown:
                 if __import__( "sys" ).platform != "emscripten":

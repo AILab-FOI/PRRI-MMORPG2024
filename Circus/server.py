@@ -1,29 +1,60 @@
 #!/usr/bin/env python3
 import asyncio
+import types
 import websockets
 import logging
 logging.basicConfig(level=logging.INFO)
 
 import json
 from ZEO.ClientStorage import ClientStorage
-from ZODB import DB
+from ZODB import DB, Connection
 import transaction
 from BTrees.OOBTree import OOBTree
 import persistent
 
+import atexit
+
 from config import SHOST, SPORT, DBHOST, DBPORT
 
+class dbGlobal:
+    db = None
+    connection = None
+    root = None
+
+    def start_edit():
+        pass
+    
+    def end_edit():
+        transaction.commit()
+
 def setup_database():
-    #print( 'Connecting to ZEO server' ) # Too much clutter
+    print( 'Connecting to ZEO server' ) # Too much clutter
     storage = ClientStorage( ( DBHOST, DBPORT ) )
     db = DB( storage )
-    connection = db.open()
+    connection: Connection = db.open()
     root = connection.root()
+
+    dbGlobal.connection = connection
+    dbGlobal.root = root
 
     if not hasattr( root, 'players' ):
         print( 'Creating new database' )
         root.players = OOBTree()
         transaction.commit()
+    
+    template_player = Player( "tmp", "tmp" )
+
+    # Ensure playeres in the database all follow the CURRENT template
+    for player_id, player in dbGlobal.root.players.items():       
+        for attr in dir(template_player):
+            if( type(getattr(template_player, attr)) == types.MethodType ):
+                continue
+            
+            if( not hasattr(player,attr) ):
+                setattr( player, attr, getattr(template_player, attr) )
+                logging.warn( f"Player {player.username} has missing attribute {attr}, adding default value...")
+    
+    transaction.commit()
 
     return db
 
@@ -40,6 +71,8 @@ class Player( persistent.Persistent ):
         self.password = password
         self.x = 0
         self.y = 0
+        self.velx = 0
+        self.vely = 0
         self.logged_in = False
 
     def login( self, password: str ) -> bool:
@@ -60,62 +93,18 @@ class Player( persistent.Persistent ):
         if password == self.password:
             self.logged_in = False
 
-    def update( self, x, y ):
+    def update( self, position, velocity ):
         if self.logged_in:
-            self.x = x
-            self.y = y
+            self.x = position['x']
+            self.y = position['y']
+            self.velx = velocity['x']
+            self.vely = velocity['y']   
 
 # Set to keep track of connected clients
 connected_clients = set()
 
 # WebSocket server handling
-async def handle_connection( websocket, path: str ):
-    """Websocket server handling
-
-    Args:
-        websocket ( websocket ): _description_
-        path ( string ): _description_
-    """    
-    # Register websocket connection
-    connected_clients.add( websocket )
-    
-    try:
-        
-        async for message in websocket:
-            data = json.loads( message )
-            try:
-                if data[ 'command' ] == 'register':
-                    if register_player( data[ 'id' ], data[ 'password' ] ):
-                        login_player( data[ 'id' ], data[ 'password' ] )
-                        await broadcast_positions()
-                    else:
-                        print( 'Error registring: username already taken', data )
-                elif data[ 'command' ] == 'login':
-                    if login_player( data[ 'id' ], data[ 'password' ] ):
-                        await broadcast_positions()
-                    else:
-                        print( 'Invalid login attempt', data )
-                elif data[ 'command' ] == 'logout':
-                    logout_player( data[ 'id' ], data[ 'password' ] )
-                    print( 'User logged out', data )
-                elif data[ 'command' ] == 'update':
-                    player_id = data[ 'id' ]
-                    position = data[ 'position' ]
-                    update_player_position( player_id, position[ 'x' ], position[ 'y' ] )
-                else:
-                    print( 'Invalid command', data )
-            except Exception as e:
-                connected_clients.remove( websocket )
-                print( 'Invalid message', data, str( e ) )
-            await broadcast_positions()
-    except websockets.exceptions.ConnectionClosed:
-        print( f"Client {websocket} disconnected" )
-        try:
-            logout_player( data[ 'id' ], data[ 'password' ] )
-            connected_clients.remove( websocket )
-        except:
-            print( 'Error: Player already logged out', data )
-
+# Unutar funkcije handle_connection, nakon logike koja već obrađuje dolazne poruke
 async def handle_connection(websocket, path: str):
     """Handles websocket connection
 
@@ -125,45 +114,115 @@ async def handle_connection(websocket, path: str):
     """    
     logging.info( f"New connection: {path}" )
     connected_clients.add( websocket )
+
     try:
         # Existing connection handling logic...
         async for message in websocket:
-            logging.info( f"Message received: {message}" )
             # Handle incoming messages...
             data = json.loads( message )
+
+            if( data[ 'command' ] != "keep_connection" ):
+                logging.info( f"Messages left: {len(websocket.messages)}" )
+                logging.info( f"Message received: {message}" )
+
             try:
-                if data[ 'command' ] == 'register':
+                if data['command'] == 'skip':
+                    pass
+                elif data[ 'command' ] == 'register':
                     if register_player( data[ 'id' ], data[ 'password' ] ):
-                        login_player( data[ 'id' ], data[ 'password' ] )
+                        if( login_player( data[ 'id' ], data[ 'password' ] ) ):
+                            await send_message_to_player(websocket, {"command": "login_successful"})
+                        
                         await broadcast_positions()
                     else:
                         logging.info( f'Error registring: username already taken {data}' )
                 elif data[ 'command' ] == 'login':
-                    if login_player( data[ 'id' ], data[ 'password' ] ):
-                        await broadcast_positions()
+                    if not login_player( data[ 'id' ], data[ 'password' ] ):
+                        await send_message_to_player( websocket, {"command": "login_failed", "data":"player_doesnt_exist"} )
+                        logging.info( f'Invalid login attempt {data}' )							  
                     else:
-                        logging.info( f'Invalid login attempt {data}' )
+                        await send_message_to_player(websocket, {"command": "login_successful"})      
+                        await broadcast_positions()                  
                 elif data[ 'command' ] == 'logout':
                     logout_player( data[ 'id' ], data[ 'password' ] )
                     logging.info( f'User logged out {data}' )
                 elif data[ 'command' ] == 'update':
                     player_id = data[ 'id' ]
-                    position = data[ 'position' ]
-                    update_player_position( player_id, position[ 'x' ], position[ 'y' ] )
+
+                    latest_message = get_latest_update_message_and_remove_the_rest( websocket, player_id )
+
+                    if( latest_message == None ):
+                        latest_message = message
+
+                    new_data = json.loads(latest_message)
+
+                    position = new_data['position']
+                    velocity = new_data['velocity']
+
+                    update_player_position( player_id, position, velocity )
+
+                    await broadcast_positions()
+                elif data[ 'command' ] == 'chat_message':
+                    # Dodajte logiku za distribuciju chat poruke ostalim klijentima
+                    sender = data['sender']
+                    message = data['message']
+                    logging.info(f"Received chat message from {sender}: {message}")
+
+                    # Ovdje dodajte logiku za distribuciju poruke ostalim klijentima
+                    await broadcast_message_to_all(data)
+                elif data['command'] == 'keep_connection':
+                    pass
                 else:
                     print( 'Invalid command', data )
             except Exception as e:
                 connected_clients.remove( websocket )
                 logging.info( f'Invalid message {data} {str(e)}' )
-            await broadcast_positions()
             #await websocket.ping()  
+    except websockets.exceptions.ConnectionClosedOK as e:
+        logging.warning(f"Connection handled successfully: {e.reason} {e.code}")
+        logging.warning(f"Command: {data}")
     except websockets.exceptions.ConnectionClosed as e:
-        logging.warning(f"Connection closed: {e.reason}")
+        logging.warning(f"Connection closed: {e.reason} {e.code}")
+        logging.warning(f"Command: {data}")
+        connected_clients.remove( websocket )
     except Exception as e:
         logging.error(f"Unhandled exception: {str(e)}", exc_info=True)
     finally:
         logging.info("Connection handler exiting")
 
+def get_next_message( websocket ):
+    messages = websocket.messages
+
+    if( len(messages) <= 1 ):
+        return None
+    
+    next = messages[1]
+
+    try:
+        data = json.loads( next )
+    except:
+        return None
+
+    return data
+
+def get_latest_update_message_and_remove_the_rest( websocket, player_id ):
+    latestUpdateMessage = None
+    for messageIndex in range(len(websocket.messages)-1, -1,-1):
+        message = websocket.messages[messageIndex]
+        data = json.loads( message )
+        if( data['command'] != 'update' ):
+            continue
+
+        if( data['id'] != player_id ):
+            continue
+
+        if latestUpdateMessage == None:
+            latestUpdateMessage = message
+    
+        data['command'] = 'skip'
+        websocket.messages[messageIndex] = json.dumps(data)
+    
+    return latestUpdateMessage
 
 # Register player
 def register_player( player_id: str, password: str ) -> bool:
@@ -179,19 +238,17 @@ def register_player( player_id: str, password: str ) -> bool:
         bool: whether registration was successful
     """    
     print( f"Registering player {player_id}" )
-    db = setup_database()
-    connection = db.open()
-    root = connection.root()
-    if not player_id in root.players:
-        root.players[ player_id ] = Player( player_id, password )
-        transaction.commit()
+    dbGlobal.start_edit()
+    if not player_id in dbGlobal.root.players:
+        print("Added player!")
+        dbGlobal.root.players[ player_id ] = Player( player_id, password )
+        dbGlobal.end_edit()
         return True
     else:
         print( 'Error: username already taken!' )
+        dbGlobal.end_edit()
         return False
-    transaction.commit()
-    connection.close()
-    db.close()
+    
     return authenticated
 
 # Login player
@@ -206,13 +263,13 @@ def login_player( player_id: str, password: str ) -> bool:
         bool: login success
     """    
     print( f"Checking player credentials for {player_id}" )
-    db = setup_database()
-    connection = db.open()
-    root = connection.root()
-    authenticated = root.players[ player_id ].login( password )
-    transaction.commit()
-    connection.close()
-    db.close()
+    dbGlobal.start_edit()
+
+    if not dbGlobal.root.players.has_key(player_id):
+        return False
+
+    authenticated = dbGlobal.root.players[ player_id ].login( password )
+    dbGlobal.end_edit()
     return authenticated
 
 def logout_player( player_id: str, password: str ):
@@ -223,16 +280,12 @@ def logout_player( player_id: str, password: str ):
         password ( str ): player's password
     """    
     print( f"Logging out player {player_id}" )
-    db = setup_database()
-    connection = db.open()
-    root = connection.root()
-    root.players[ player_id ].logout( password )
-    transaction.commit()
-    connection.close()
-    db.close()
+    dbGlobal.start_edit()
+    dbGlobal.root.players[ player_id ].logout( password )
+    dbGlobal.end_edit()
 
 # Update player position in the database
-def update_player_position( player_id: str, x: float, y: float ):
+def update_player_position( player_id: str, position, velocity ):
     """_summary_
 
     Args:
@@ -241,42 +294,64 @@ def update_player_position( player_id: str, x: float, y: float ):
         y (float): y coordinate
     """  
     #print( f"Updating position of player {player_id} to {x},{y}" ) # Too much clutter
-    db = setup_database()
-    connection = db.open()
-    root = connection.root()
+    dbGlobal.start_edit()
     try:
-        root.players[ player_id ].update( x, y )
+        dbGlobal.root.players[ player_id ].update( position, velocity )
     except KeyError:
         print( f'No such player {player_id}' )
-    transaction.commit()
-    connection.close()
-    db.close()
+    dbGlobal.end_edit()
+
+# Broadcast positions to all clients
+async def send_message_to_player( client, object ):  
+    # Send to all connected clients
+    message = json.dumps( object )
+    logging.info(f"Sending message{message} to client {client}")
+    await client.send( message )
+
+async def broadcast_message_to_all( object ):
+    message = json.dumps( object )
+    await asyncio.gather( *( client.send( message ) for client in connected_clients ) )
 
 # Broadcast positions to all clients
 async def broadcast_positions():
     """broadcasts the positions to all clients
     """    
-    #print( "Broadcasting positions" ) # Too much clutter
-    db = setup_database()
-    connection = db.open()
-    root = connection.root()
-    positions = {player_id: {'x': position.x, 'y': position.y} for player_id, position in root.players.items()}
-    message = json.dumps( positions )
+    print( "Broadcasting positions" ) # Too much clutter
+    dbGlobal.start_edit()
+    object_to_send = {"command": "player_pos"}
+    positions = {
+        player_id: {
+            "position":{'x': player.x, 'y': player.y},
+            "velocity":{'x': player.velx, 'y': player.vely}
+            } 
+        for player_id, player in dbGlobal.root.players.items()
+        }
+    object_to_send["data"] = positions
+
     # Send to all connected clients
-    await asyncio.gather( *( client.send( message ) for client in connected_clients ) )
-    connection.close()
-    db.close()
+    await broadcast_message_to_all( object_to_send )
+    dbGlobal.end_edit()
 
 # Run the server
 async def main():
     print( "Setting up database" )
-    db = setup_database()  # Initialize database
-    db.close()
+    dbGlobal.db = setup_database()  # Initialize database
+    dbGlobal.start_edit()
+    dbGlobal.end_edit()
+
     print( "Starting websocket server" )
     async with websockets.serve( handle_connection, SHOST, SPORT ):
         await asyncio.Future()  # run forever
 
+    dbGlobal.db.close()
+
+def exit_handler():
+    if( dbGlobal.db != None ):
+        dbGlobal.connection.close()
+        dbGlobal.db.close()
+
 if __name__ == "__main__":
     print( "Server starting" )
+    atexit.register(exit_handler)
     asyncio.run( main() )
 

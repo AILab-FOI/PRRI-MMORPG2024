@@ -9,7 +9,7 @@ import threading
 from tilemap import Tile, MapData
 from materialsystem import Material
 import json
-
+from interface import Interface
 vartypes = {
     "vec2": vec2
 }
@@ -126,6 +126,7 @@ MAP_CENTER = MAP_SIZE / 2
 class Scene:
     def __init__( self ):
         self.transform_objects = []
+        self.done = False
         self.load_scene(SCENE_MAPNAME)
         clientApp().message.set_message( clientApp().player.message )
         clientApp().message.active = True
@@ -136,12 +137,14 @@ class Scene:
         rand_rot = lambda: uniform( 0, 360 )
         rand_pos = lambda pos: pos + vec2( uniform( -0.25, 0.25 ))
 
+        player_pos = vec2(0)
+
         for j, row in enumerate( MAP ):
             for i, name in enumerate( row ):
                 pos = vec2( i, j ) + vec2( 0.5 )
                 if name == 'player':
-                    clientApp().player.offset = pos * TILE_SIZE
-                    player_pos = clientApp().player.offset
+                    player_pos = pos * TILE_SIZE
+                    Interface('hud')
                 elif name == 'kitty' or name == 'circus' or name == 'movement' or name == 'resource' or name == 'combat' or name == 'tetris' or name == 'globe' or name == 'upgrades' or name == 'ui':
                     Entity( name=name, pos=pos )
                 elif str( name ).startswith( 'tree' ) or name == 'bush':
@@ -156,7 +159,18 @@ class Scene:
                     StackedSprite( name=name, pos=rand_pos( pos ), rot=rand_rot() )
 
         for pl in clientApp().players_pos: 
-            RemotePlayer( 'remote_player', clientApp().players_pos[ pl ], pl )
+            if( pl != clientApp().username ):
+                RemotePlayer( 'remote_player', clientApp().players_pos[ pl ]['position'], pl )
+            # U edge case-u da je vec 0 nekako, ovo nece raditi
+            # But it will do for now
+            elif( clientApp().players_pos[ pl ]['position'] != vec2(0) ):
+                player_pos = clientApp().players_pos[ pl ]['position']
+                print("YIPEE THE RIGHGT ONE")
+        
+        clientApp().player.offset = player_pos
+
+        self.done = True
+            
 
     def load_map_file( self, mapname ):
         if( len(mapname) <= 0 ):

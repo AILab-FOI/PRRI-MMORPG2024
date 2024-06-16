@@ -25,7 +25,6 @@ class Explosion( Entity ):
 
 class Bullet( Entity ):
     def __init__( self, name='bullet', pos=vec2(0,0) ):
-        print(pos)
         super().__init__( name, pos )
         # Entity multiplies our pos with TILE_SIZE, so undo that
         self.pos /= TILE_SIZE

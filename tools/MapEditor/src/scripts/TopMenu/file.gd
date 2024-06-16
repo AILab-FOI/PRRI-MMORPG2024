@@ -13,6 +13,29 @@ func _process(delta):
 func _on_open_assets_pressed():
 	$AssetDialog.popup()
 
+func _on_set_default_pressed():
+	var defaultPaths = [
+		"../../Circus/assets",
+		"../../../Circus/assets"
+	]
+	
+	var validPath = null
+	
+	for path in defaultPaths:
+		var dir = DirAccess.open(path)
+		if !dir:
+			continue
+		
+		validPath = dir.get_current_dir()
+		break
+
+	if( validPath != null ):
+		Main.set_asset_path(validPath)
+		$OpenFile.set_current_dir(Main.g_AssetPath+"/"+"maps")
+	else:
+		$DefaultFail.show()
+	
+
 func _open_save_file_menu():
 	$SaveFile.popup()
 
@@ -27,6 +50,8 @@ func _on_id_pressed(id):
 			_open_save_file_menu()
 		2:
 			_open_open_file_dialog()
+		3:
+			_on_set_default_pressed()
 
 func _on_file_dialog_dir_selected(path):
 	Main.set_asset_path(path)

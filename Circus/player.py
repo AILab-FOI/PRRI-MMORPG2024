@@ -40,21 +40,8 @@ class Player( BaseSpriteEntity ):
         self.direction = 'DOWN'
         self.moving = False
 
-        self.message = """Welcome to the Circus of Game Mechanics! Where everything is important, but nothing realy matters.
+        self.message = ""
 
-What are game mechanics, you ask? Well, let me show you!
-
-Game Mechanics are the rules and systems that govern player interactions within a game.
-
-They are important because they provide structure, challenge, and variety in games.
-
-As a first, I am the ring master, the narrator of this game. This is our first mechanic related to story and narrative. 
-
-It can include branching storylines, dialogue choices, moral and ethical choices, and quest systems which provide narrative depth and immersion.
-
-Let us walk through the circus and I show you some of our performers!
-
-"""
     def on_start_drawing(self):
         super().on_start_drawing()
         self.sprite.groups()[0].change_layer( self.sprite, CENTER.y )
@@ -101,6 +88,8 @@ Let us walk through the circus and I show you some of our performers!
 
     def control( self ):
         self.moving = False
+        self.last_inc[0] = self.inc[0]
+        self.last_inc[1] = self.inc[1]
         self.inc = vec2( 0 )
         speed = PLAYER_SPEED * clientApp().delta_time
         rot_speed = PLAYER_ROT_SPEED * clientApp().delta_time
@@ -133,10 +122,12 @@ Let us walk through the circus and I show you some of our performers!
             self.inc *= self.diag_move_corr
 
     def single_fire( self, event ):
-        if event.key == pg.K_UP:
-            Bullet( "bullet", self.pos )
-        if event.key == pg.K_SPACE:
-            clientApp().message.handle_input()
+        if event.type == pg.MOUSEBUTTONDOWN:
+            if event.button == 1:  
+                Bullet(pos=self.pos)
+        elif event.type == pg.KEYDOWN:
+            if event.key == pg.K_SPACE:
+                clientApp().message.handle_input()
 
     def check_collision( self ):
         if( self.sprite == None ):
@@ -158,20 +149,35 @@ Let us walk through the circus and I show you some of our performers!
                 clientApp().message.set_message( hitobst[ 0 ].entity.message )
                 clientApp().message.active = True
 
+    def has_moved_this_frame(self) -> bool:
+        x = self.offset[ 0 ]
+        y = self.offset[ 1 ]
+        x1 = self.last_offset[ 0 ]
+        y1 = self.last_offset[ 1 ]
+
+        return (x != x1 or y != y1)
+
+    def has_velocity_changed( self ):
+        x = self.inc[ 0 ]
+        y = self.inc[ 1 ]
+        x1 = self.last_inc[ 0 ]
+        y1 = self.last_inc[ 1 ]
+
+        return (x != x1 or y != y1)
 
     def move( self ):
         self.offset += self.inc
-        x = int( self.offset[ 0 ] ) // TILE_SIZE + 0.5
-        y = int( self.offset[ 1 ] ) // TILE_SIZE + 0.5
-        x1 = self.last_offset[ 0 ] // TILE_SIZE + 0.5
-        y1 = self.last_offset[ 1 ] // TILE_SIZE + 0.5
-        if x != x1 or y != y1:
-            message = json.dumps( { "command":"update", "id": clientApp().username, "position": { "x": x, "y": y } } )
-            if( not clientApp().closed ):
-                clientApp().ws.send( message )
+        
+        if self.has_velocity_changed() or self.has_moved_this_frame():
+            message = { "command":"update",
+                        "id": clientApp().username,
+                        "position": { "x": self.offset.x, "y": self.offset.y },
+                        'velocity': { "x":self.inc.x, "y":self.inc.y } }
+            clientApp().push_websocket_message( message )
 
-            self.last_offset[ 0 ] = int( self.offset[ 0 ] )
-            self.last_offset[ 1 ] = int( self.offset[ 1 ] )
+        self.last_offset[ 0 ] = self.offset[ 0 ]
+        self.last_offset[ 1 ] = self.offset[ 1 ]
+
 
     def should_think(self) -> bool:
         return True
@@ -187,7 +193,9 @@ Let us walk through the circus and I show you some of our performers!
         self.check_collision()
         self.move()
 
-
+    def set_pos(self, newPos):
+        super().set_pos(newPos)
+        self.offset = newPos
 
 
 
