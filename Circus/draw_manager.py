@@ -59,6 +59,10 @@ class DrawManager:
     def screenpos_update( self ):
         if( self.angle ):
             clientApp().material_system.recalculate_tile_rotation()
+            try:
+                clientApp().scene.redraw_tile_rotation()
+            except:
+                pass
 
         for drawable in self.drawables:
             drawable._screenpos_update()
