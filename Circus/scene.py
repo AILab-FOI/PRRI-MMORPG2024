@@ -309,7 +309,7 @@ class LoadingScene:
 
     def draw( self ):
         #client_app.screen.fill( BG_COLOR )
-        self.bg_img = pg.image.load( 'assets/images/png' )
+        self.bg_img = pg.image.load( 'assets/images/splash.png' )
         self.bg_img = pg.transform.smoothscale( self.bg_img, clientApp().screen.get_size() )
         clientApp().screen.blit( self.bg_img, self.bg_img.get_rect() )
         screen_center_x = clientApp().screen.get_width() // 2

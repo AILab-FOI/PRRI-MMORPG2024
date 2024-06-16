@@ -153,17 +153,20 @@ class ClientApp:
 
     def draw(self):
         """Draws the scene
-        """        
+        """
         try:
             self.scene.draw()
-        except:
+        except AttributeError as e:
+            # Scene doesn't have a draw method, just use regular draw
             self.screen.fill(BG_COLOR)
             self.draw_manager.draw()
             self.message.draw()
             self.fps_counter.draw()
-
-        # Crtanje chata
-        self.draw_chat()
+            # Crtanje chata
+            self.draw_chat()
+        except Exception as e:
+            logging.info( f"Couldn't draw scene {str(e)}" )
+        
 
         pg.display.flip()
 
