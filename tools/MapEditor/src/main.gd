@@ -247,6 +247,11 @@ func _load_entity( entityList, name ) -> Variant:
 		for key in entityList[name]["attr"]:
 			newEnt[key] = entityList[name]["attr"][key]
 	
+	if( entityList[name].has('_hidden_in_editor') ):
+		newEnt['_hidden_in_editor'] = entityList[name]["_hidden_in_editor"]
+	else:
+		newEnt['_hidden_in_editor'] = false
+	
 	g_Entities[name] = newEnt
 	
 	return newEnt
@@ -296,6 +301,9 @@ func _on_file_assets_loaded():
 		child.queue_free()
 
 	for name in g_Entities.keys():
+		if( g_Entities[name].has('_hidden_in_editor') && g_Entities[name]["_hidden_in_editor"] ):
+			continue
+		
 		var newEntity = EntityDisplay.instantiate()
 		newEntity.set_entity(name)
 		entityList.add_item(newEntity)
