@@ -6,7 +6,7 @@ import logging
 #   General class for mouse interactive elements, assumes the interactive element is a square, currently only attachable to Interface items
 
 class Interactible:
-    def __init__(self, name, interaction='default'):
+    def __init__(self, name, interaction='default', z=0):
         self.app = clientApp()
         self.attrs = INTERFACE_ATTRS[ name ][ 'interactibles' ][ interaction ]
         self.x = self.attrs['x']
@@ -14,6 +14,7 @@ class Interactible:
         self.width = self.attrs['width']
         self.height = self.attrs['height']
         self.interaction = self.attrs['interaction'] 
+        self.z = z
 
         #
         #   Group that collects all Interactible areas, used for sifting through all of them when checking on click
@@ -33,6 +34,6 @@ class Interactible:
         x = self.x - mx
         y = self.y - my
         if x < self.width and y < self.height:
-            return self.interaction
+            return {'z':self.z, 'interaction':self.interaction}
         else:
             return ''

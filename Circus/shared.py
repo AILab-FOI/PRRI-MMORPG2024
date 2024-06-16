@@ -348,19 +348,42 @@ INTERFACE_ATTRS = {
     },
     'health-bar': {
         'path': 'assets/images/health_bar.png',
-        'pos': (216,369),
-        'size': (29,59),
+        'pos': (216, 369),
+        'size': (29, 59),
         'z': 2,
         'frames': 41,
         'tracking': 'player-health',
     },
     'mana-bar': {
         'path': 'assets/images/mana_bar.png',
-        'pos': (239,360),
-        'size': (50,58),
+        'pos': (239, 360),
+        'size': (50, 58),
         'z': 1,
         'frames': 41,
         'tracking': 'player-mana',
+    },
+    'dialogue-box': {
+        'path': 'assets/images/dialogue.png',
+        'pos': (92, 242),
+        'size': (599, 211),
+        'z': 3,
+        'text-pos':(225, 48),
+        'text-area': {
+            'width':336,
+            'height':132,
+        },
+        'interactibles':{
+            'textbox': {
+                'x': 92,
+                'y': 242,
+                'width': 599,
+                'height': 211,
+                'interaction': 'textbox'
+                }
+        },
+    },
+    'chat-box': {
+
     },
 }
 

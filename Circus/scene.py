@@ -11,6 +11,7 @@ from materialsystem import Material
 import json
 from interface import Interface
 from interface import BarInterface
+from dialogue import Dialogue
 vartypes = {
     "vec2": vec2
 }

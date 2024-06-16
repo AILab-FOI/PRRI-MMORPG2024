@@ -7,8 +7,9 @@ import logging
 #   General Interface class for all Graphical elements for display and interaction with the player
 
 class Interface( pg.sprite.Sprite ):
-    def __init__(self, name):
+    def __init__(self, name, shown=True ):
         self.name = name
+        self.shown = shown
         self.group = clientApp().draw_manager.layer_masks["hud_layer"]
         super().__init__( self.group )
         self.attrs = INTERFACE_ATTRS[ name ]
@@ -19,11 +20,13 @@ class Interface( pg.sprite.Sprite ):
             self.interactable = True
             self.interactibles = INTERFACE_ATTRS[ name ][ 'interactibles' ]
             for interaction in self.interactibles:
-                Interactible(self.name, interaction)
+                Interactible(self.name, interaction, self.attrs[ 'z' ])
         
-        self.image = pg.image.load( self.attrs[ 'path' ] ).convert_alpha()
-        self.rect = self.image.get_rect()
-        self.rect.topleft = self.pos
+        self.sprite = pg.image.load( self.attrs[ 'path' ] ).convert_alpha()
+        if self.shown:
+            self.image = pg.image.load( self.attrs[ 'path' ] ).convert_alpha()
+            self.rect = self.image.get_rect()
+            self.rect.topleft = self.pos
 
         self.group.change_layer( self, self.attrs[ 'z' ] )
     
@@ -37,7 +40,22 @@ class Interface( pg.sprite.Sprite ):
         self.get_image()
     
     def get_image( self ):
-        clientApp().screen.blit(self.image, self.rect)
+        if self.shown:
+            self.image = pg.image.load( self.attrs[ 'path' ] ).convert_alpha()
+            clientApp().screen.blit(self.image, self.rect)
+        else:
+            self.image = None
+    
+    def show( self ):
+        self.shown = True
+        self.image = pg.image.load( self.attrs[ 'path' ] ).convert_alpha()
+        self.rect = self.image.get_rect()
+        self.rect.topleft = self.pos
+
+    def hide( self ):
+        self.shown = False
+        self.image = None
+        self.rect = None
 
 class BarInterface( Interface ):
     def __init__(self, name):
@@ -58,13 +76,12 @@ class BarInterface( Interface ):
         self.frame_index = (self.frames - 1) - math.floor(tracked_stat / trackable[ 'max' ] * (self.frames - 1))
     
     def get_sheet( self ):
-        sheet = pg.image.load( self.attrs[ 'path' ] ).convert_alpha()
-        sheet_width = sheet.get_width()
-        sheet_height = sheet.get_height()
+        sheet_width = self.sprite.get_width()
+        sheet_height = self.sprite.get_height()
         sprite_width = sheet_width // self.frames
         sprite_sheet = []
         for x in range( 0, sheet_width, sprite_width):
-            sprite = sheet.subsurface( ( x, 0, sprite_width, sheet_height ))
+            sprite = self.sprite.subsurface( ( x, 0, sprite_width, sheet_height ))
             sprite_sheet.append( sprite )
         return sprite_sheet
 

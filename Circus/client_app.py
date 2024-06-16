@@ -135,7 +135,7 @@ class ClientApp:
 
         if self.scene:
             self.scene.update()
-            pg.display.set_caption('The Circus of Game Mechanics')
+            pg.display.set_caption('Age of Dogma a1.0')
         
         self.entity_system.think()
         self.draw_manager.update()
@@ -195,13 +195,20 @@ class ClientApp:
             elif e.type == self.anim_event:
                 self.anim_trigger = True
             elif e.type == pg.MOUSEBUTTONDOWN:
+                # to do seperate this into its own function for testing and handling
                 clicked = False
+                max = {'z':0, 'interaction':''}
                 for clickable in self.clickable_group:
                     interaction = clickable.try_interact()
                     if interaction != '':
                         logging.info( interaction )
+                        clicked = True
+                        if interaction[ 'z' ] >= max[ 'z' ]:
+                            max = interaction
                 if not clicked:
                     self.player.single_fire( event=e )
+                #else:
+                    #handle interaction stored in max
             else:
                 self.player.single_fire( event=e )
             
