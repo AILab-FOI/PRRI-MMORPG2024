@@ -184,6 +184,7 @@ async def handle_connection(websocket, path: str):
                 elif data['command'] == 'keep_connection':
                     notify_message = False
                 elif data['command'] == 'request_quest_info':
+                    notify_message = False
                     player_id = data[ 'player' ]
                     quest_id = data['quest']
                     player: Player = dbGlobal.root.players[ player_id ]
@@ -193,7 +194,7 @@ async def handle_connection(websocket, path: str):
                     else:
                         create_quest_info(quest_id, player)
                 elif data['command'] == 'update_quest_info':
-                    notify_message = True
+                    notify_message = False
                     player_id = data[ 'player' ]
                     quest_id = data['quest']
                     player: Player = dbGlobal.root.players[ player_id ]
