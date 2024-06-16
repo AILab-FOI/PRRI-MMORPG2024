@@ -10,6 +10,7 @@ from tilemap import Tile, MapData
 from materialsystem import Material
 import json
 from interface import Interface
+from interface import BarInterface
 vartypes = {
     "vec2": vec2
 }
@@ -145,6 +146,8 @@ class Scene:
                 if name == 'player':
                     player_pos = pos * TILE_SIZE
                     Interface('hud')
+                    BarInterface('health-bar')
+                    BarInterface('mana-bar')
                 elif name == 'kitty' or name == 'circus' or name == 'movement' or name == 'resource' or name == 'combat' or name == 'tetris' or name == 'globe' or name == 'upgrades' or name == 'ui':
                     Entity( name=name, pos=pos )
                 elif str( name ).startswith( 'tree' ) or name == 'bush':

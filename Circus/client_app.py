@@ -71,6 +71,7 @@ class ClientApp:
 
         self.done_counter = 0
 
+        self.trackables = {}
         # game objects
         self.player: Player = None
 
@@ -92,7 +93,7 @@ class ClientApp:
         self.fps_counter = Message([self.screen.get_size()[0]-200, 0], [200, 80], font_size=10)
 
         self.active_viewpoint: Viewpoint = None
-    
+
     def set_local_player(self, player: Player):
         """Set the local player
 
@@ -199,10 +200,10 @@ class ClientApp:
                     interaction = clickable.try_interact()
                     if interaction != '':
                         logging.info( interaction )
-                        clicked = True
                 if not clicked:
                     self.player.single_fire( event=e )
-            
+            else:
+                self.player.single_fire( event=e )
             
             # Chat input handling
             if e.type == pg.MOUSEBUTTONDOWN:

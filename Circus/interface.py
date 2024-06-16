@@ -1,5 +1,7 @@
 from shared import *
 from interactible import Interactible
+import math
+import logging
 
 #
 #   General Interface class for all Graphical elements for display and interaction with the player
@@ -12,22 +14,60 @@ class Interface( pg.sprite.Sprite ):
         self.attrs = INTERFACE_ATTRS[ name ]
         self.pos = vec2( self.attrs[ 'pos' ] )
         self.size = vec2( self.attrs[ 'size' ] )
-        self.interactibles = INTERFACE_ATTRS[ name ][ 'interactibles' ]
-        for interaction in self.interactibles:
-            Interactible(self.name, interaction)
+        self.interactable = False
+        if 'interactibles' in self.attrs:
+            self.interactable = True
+            self.interactibles = INTERFACE_ATTRS[ name ][ 'interactibles' ]
+            for interaction in self.interactibles:
+                Interactible(self.name, interaction)
         
         self.image = pg.image.load( self.attrs[ 'path' ] ).convert_alpha()
         self.rect = self.image.get_rect()
+        self.rect.topleft = self.pos
 
         self.group.change_layer( self, self.attrs[ 'z' ] )
     
     def __del__( self ):
-        for interaction in self.interactibles:
-            del interaction
+        if self.interactable:
+            for interaction in self.interactibles:
+                del interaction
 
+    #this will be used for animated ui
     def update( self ):
         self.get_image()
     
     def get_image( self ):
-        a = 3
-        # need to make health and mana updates here
+        clientApp().screen.blit(self.image, self.rect)
+
+class BarInterface( Interface ):
+    def __init__(self, name):
+        super().__init__(name)
+        self.frames = self.attrs[ 'frames' ]
+        self.tracking = self.attrs[ 'tracking' ]
+        self.frame_index = 0
+        self.sheet = self.get_sheet()
+
+    def update( self ):
+        super().update()
+        self.updateFrameIndex()
+        self.get_image()
+
+    def updateFrameIndex( self ):
+        trackable = clientApp().trackables[self.tracking]
+        tracked_stat = getattr(trackable['object'], trackable['attr'])
+        self.frame_index = (self.frames - 1) - math.floor(tracked_stat / trackable[ 'max' ] * (self.frames - 1))
+    
+    def get_sheet( self ):
+        sheet = pg.image.load( self.attrs[ 'path' ] ).convert_alpha()
+        sheet_width = sheet.get_width()
+        sheet_height = sheet.get_height()
+        sprite_width = sheet_width // self.frames
+        sprite_sheet = []
+        for x in range( 0, sheet_width, sprite_width):
+            sprite = sheet.subsurface( ( x, 0, sprite_width, sheet_height ))
+            sprite_sheet.append( sprite )
+        return sprite_sheet
+
+    
+    def get_image( self ):
+        self.image = self.sheet[ self.frame_index ]

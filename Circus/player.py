@@ -4,6 +4,7 @@ from entity import BaseSpriteEntity
 from bullet import Bullet
 from itertools import cycle
 import json
+import logging
 
 from viewpoint import Viewpoint
 
@@ -39,6 +40,13 @@ class Player( BaseSpriteEntity ):
 
         self.direction = 'DOWN'
         self.moving = False
+
+        self.health = 100
+        self.mana = 100
+        self.alive = True
+
+        clientApp().trackables['player-health'] = {'object': self, 'attr': 'health', 'max': 100}
+        clientApp().trackables['player-mana'] = {'object': self, 'attr': 'mana', 'max': 100}
 
         self.message = ""
 
@@ -121,12 +129,25 @@ class Player( BaseSpriteEntity ):
         if self.inc.x and self.inc.y:
             self.inc *= self.diag_move_corr
 
+    def damage( self, amount ):
+        if self.health - amount <= 0:
+            self.health = 0
+        else:
+            self.health -= amount
+    def heal( self, amount ):
+        if self.health + amount >= 100:
+            self.health = 100
+        else:
+            self.health += amount
     def single_fire( self, event ):
         if event.type == pg.MOUSEBUTTONDOWN:
             if event.button == 1:  
                 Bullet(pos=self.pos)
+                self.damage(8.72)
+                
         elif event.type == pg.KEYDOWN:
             if event.key == pg.K_SPACE:
+                self.heal(6.32)
                 clientApp().message.handle_input()
 
     def check_collision( self ):

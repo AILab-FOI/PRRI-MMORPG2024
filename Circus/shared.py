@@ -345,7 +345,23 @@ INTERFACE_ATTRS = {
                 'interaction': 'a'
                 }
         }
-    }
+    },
+    'health-bar': {
+        'path': 'assets/images/health_bar.png',
+        'pos': (216,369),
+        'size': (29,59),
+        'z': 2,
+        'frames': 41,
+        'tracking': 'player-health',
+    },
+    'mana-bar': {
+        'path': 'assets/images/mana_bar.png',
+        'pos': (239,360),
+        'size': (50,58),
+        'z': 1,
+        'frames': 41,
+        'tracking': 'player-mana',
+    },
 }
 
 # NOTE NOTE: Only use this with strings that *we* made, not something the user can edit
