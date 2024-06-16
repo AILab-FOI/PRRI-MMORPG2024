@@ -226,14 +226,14 @@ class ClientApp:
             elif e.type == pg.MOUSEBUTTONDOWN:
                 # to do seperate this into its own function for testing and handling
                 clicked = False
-                max = 0
+                max_interacts = 0
                 interact = ''
                 for clickable in self.clickable_group:
                     interaction = clickable.try_interact()
                     if interaction != '':
                         clicked = True
-                        if interaction[ 'z' ] >= max:
-                            max = interaction[ 'z' ]
+                        if interaction[ 'z' ] >= max_interacts:
+                            max_interacts = interaction[ 'z' ]
                             interact = interaction[ 'interaction' ]
                 if not clicked:
                     self.player.single_fire( event=e )
