@@ -154,6 +154,8 @@ class Player( BaseSpriteEntity ):
         if( self.sprite == None ):
             return
 
+        return
+
         hitobst = pg.sprite.spritecollide( self.sprite, clientApp().collision_group,
                                       dokill=False, collided=pg.sprite.collide_mask )
         hit = pg.sprite.spritecollide( self.sprite, clientApp().draw_manager.layer_masks['entity_layer'],

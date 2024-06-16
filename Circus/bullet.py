@@ -41,6 +41,8 @@ class Bullet( Entity ):
         if( not self.sprite ):
             return
 
+        return
+
         hits = pg.sprite.spritecollide( self.sprite, clientApp().collision_group,
                                       dokill=False, collided=pg.sprite.collide_mask )
         if hits:
