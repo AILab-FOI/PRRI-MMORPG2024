@@ -109,7 +109,7 @@ class ClientApp:
         """        
         self.player = player
         self.active_viewpoint = player.viewpoint
-        self.draw_manager.set_dirty()
+        self.draw_manager.set_dirty(True)
 
     def set_active_scene(self, scene):
         """Sets the active scene

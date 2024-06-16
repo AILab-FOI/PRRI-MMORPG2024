@@ -1,3 +1,4 @@
+import math
 from shared import *
 
 class LayerMask( pg.sprite.LayeredUpdates ):
@@ -23,6 +24,7 @@ class DrawManager:
         self.layer_masks: dict = {}
         self.drawables = []
         self.dirty = True
+        self.angle = True
 
         # Default masks
         self.layer_masks["tile_layer"] = LayerMask(-1)
@@ -31,24 +33,23 @@ class DrawManager:
 
         self.layer_masks["hud_layer"] = LayerMask(999)
     
-    def set_dirty( self ):
+    def set_dirty( self, angle = False ):
         """force a draw call update
 
         Args:
             repeats (int, optional): number of times to redraw. Defaults to 2.
         """
         self.dirty = True
+        self.angle = self.angle or angle
 
     def update( self ):
         if( self.dirty ):
-
             self.screenpos_update()
 
         for layer in self.layer_masks.values():
             layer.update()
 
     def draw( self ):
-
         for drawable in list(self.drawables):
             drawable._draw_update()
 
@@ -56,11 +57,14 @@ class DrawManager:
             layer.draw( clientApp().screen )
 
     def screenpos_update( self ):
+        if( self.angle ):
+            clientApp().material_system.recalculate_tile_rotation()
 
         for drawable in self.drawables:
             drawable._screenpos_update()
         
         self.dirty = False
+        self.angle = False
 
     def sort_layers_by_order( self ):
         self.layer_masks = dict(sorted(self.layer_masks.items(), key=lambda item: item[1].order))

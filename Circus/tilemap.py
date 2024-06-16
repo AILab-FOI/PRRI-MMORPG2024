@@ -50,10 +50,7 @@ class Tile( WorldObject ):
 	def reset_sprite( self ):
 		self.sprite = pg.sprite.Sprite( self.group )
 
-		size = self.material.image.get_size()
-		self.resize = vec2( TILE_SIZE / size[0], TILE_SIZE / size[1] )
-
-		self.sprite.image = self.material.image.__copy__()
+		self.sprite.image = self.material.rotated_image.__copy__()
 		self.sprite.rect = self.sprite.image.get_rect()
 		self.sprite.rect.x = self.pos.x
 		self.sprite.rect.y = self.pos.y
@@ -61,10 +58,7 @@ class Tile( WorldObject ):
 	def update_screenpos(self):
 
 		"""Updates the screen position of the tile
-		"""     
-		self.sprite.image = self.material.image
-
-		self.sprite.image = pg.transform.rotate( self.sprite.image, self.screen_ang )
-		
-		self.sprite.rect = self.sprite.image.get_rect()
+		"""
+		self.sprite.kill()
+		self.reset_sprite()
 		self.sprite.rect.center = self.screen_pos
