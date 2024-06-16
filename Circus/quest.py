@@ -12,6 +12,7 @@ class Quest ( object ):
         self.text = ""
         self.accepted = False
         self.finished = False
+        self.progress = {}
 
     def is_accepted(self):
         return self.accepted
@@ -36,11 +37,21 @@ class Quest ( object ):
     
     def accept_quest( self, player : player.Player):
         self.accepted = True
+        self.update_info()
 
     def finish_quest( self ):
         self.finished = True
+        self.update_info()
 
+    def update_info(self):
+        message = {"command": "update_quest_info"}
+        message['quest'] = self.id
+        message['player'] = clientApp().username
+        message['accepted'] = self.accepted
+        message['finished'] = self.finished
+        message['progress'] = self.progress
 
+        clientApp().push_websocket_message(message)
 
 
 

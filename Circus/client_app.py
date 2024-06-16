@@ -112,6 +112,10 @@ class ClientApp:
         """        
         self.scene = scene
 
+    def add_quest(self, id, quest ):
+        self.push_websocket_message({"command": "request_quest_info", "player": self.username, "quest": id})
+        self.quest_list[id] = quest
+
     def tick(self):
         """A single game tick
         """
@@ -302,46 +306,65 @@ class ClientApp:
 
         match json_message["command"]:
             case "player_pos":
-                data = json_message["data"]
-                for player in data:
-                    player_data = data[ player ]
-                    player_exists = player in self.players_pos
+                self.handle_player_pos_message(json_message)
+            case "login_failed":
+                message = self.handle_login_failed(json_message)
+            case "login_successful":
+                if not self.scene:
+                    self.scene = LoadingScene()
+            case "quest_info":
+                self.handle_quest_info_update(json_message)
+            case "chat_message":
+                # Handle incoming chat message
+                self.handle_chat_message(json_message)
 
-                    position = player_data[ 'position' ]
-                    velocity = player_data[ 'velocity' ]
+    def handle_player_pos_message(self, json_message):
+        data = json_message["data"]
+        for player in data:
+            player_data = data[ player ]
+            player_exists = player in self.players_pos
+
+            position = player_data[ 'position' ]
+            velocity = player_data[ 'velocity' ]
 
                     #if(player != self.username):
                     #    print( player, position, velocity )
 
-                    pos = vec2( position['x'], position['y'] )
-                    vel = vec2( velocity['x'], velocity['y'] )
+            pos = vec2( position['x'], position['y'] )
+            vel = vec2( velocity['x'], velocity['y'] )
 
-                    player_info = {}
-                    player_info["time"] = self.time
-                    player_info["position"] = pos
-                    player_info["velocity"] = vel
+            player_info = {}
+            player_info["time"] = self.time
+            player_info["position"] = pos
+            player_info["velocity"] = vel
 
-                    if self.scene.done and player != self.username and not player_exists: 
-                        RemotePlayer( 'remote_player', pos, player )
+            if self.scene.done and player != self.username and not player_exists: 
+                RemotePlayer( 'remote_player', pos, player )
 
-                    self.players_pos[ player ] = player_info
-                    
-            case "login_failed":
-                data = json_message["data"]
-                if data == "player_doesnt_exist":
-                    message = {"command": "register", "id": self.username, "password": self.password}
-                    self.push_websocket_message(message)
-                    logging.info(f"Sent: {message}")
-            case "chat_message":
-                # Handle incoming chat message
-                sender = json_message["sender"]
-                chat_message = json_message["message"]
-                self.chat_messages.append(f"{sender}: {chat_message}")
-                logging.info(f"Sent: {message}")
-            case "login_successful":
-                if not self.scene:
-                    self.scene = LoadingScene()
+            self.players_pos[ player ] = player_info
 
+    def handle_login_failed(self, json_message):
+        data = json_message["data"]
+        if data == "player_doesnt_exist":
+            message = {"command": "register", "id": self.username, "password": self.password}
+            self.push_websocket_message(message)
+            logging.info(f"Sent: {message}")
+        return message
+
+    def handle_chat_message(self, json_message):
+        sender = json_message["sender"]
+        chat_message = json_message["message"]
+        self.chat_messages.append(f"{sender}: {chat_message}")
+
+    def handle_quest_info_update(self, json_message):
+        quest_id = json_message['quest']
+
+        if( not quest_id in self.quest_list ):
+            self.quest_list[quest_id] = {}
+        
+        self.quest_list[quest_id].accepted = json_message['accepted']
+        self.quest_list[quest_id].finished = json_message['finished']
+        self.quest_list[quest_id].progress = json_message['progress']
 
     def on_error(self, ws: websocket, error):
         """On error

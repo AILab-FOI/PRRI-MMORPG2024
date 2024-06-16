@@ -58,7 +58,6 @@ def setup_database():
 
     return db
 
-
 # Player position model
 class Player( persistent.Persistent ):
     """Player's position model on the server
@@ -74,6 +73,7 @@ class Player( persistent.Persistent ):
         self.velx = 0
         self.vely = 0
         self.logged_in = False
+        self.quests = {}
 
     def login( self, password: str ) -> bool:
         """Logins the player
@@ -165,13 +165,43 @@ async def handle_connection(websocket, path: str):
                 elif data[ 'command' ] == 'chat_message':
                     # Dodajte logiku za distribuciju chat poruke ostalim klijentima
                     sender = data['sender']
-                    message = data['message']
-                    logging.info(f"Received chat message from {sender}: {message}")
+                    send_message = data['message']
+                    logging.info(f"Received chat message from {sender}: {send_message}")
 
                     # Ovdje dodajte logiku za distribuciju poruke ostalim klijentima
                     await broadcast_message_to_all(data)
                 elif data['command'] == 'keep_connection':
                     pass
+                elif data['command'] == 'request_quest_info':
+                    player_id = data[ 'player' ]
+                    quest_id = data['quest']
+                    player: Player = dbGlobal.root.players[ player_id ]
+                    
+                    if( quest_id in player.quests ):
+                        send_message = { 'command': 'quest_info', 'quest': quest_id }
+                        send_message['accepted'] = player.quests[quest_id]['accepted']
+                        send_message['finished'] = player.quests[quest_id]['finished']
+                        send_message['progress'] = player.quests[quest_id]['progress']
+
+                        await send_message_to_player(websocket, send_message)
+                    else:
+                        player.quests[quest_id] = {}
+                        player.quests[quest_id]['accepted'] = False
+                        player.quests[quest_id]['finished'] = False
+                        player.quests[quest_id]['progress'] = {}
+                        transaction.commit()
+                elif data['command'] == 'update_quest_info':
+                    player_id = data[ 'player' ]
+                    quest_id = data['quest']
+                    player: Player = dbGlobal.root.players[ player_id ]
+                    
+                    if( not quest_id in player.quests ):
+                        player.quests[quest_id] = {}
+                    
+                    player.quests[quest_id]['accepted'] = data['accepted']
+                    player.quests[quest_id]['finished'] = data['finished']
+                    player.quests[quest_id]['progress'] = data['progress']
+                    transaction.commit()
                 else:
                     print( 'Invalid command', data )
             except websockets.exceptions.ConnectionClosedOK as e:

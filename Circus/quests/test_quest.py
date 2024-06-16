@@ -11,20 +11,21 @@ class PositionQuest(quest.Quest):
         self.text = "This is the testiest quest."
         self.position : vec2 = position
         self.npc = npc
-        self.distance = -1
+        self.progress['distance'] = -1
     
     def check_quest_finished( self ):
         has_quest_finished = bool(False)
         # send to server?
         #return bool
 
-        self.distance = abs(self.position.distance_to(clientApp().player.pos))
+        self.progress['distance'] = abs(self.position.distance_to(clientApp().player.pos))
         required_distance = 200
+        self.update_info()
 
-        print(self.distance)
+        #print(self.progress['distance'])
 
         # Got to pos, finished!
-        if self.distance <= required_distance:
+        if self.progress['distance'] <= required_distance:
             has_quest_finished = True
         return has_quest_finished
     
@@ -46,6 +47,6 @@ class PositionQuest(quest.Quest):
     
     def finish_quest(self):
         super().finish_quest()
-        self.distance = -1
+        self.progress['distance'] = -1
         print("Quest finished!")
 

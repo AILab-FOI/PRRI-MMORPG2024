@@ -19,7 +19,7 @@ class NPCBase( entity.Entity ):
             self.add_quest(quests)
 
     def add_quest( self, quest ):
-        clientApp().quest_list[id] = quest
+        clientApp().add_quest( quest.id, quest )
         self.quests.append(quest)
 
     def should_think(self) -> bool:
