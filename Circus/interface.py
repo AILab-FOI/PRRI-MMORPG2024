@@ -30,9 +30,7 @@ class Interface( pg.sprite.Sprite ):
         self.group.change_layer( self, self.attrs[ 'z' ] )
     
     def __del__( self ):
-        if self.interactable:
-            for interaction in self.interactibles:
-                del interaction
+        self.remove_interactions()
 
     #this will be used for animated ui
     def update( self ):
@@ -46,17 +44,17 @@ class Interface( pg.sprite.Sprite ):
             self.image = None
     
     def show( self ):
-        self.create_interactions()
         self.shown = True
+        self.create_interactions()
         self.image = pg.image.load( self.attrs[ 'path' ] ).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.topleft = self.pos
 
     def hide( self ):
-        self.remove_interactions()
         self.shown = False
-        self.image = None
-        self.rect = None
+        self.remove_interactions()
+        self.image = pg.Surface( (0, 0) )
+        self.rect = self.image.get_rect()
 
     def create_interactions ( self ):
         if 'interactibles' in self.attrs:
@@ -66,9 +64,12 @@ class Interface( pg.sprite.Sprite ):
                 Interactible(self.name, interaction, self.attrs[ 'z' ])
     
     def remove_interactions ( self ):
-        if self.interactable:
-            for interaction in self.interactibles:
-                del interaction
+        if 'interactibles' in self.attrs:
+            self.interactable = False
+            for interaction in clientApp().clickable_group:
+                if interaction.name == self.name:
+                    interaction.drop()
+                    del interaction
 
 
 class BarInterface( Interface ):

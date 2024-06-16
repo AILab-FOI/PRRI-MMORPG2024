@@ -7,7 +7,7 @@ import logging
 
 class Interactible:
     def __init__(self, name, interaction='default', z=0):
-        self.app = clientApp()
+        self.name = name
         self.attrs = INTERFACE_ATTRS[ name ][ 'interactibles' ][ interaction ]
         self.x = self.attrs['x']
         self.y = self.attrs['y']
@@ -18,12 +18,11 @@ class Interactible:
 
         #
         #   Group that collects all Interactible areas, used for sifting through all of them when checking on click
-        self.app.clickable_group.append( self )
+        clientApp().clickable_group.append( self )
 
 
-    def __del__( self ):
-        self.app.clickable_group.remove( self )
-
+    def drop( self ):
+        clientApp().clickable_group.remove( self )
 
         #
         #   Method to attempt interacting with an interactible area, if succesful it will return the interaction

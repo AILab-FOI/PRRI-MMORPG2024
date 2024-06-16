@@ -13,9 +13,7 @@ from entity_system import EntitySystem
 from materialsystem import MaterialSystem
 import sys
 import pygame as pg  
-from interaction_handler import InteractionHandler
 from entity import RemotePlayer
-
 
 class ClientApp:
     """Client app base class
@@ -94,16 +92,6 @@ class ClientApp:
 
         self.active_viewpoint: Viewpoint = None
 
-
-        # INTERACTIONS
-
-        self.interaction = InteractionHandler()
-
-        # REGISTER INTERACTIONS HERE WITH CALLS TO FUNCTIONS THAT HANDLE THEM
-
-        # !!!
-
-        
     def set_local_player(self, player: Player):
         """Set the local player
 
@@ -208,18 +196,19 @@ class ClientApp:
             elif e.type == pg.MOUSEBUTTONDOWN:
                 # to do seperate this into its own function for testing and handling
                 clicked = False
-                max = {'z':0, 'interaction':''}
+                max = 0
+                interact = ''
                 for clickable in self.clickable_group:
                     interaction = clickable.try_interact()
                     if interaction != '':
-                        logging.info( interaction )
                         clicked = True
-                        if interaction[ 'z' ] >= max[ 'z' ]:
-                            max = interaction
+                        if interaction[ 'z' ] >= max:
+                            max = interaction[ 'z' ]
+                            interact = interaction[ 'interaction' ]
                 if not clicked:
                     self.player.single_fire( event=e )
                 else:
-                    self.interaction.hit(max[ 'interaction' ])
+                    interact()
             else:
                 self.player.single_fire( event=e )
             

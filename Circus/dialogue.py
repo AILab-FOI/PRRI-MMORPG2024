@@ -4,7 +4,7 @@ import textwrap
 from itertools import chain
 import math
 class Dialogue( Interface ):
-    def __init__( self, type = 'dialogue-box', font_size = 15, max_lines = 3, color = ( 29, 29, 29 ), source = None):
+    def __init__( self, type = 'dialogue-box', font_size = 15, max_lines = 5, color = ( 29, 29, 29 ), source = None):
         """Dialogue class
 
         Args:
@@ -24,8 +24,10 @@ class Dialogue( Interface ):
         self.text_index = 0
         self.inner_surface = pg.Surface((self.text_area['width'], self.text_area['height']))
         self.source = source
+        self.msg = ''
 
     def set_message( self, msg ):
+        self.msg = msg
         t = [ textwrap.wrap( m, width=39 ) for m in msg.split( '\n' ) ]
         self.wrapped_text = list( chain( *t ) )
 
@@ -33,7 +35,8 @@ class Dialogue( Interface ):
         self.show()
         self.set_message( msg )
         self.show_text = self.wrapped_text[ self.text_index:self.text_index + self.max_lines ]
-
+        self.inner_surface.fill((0,0,0))
+        self.inner_surface.set_colorkey((0,0,0))
         for i, line in enumerate( self.show_text ):
             text = self.font.render( line, False, self.color)
             text_rect = text.get_rect()
@@ -43,13 +46,13 @@ class Dialogue( Interface ):
         self.image.blit( self.inner_surface, self.text_pos)
 
     def close( self ):
-        self.text_index = 0
         self.hide()
     
     def handle_input( self ):
         if self.text_index < len( self.wrapped_text ):
             self.text_index += self.max_lines
         else:
+            self.text_index = 0
             self.close()
     
     def dist_to_source( self ):
@@ -61,4 +64,7 @@ class Dialogue( Interface ):
         return dist
 
     def update( self ):
-        return
+        if self.shown:
+            self.display( self.msg )
+        else:
+            self.hide()

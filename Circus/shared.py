@@ -1,7 +1,7 @@
 import pygame as pg
 import sys
 import re
-
+import logging
 vec2 = pg.math.Vector2
 
 RES = WIDTH, HEIGHT = vec2( 800, 450 ) #vec2( 1600, 900 )
@@ -342,28 +342,28 @@ INTERFACE_ATTRS = {
                 'y': 394,
                 'width': 32,
                 'height': 32,
-                'interaction': 'ability_slash'
+                'interaction': lambda: logging.info('ability_slash')
                 },
             'Fireball': {
                 'x': 356,
                 'y': 394,
                 'width': 32,
                 'height': 32,
-                'interaction': 'ability_fireball'
+                'interaction': lambda: logging.info('ability_fireball')
                 },
             'Lightning': {
                 'x': 393,
                 'y': 394,
                 'width': 32,
                 'height': 32,
-                'interaction': 'ability_lightning'
+                'interaction': lambda: logging.info('ability_lightning')
                 },
             'Heal': {
                 'x': 430,
                 'y': 394,
                 'width': 32,
                 'height': 32,
-                'interaction': 'ability_heal'
+                'interaction': lambda: logging.info('ability_heal')
                 },
         }
     },
@@ -385,13 +385,13 @@ INTERFACE_ATTRS = {
     },
     'dialogue-box': {
         'path': 'assets/images/dialogue.png',
-        'pos': (92, 242),
-        'size': (599, 211),
+        'pos': (96, 281),
+        'size': (575, 154),
         'z': 3,
-        'text-pos':(225, 48),
+        'text-pos':(179, 43),
         'text-area': {
-            'width':336,
-            'height':132,
+            'width':362,
+            'height':90,
         },
         'interactibles':{
             'textbox': {
@@ -399,7 +399,7 @@ INTERFACE_ATTRS = {
                 'y': 242,
                 'width': 599,
                 'height': 211,
-                'interaction': 'textbox'
+                'interaction': lambda : clientApp().player.questDialogue.handle_input()
                 }
         },
     },
