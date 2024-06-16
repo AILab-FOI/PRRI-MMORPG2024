@@ -85,6 +85,7 @@ class ClientApp:
         self.connect()
     
         self.players_pos = {}
+        self.quest_list = {}
         
         self.cache = None
         self.scene = None
@@ -264,8 +265,8 @@ class ClientApp:
         while len(self.messages_to_send) > 0 and not self.closed:
             message = self.messages_to_send[0]
             try:
-                if( message['command'] != "keep_connection" ):
-                    print(f"Sending message: {message}")
+                #if( message['command'] != "keep_connection" ):
+                #    print(f"Sending message: {message}")
                 
                 self.ws.send(json.dumps(message))
                 self.messages_to_send.pop(0)
@@ -275,8 +276,8 @@ class ClientApp:
                 break
 
     def push_websocket_message(self, message: object, override=True):
-        if( message["command"] != "keep_connection" ):
-            print(f"Adding message: {message}")
+        #if( message["command"] != "keep_connection" ):
+            #print(f"Adding message: {message}")
 
         if override:
             for i in range(len(self.messages_to_send)):
@@ -309,8 +310,8 @@ class ClientApp:
                     position = player_data[ 'position' ]
                     velocity = player_data[ 'velocity' ]
 
-                    if(player != self.username):
-                        print( player, position, velocity )
+                    #if(player != self.username):
+                    #    print( player, position, velocity )
 
                     pos = vec2( position['x'], position['y'] )
                     vel = vec2( velocity['x'], velocity['y'] )

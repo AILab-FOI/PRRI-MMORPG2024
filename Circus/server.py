@@ -139,7 +139,7 @@ async def handle_connection(websocket, path: str):
                 elif data[ 'command' ] == 'login':
                     if not login_player( data[ 'id' ], data[ 'password' ] ):
                         await send_message_to_player( websocket, {"command": "login_failed", "data":"player_doesnt_exist"} )
-                        logging.info( f'Invalid login attempt {data}' )							  
+                        logging.info( f'Invalid login attempt {data}' )
                     else:
                         await send_message_to_player(websocket, {"command": "login_successful"})      
                         await broadcast_positions()                  
@@ -174,6 +174,9 @@ async def handle_connection(websocket, path: str):
                     pass
                 else:
                     print( 'Invalid command', data )
+            except websockets.exceptions.ConnectionClosedOK as e:
+                pass
+                #logging.info(f"Connection handled successfully: {e.reason} {e.code}")
             except Exception as e:
                 connected_clients.remove( websocket )
                 logging.info( f'Invalid message {data} {str(e)}' )
