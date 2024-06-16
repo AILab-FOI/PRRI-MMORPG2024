@@ -54,11 +54,10 @@ class Tile( WorldObject ):
 		self.sprite.rect = self.sprite.image.get_rect()
 		self.sprite.rect.x = self.pos.x
 		self.sprite.rect.y = self.pos.y
+		self.update_screenpos()
 
 	def update_screenpos(self):
 
 		"""Updates the screen position of the tile
 		"""
-		self.sprite.kill()
-		self.reset_sprite()
 		self.sprite.rect.center = self.screen_pos

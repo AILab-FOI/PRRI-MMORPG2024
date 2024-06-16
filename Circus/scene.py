@@ -145,6 +145,7 @@ class Scene:
     def __init__( self ):
         self.transform_objects = []
         self.done = False
+        self.tiles = []
         self.load_scene(SCENE_MAPNAME)
 
     def load_scene( self, mapname: str ):
@@ -189,7 +190,14 @@ class Scene:
         clientApp().player.offset = player_pos
 
         self.done = True
-            
+    
+    def redraw_tile_rotation( self ):
+        for tile in self.tiles:
+            if( not tile.should_draw() or tile.sprite == None ):
+                continue
+
+            tile.sprite.kill()
+            tile.reset_sprite()
 
     def load_map_file( self, mapname ):
         if( len(mapname) <= 0 ):
@@ -207,7 +215,8 @@ class Scene:
                 for posStr in layerData:
                     pos = strToVec(posStr)
                     material: Material = clientApp().material_system.register_material( "assets/" + layerData[posStr] )
-                    Tile( material, pos * TILE_SIZE, clientApp().draw_manager.layer_masks["tile_layer"] )
+                    tile = Tile( material, pos * TILE_SIZE, clientApp().draw_manager.layer_masks["tile_layer"] )
+                    self.tiles.append(tile)
             elif layerName.startswith("entities_"):
                 layerData = layer["data"]
                 for key in layerData:
