@@ -12,7 +12,7 @@ PLAYER_SPEED = 0.4
 PLAYER_ROT_SPEED = 0.0015
 
 BG_COLOR = ( 9, 20, 38 ) #'white'  # olivedrab
-NUM_ANGLES = 8  # multiple of 360 -> 24, 30, 36, 40, 45, 60, 72, 90, 120, 180
+NUM_ANGLES = 72  # multiple of 360 -> 24, 30, 36, 40, 45, 60, 72, 90, 120, 180
 
 pg.mixer.init()
 pg.mixer.music.load( "assets/bgm/bgm.ogg" )
@@ -431,7 +431,25 @@ INTERFACE_ATTRS = {
         },
     },
     'chat-box': {
+        'path': 'assets/images/chat_box.png',
+        'pos': (0, 0),
+        'size': (251, 160),
+        'z': 0,
+        'text-pos':(12, 11),
+        'text-area': {
+            'width':227,
+            'height':125,
+        },
+        'interactibles':{
 
+            'enter-message': {
+                'x': 11,
+                'y': 138,
+                'width': 229,
+                'height': 22,
+                'interaction': lambda : clientApp().chat.activate()
+                },
+        },
     },
 }
 

@@ -15,6 +15,8 @@ import json
 from interface import Interface
 from interface import BarInterface
 from dialogue import Dialogue
+from chat import Chat
+
 vartypes = {
     "vec2": vec2
 }
@@ -150,7 +152,8 @@ class Scene:
     def load_scene( self, mapname: str ):
         self.load_map_file( mapname )
 
-        clientApp().player.questDialogue.display(ESSAY)
+        #clientApp().player.questDialogue.set_message(ESSAY)
+        #clientApp().player.questDialogue.show()
         Interface('hud')
         BarInterface('health-bar')
         BarInterface('mana-bar')
@@ -159,6 +162,9 @@ class Scene:
         rand_pos = lambda pos: pos + vec2( uniform( -0.25, 0.25 ))
 
         player_pos = vec2(0)
+        
+
+        clientApp().chat.show()
 
         for j, row in enumerate( MAP ):
             for i, name in enumerate( row ):
@@ -317,7 +323,9 @@ class LoadingScene:
         if self.done:
             # Switch to the game scene after loading is complete
             clientApp().set_local_player( Player() )
+            clientApp().set_chat( Chat() )
             clientApp().set_active_scene( Scene() )
+            
         else:
             # Simulate loading progress
             self.progress = clientApp().done_counter / self.MAX * len( self.messages )

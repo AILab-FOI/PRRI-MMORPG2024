@@ -44,6 +44,8 @@ class Player( BaseSpriteEntity ):
         self.mana = 100
         self.alive = True
 
+        self.inControl = True
+
         clientApp().trackables['player-health'] = {'object': self, 'attr': 'health', 'max': 100}
         clientApp().trackables['player-mana'] = {'object': self, 'attr': 'mana', 'max': 100}
 
@@ -94,6 +96,9 @@ class Player( BaseSpriteEntity ):
 
 
     def control( self ):
+        if not self.inControl:
+            return
+        
         self.moving = False
         self.last_inc[0] = self.inc[0]
         self.last_inc[1] = self.inc[1]

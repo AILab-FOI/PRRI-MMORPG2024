@@ -4,17 +4,17 @@ import textwrap
 from itertools import chain
 import math
 class Dialogue( Interface ):
-    def __init__( self, type = 'dialogue-box', font_size = 15, max_lines = 5, color = ( 29, 29, 29 ), source = None):
+    def __init__( self, name = 'dialogue-box', font_size = 15, max_lines = 5, color = ( 29, 29, 29 ), source = None):
         """Dialogue class
 
         Args:
-            type (string): identifiable name for shared.py, defaults to dialogue-box
+            name (string): identifiable name for shared.py, defaults to dialogue-box
             font_size (int): size of the font to display
             max_lines (int): maximum number of lines to display
             color (vec3): RGB color for the text
             source (WorldObject): object that is "sending" the dialogue, used for checking distance to cancel dialogue when getting too far away
         """
-        super().__init__(type, False)
+        super().__init__(name, False)
         self.font = pg.font.Font( "assets/PressStart2P-Regular.ttf", font_size )
         self.max_lines = max_lines
         self.color = color
@@ -26,21 +26,26 @@ class Dialogue( Interface ):
         self.source = source
         self.msg = ''
 
-    def set_message( self, msg ):
-        self.msg = msg
+    def set_message( self, msg, width=39 ):
         t = [ textwrap.wrap( m, width=39 ) for m in msg.split( '\n' ) ]
         self.wrapped_text = list( chain( *t ) )
 
-    def display( self, msg ):
+    def display( self, offset=0 ):
         self.show()
-        self.set_message( msg )
         self.show_text = self.wrapped_text[ self.text_index:self.text_index + self.max_lines ]
         self.inner_surface.fill((0,0,0))
         self.inner_surface.set_colorkey((0,0,0))
+
+        height = len(self.show_text) * self.line_height * 1.1
+        if height > self.text_area['height']:
+            y = self.text_area['height'] - height
+        else:
+            y = 0
+
         for i, line in enumerate( self.show_text ):
             text = self.font.render( line, False, self.color)
             text_rect = text.get_rect()
-            text_rect.top = i * self.line_height
+            text_rect.top = y + i * self.line_height * 1.1 - offset
             self.inner_surface.blit( text, text_rect )
             self.inner_surface.set_colorkey((0,0,0))
         self.image.blit( self.inner_surface, self.text_pos)

@@ -10,9 +10,9 @@ class Interface( pg.sprite.Sprite ):
     def __init__(self, name, shown=True ):
         self.name = name
         self.shown = shown
+        self.attrs = INTERFACE_ATTRS[ self.name ]
         self.group = clientApp().draw_manager.layer_masks["hud_layer"]
         super().__init__( self.group )
-        self.attrs = INTERFACE_ATTRS[ self.name ]
         self.pos = vec2( self.attrs[ 'pos' ] )
         self.size = vec2( self.attrs[ 'size' ] )
         self.interactable = False
@@ -32,7 +32,6 @@ class Interface( pg.sprite.Sprite ):
     def __del__( self ):
         self.remove_interactions()
 
-    #this will be used for animated ui
     def update( self ):
         self.get_image()
     
