@@ -172,8 +172,6 @@ class Scene:
         
         clientApp().player.offset = player_pos
 
-        NPCBase("test_npc", MAP_CENTER )
-
         self.done = True
             
 
@@ -219,6 +217,11 @@ class Scene:
                     newEnt = entClass(name)
                     if( "pos" in attr ):
                         newEnt.set_pos( strToVec(attr["pos"]) * TILE_SIZE )
+                    
+                    try:
+                        newEnt.load_info_from_map(attr)
+                    except Exception as e:
+                        pass
 
                     print(newEnt)
 

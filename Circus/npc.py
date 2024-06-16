@@ -15,11 +15,21 @@ NPCS = {
 }
 
 class NPCBase( entity.Entity ):
-    def __init__( self, name, pos = vec2(0) ):
-        template = NPCS[name]
-        self.npc_name = template['name']
+    def __init__( self, name, pos = vec2(0), template=None ):
+        super().__init__( name, pos )
 
-        super().__init__( template['entity'], pos )
+        self.npc_name = name
+        self.quests : List[Quest] = []
+
+        if( template != None ):
+            self.load_npc_template(template)
+
+    def load_npc_template(self, name):
+        template = NPCS[name]
+        # Load default entity stuff
+        self.load_attrs_from_name(template['entity'])
+
+        self.npc_name = template['name']
         self.quests : List[Quest] = []
 
         quests = template['quests']
@@ -32,6 +42,13 @@ class NPCBase( entity.Entity ):
                 self.add_quest(quest)
         else:
             self.add_quest(quests)
+
+    def load_attribute(self, name, value):
+        match name:
+            case "template":
+                self.load_npc_template(value)
+            case _:
+                super().load_attribute(name, value)
 
     def add_quest( self, quest ):
         quest.set_owner(self)

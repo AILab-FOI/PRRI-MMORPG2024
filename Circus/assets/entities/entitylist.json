@@ -18,6 +18,13 @@
 		"base": "entity.BaseSpriteEntity"		
 	},
 	
+	"npc.NPCBase":	{
+		"base": "entity.Entity",
+		"attr":		{
+			"template": "str"
+		}
+	},
+	
 	"stacked_sprite.StackedSprite":	{
 		"base": "base",
 		"attr":		{
