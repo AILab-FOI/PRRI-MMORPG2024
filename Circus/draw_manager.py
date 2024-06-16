@@ -1,3 +1,4 @@
+import math
 from shared import *
 
 class LayerMask( pg.sprite.LayeredUpdates ):
@@ -14,6 +15,18 @@ class LayerMask( pg.sprite.LayeredUpdates ):
     def set_order( self, order ):
         self.order = order
         clientApp().draw_manager.sort_layers_by_order()
+    
+    def draw_rotated( self, surface, angle ):
+        tmp_surf = pg.surface.Surface(vec2(RES.x,RES.x), pg.SRCALPHA, 32)
+        tmp_surf.get_rect()
+        self.draw( tmp_surf )
+
+        rotated_image = tmp_surf
+
+        rotated_image = pg.transform.rotate(rotated_image, -math.degrees( angle ))
+        new_rect = rotated_image.get_rect(center = surface.get_rect().center)
+
+        surface.blit(rotated_image, new_rect)
 
 class DrawManager:
     """Draw Manager class
@@ -41,7 +54,6 @@ class DrawManager:
 
     def update( self ):
         if( self.dirty ):
-
             self.screenpos_update()
 
         for layer in self.layer_masks.values():
@@ -52,11 +64,13 @@ class DrawManager:
         for drawable in list(self.drawables):
             drawable._draw_update()
 
-        for layer in self.layer_masks.values():
-            layer.draw( clientApp().screen )
+        for layerName, layer in self.layer_masks.items():
+            if( layerName == "tile_layer" and clientApp().active_viewpoint ):
+                layer.draw_rotated( clientApp().screen, clientApp().active_viewpoint.angle )
+            else:
+                layer.draw( clientApp().screen )
 
     def screenpos_update( self ):
-
         for drawable in self.drawables:
             drawable._screenpos_update()
         

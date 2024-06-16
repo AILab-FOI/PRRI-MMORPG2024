@@ -1,3 +1,4 @@
+import math
 from shared import *
 from entity import WorldObject
 from materialsystem import Material
@@ -58,13 +59,23 @@ class Tile( WorldObject ):
 		self.sprite.rect.x = self.pos.x
 		self.sprite.rect.y = self.pos.y
 
+	def calculate_viewpoint_position( self ):
+		viewpoint = clientApp().active_viewpoint
+
+		if( viewpoint == None ):
+			return
+
+		view_pos = self.pos - viewpoint.offset
+		self.screen_pos = view_pos + CENTER
+
+		self.screen_ang = 0
+
 	def update_screenpos(self):
 
 		"""Updates the screen position of the tile
 		"""     
 		self.sprite.image = self.material.image
 
-		self.sprite.image = pg.transform.rotate( self.sprite.image, self.screen_ang )
-		
 		self.sprite.rect = self.sprite.image.get_rect()
-		self.sprite.rect.center = self.screen_pos
+		xydiff=(RES.x-RES.y)/2
+		self.sprite.rect.center = self.screen_pos + vec2(0, xydiff)
