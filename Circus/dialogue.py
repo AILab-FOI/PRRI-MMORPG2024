@@ -51,6 +51,7 @@ class Dialogue( Interface ):
     def handle_input( self ):
         if self.text_index < len( self.wrapped_text ):
             self.text_index += self.max_lines
+            self.display( self.msg )
         else:
             self.text_index = 0
             self.close()
@@ -64,7 +65,6 @@ class Dialogue( Interface ):
         return dist
 
     def update( self ):
-        if self.shown:
-            self.display( self.msg )
-        else:
+        if not self.shown:
             self.hide()
+            
