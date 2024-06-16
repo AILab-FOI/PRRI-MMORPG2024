@@ -50,11 +50,25 @@ class Quest ( object ):
     
     def accept_quest( self, player : player.Player):
         self.accepted = True
+
+        self.on_quest_accepted()
+
         self.update_info()
 
     def finish_quest( self ):
         self.finished = True
+
+        self.on_quest_finished()
+
         self.update_info()
+    
+    # Called before info is sent to server
+    def on_quest_accepted( self ):
+        pass
+
+    # Called before info is sent to server
+    def on_quest_finished( self ):
+        pass
 
     def update_info(self):
         message = {"command": "update_quest_info"}

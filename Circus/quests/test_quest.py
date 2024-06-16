@@ -43,12 +43,12 @@ class PositionQuest(quest.Quest):
 
         return has_quest_condition
     
-    def accept_quest( self, player : player.Player):
-        super().accept_quest(player)
+    def on_quest_accepted( self):
+        super().on_quest_accepted()
         print("Accepted Quest!")
     
-    def finish_quest(self):
-        super().finish_quest()
+    def on_quest_finished(self):
+        super().on_quest_finished()
         self.progress['distance'] = -1
         print("Quest finished!")
 
