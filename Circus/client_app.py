@@ -8,11 +8,15 @@ import websocket
 import json
 from draw_manager import DrawManager
 from player import Player
+from shared import _globals
 from viewpoint import Viewpoint
 from entity_system import EntitySystem
 from materialsystem import MaterialSystem
 import sys
 import pygame as pg  
+
+import quest
+
 from entity import RemotePlayer
 
 class ClientApp:
@@ -84,7 +88,14 @@ class ClientApp:
         self.connect()
     
         self.players_pos = {}
+        self.quest_list = {}
+
+        for id in _globals.tmp_quest_list.keys():
+            quest = _globals.tmp_quest_list[id]
+            self.add_quest(id, quest)
         
+        _globals.tmp_quest_list = {}
+
         self.cache = None
         self.scene = None
         self.message = Message([self.screen.get_size()[0], self.screen.get_size()[1] / 2], self.screen.get_size(), font_size=20)
@@ -100,7 +111,7 @@ class ClientApp:
         """        
         self.player = player
         self.active_viewpoint = player.viewpoint
-        self.draw_manager.set_dirty()
+        self.draw_manager.set_dirty(True)
 
     def set_active_scene(self, scene):
         """Sets the active scene
@@ -109,6 +120,10 @@ class ClientApp:
             scene (Scene): Scene to set as active
         """        
         self.scene = scene
+
+    def add_quest(self, id, quest ):
+        self.push_websocket_message({"command": "request_quest_info", "player": self.username, "quest": id})
+        self.quest_list[id] = quest
 
     def tick(self):
         """A single game tick
@@ -141,17 +156,20 @@ class ClientApp:
 
     def draw(self):
         """Draws the scene
-        """        
+        """
         try:
             self.scene.draw()
-        except:
+        except AttributeError as e:
+            # Scene doesn't have a draw method, just use regular draw
             self.screen.fill(BG_COLOR)
             self.draw_manager.draw()
             self.message.draw()
             self.fps_counter.draw()
-
-        # Crtanje chata
-        self.draw_chat()
+            # Crtanje chata
+            self.draw_chat()
+        except Exception as e:
+            logging.info( f"Couldn't draw scene {str(e)}" )
+        
 
         pg.display.flip()
 
@@ -177,6 +195,18 @@ class ClientApp:
 
         pg.draw.rect(self.screen, self.BLACK, self.chat_display_box, 2)
         pg.draw.rect(self.screen, self.BLACK, self.input_box, 2)
+
+    def print_quests( self ):
+        for id, quest in self.quest_list.items():
+            print(f"{id}: {quest.title}")
+            print(f"{quest.text}")
+            print(f"\tAccepted: {quest.accepted}")
+            print(f"\tFinished: {quest.finished}")
+            if( quest.reward ):
+                print(f"\tRewards: {quest.reward.reward_string()}")
+            print(f"\tProgress:")
+            for progress_type, progress in quest.progress.items():
+                print(f"\t\t{progress_type}: {progress}")
 
     def check_events(self):
         """Checks events
@@ -272,8 +302,8 @@ class ClientApp:
         while len(self.messages_to_send) > 0 and not self.closed:
             message = self.messages_to_send[0]
             try:
-                if( message['command'] != "keep_connection" ):
-                    print(f"Sending message: {message}")
+                #if( message['command'] != "keep_connection" ):
+                #    print(f"Sending message: {message}")
                 
                 self.ws.send(json.dumps(message))
                 self.messages_to_send.pop(0)
@@ -283,8 +313,8 @@ class ClientApp:
                 break
 
     def push_websocket_message(self, message: object, override=True):
-        if( message["command"] != "keep_connection" ):
-            print(f"Adding message: {message}")
+        #if( message["command"] != "keep_connection" ):
+            #print(f"Adding message: {message}")
 
         if override:
             for i in range(len(self.messages_to_send)):
@@ -309,46 +339,65 @@ class ClientApp:
 
         match json_message["command"]:
             case "player_pos":
-                data = json_message["data"]
-                for player in data:
-                    player_data = data[ player ]
-                    player_exists = player in self.players_pos
-
-                    position = player_data[ 'position' ]
-                    velocity = player_data[ 'velocity' ]
-
-                    if(player != self.username):
-                        print( player, position, velocity )
-
-                    pos = vec2( position['x'], position['y'] )
-                    vel = vec2( velocity['x'], velocity['y'] )
-
-                    player_info = {}
-                    player_info["time"] = self.time
-                    player_info["position"] = pos
-                    player_info["velocity"] = vel
-
-                    if self.scene.done and player != self.username and not player_exists: 
-                        RemotePlayer( 'remote_player', pos, player )
-
-                    self.players_pos[ player ] = player_info
-                    
+                self.handle_player_pos_message(json_message)
             case "login_failed":
-                data = json_message["data"]
-                if data == "player_doesnt_exist":
-                    message = {"command": "register", "id": self.username, "password": self.password}
-                    self.push_websocket_message(message)
-                    logging.info(f"Sent: {message}")
-            case "chat_message":
-                # Handle incoming chat message
-                sender = json_message["sender"]
-                chat_message = json_message["message"]
-                self.chat_messages.append(f"{sender}: {chat_message}")
-                logging.info(f"Sent: {message}")
+                message = self.handle_login_failed(json_message)
             case "login_successful":
                 if not self.scene:
                     self.scene = LoadingScene()
+            case "quest_info":
+                self.handle_quest_info_update(json_message)
+            case "chat_message":
+                # Handle incoming chat message
+                self.handle_chat_message(json_message)
 
+    def handle_player_pos_message(self, json_message):
+        data = json_message["data"]
+        for player in data:
+            player_data = data[ player ]
+            player_exists = player in self.players_pos
+
+            position = player_data[ 'position' ]
+            velocity = player_data[ 'velocity' ]
+
+                    #if(player != self.username):
+                    #    print( player, position, velocity )
+
+            pos = vec2( position['x'], position['y'] )
+            vel = vec2( velocity['x'], velocity['y'] )
+
+            player_info = {}
+            player_info["time"] = self.time
+            player_info["position"] = pos
+            player_info["velocity"] = vel
+
+            if self.scene.done and player != self.username and not player_exists: 
+                RemotePlayer( 'remote_player', pos, player )
+
+            self.players_pos[ player ] = player_info
+
+    def handle_login_failed(self, json_message):
+        data = json_message["data"]
+        if data == "player_doesnt_exist":
+            message = {"command": "register", "id": self.username, "password": self.password}
+            self.push_websocket_message(message)
+            logging.info(f"Sent: {message}")
+        return message
+
+    def handle_chat_message(self, json_message):
+        sender = json_message["sender"]
+        chat_message = json_message["message"]
+        self.chat_messages.append(f"{sender}: {chat_message}")
+
+    def handle_quest_info_update(self, json_message):
+        quest_id = json_message['quest']
+
+        if( not quest_id in self.quest_list ):
+            self.quest_list[quest_id] = quest.Quest(quest_id)
+        
+        self.quest_list[quest_id].accepted = json_message['accepted']
+        self.quest_list[quest_id].finished = json_message['finished']
+        self.quest_list[quest_id].progress = json_message['progress']
 
     def on_error(self, ws: websocket, error):
         """On error

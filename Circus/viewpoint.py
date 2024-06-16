@@ -11,17 +11,17 @@ class Viewpoint(object):
             return
 
         self.offset = vec2( pos )
-        self.call_viewpoint_update()
+        self.call_viewpoint_update(False)
     
     def set_ang( self, ang ):
         if( self.angle == ang ):
             return
         
         self.angle = ang
-        self.call_viewpoint_update()
+        self.call_viewpoint_update(True)
     
-    def call_viewpoint_update( self ):
+    def call_viewpoint_update( self, angle = False ):
         if( clientApp().active_viewpoint != self ):
             return
 
-        clientApp().draw_manager.set_dirty()
+        clientApp().draw_manager.set_dirty(angle)

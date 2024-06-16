@@ -58,7 +58,6 @@ def setup_database():
 
     return db
 
-
 # Player position model
 class Player( persistent.Persistent ):
     """Player's position model on the server
@@ -74,6 +73,7 @@ class Player( persistent.Persistent ):
         self.velx = 0
         self.vely = 0
         self.logged_in = False
+        self.quests = {}
 
     def login( self, password: str ) -> bool:
         """Logins the player
@@ -121,32 +121,43 @@ async def handle_connection(websocket, path: str):
             # Handle incoming messages...
             data = json.loads( message )
 
-            if( data[ 'command' ] != "keep_connection" ):
-                logging.info( f"Messages left: {len(websocket.messages)}" )
-                logging.info( f"Message received: {message}" )
+            notify_message = True
 
             try:
                 if data['command'] == 'skip':
-                    pass
+                    notify_message = False
                 elif data[ 'command' ] == 'register':
-                    if register_player( data[ 'id' ], data[ 'password' ] ):
-                        if( login_player( data[ 'id' ], data[ 'password' ] ) ):
+                    player_id = data[ 'id' ]
+
+                    if register_player( player_id, data[ 'password' ] ):
+                        if( login_player( player_id, data[ 'password' ] ) ):
                             await send_message_to_player(websocket, {"command": "login_successful"})
+                        
+                        player: Player = dbGlobal.root.players[ player_id ]
+                        for quest_id in player.quests:
+                            await send_quest_info_to_player(websocket, quest_id, player)
                         
                         await broadcast_positions()
                     else:
                         logging.info( f'Error registring: username already taken {data}' )
                 elif data[ 'command' ] == 'login':
-                    if not login_player( data[ 'id' ], data[ 'password' ] ):
+                    player_id = data[ 'id' ]
+
+                    if not login_player( player_id, data[ 'password' ] ):
                         await send_message_to_player( websocket, {"command": "login_failed", "data":"player_doesnt_exist"} )
-                        logging.info( f'Invalid login attempt {data}' )							  
+                        logging.info( f'Invalid login attempt {data}' )
                     else:
                         await send_message_to_player(websocket, {"command": "login_successful"})      
+
+                        player: Player = dbGlobal.root.players[ player_id ]
+                        for quest_id in player.quests:
+                            await send_quest_info_to_player(websocket, quest_id, player)
                         await broadcast_positions()                  
                 elif data[ 'command' ] == 'logout':
                     logout_player( data[ 'id' ], data[ 'password' ] )
                     logging.info( f'User logged out {data}' )
                 elif data[ 'command' ] == 'update':
+                    notify_message = False
                     player_id = data[ 'id' ]
 
                     latest_message = get_latest_update_message_and_remove_the_rest( websocket, player_id )
@@ -165,18 +176,47 @@ async def handle_connection(websocket, path: str):
                 elif data[ 'command' ] == 'chat_message':
                     # Dodajte logiku za distribuciju chat poruke ostalim klijentima
                     sender = data['sender']
-                    message = data['message']
-                    logging.info(f"Received chat message from {sender}: {message}")
+                    send_message = data['message']
+                    logging.info(f"Received chat message from {sender}: {send_message}")
 
                     # Ovdje dodajte logiku za distribuciju poruke ostalim klijentima
                     await broadcast_message_to_all(data)
                 elif data['command'] == 'keep_connection':
-                    pass
+                    notify_message = False
+                elif data['command'] == 'request_quest_info':
+                    player_id = data[ 'player' ]
+                    quest_id = data['quest']
+                    player: Player = dbGlobal.root.players[ player_id ]
+                    
+                    if( quest_id in player.quests ):
+                        await send_quest_info_to_player(websocket, quest_id, player)
+                    else:
+                        create_quest_info(quest_id, player)
+                elif data['command'] == 'update_quest_info':
+                    notify_message = True
+                    player_id = data[ 'player' ]
+                    quest_id = data['quest']
+                    player: Player = dbGlobal.root.players[ player_id ]
+                    
+                    if( not quest_id in player.quests ):
+                        player.quests[quest_id] = {}
+                    
+                    player.quests[quest_id]['accepted'] = data['accepted']
+                    player.quests[quest_id]['finished'] = data['finished']
+                    player.quests[quest_id]['progress'] = data['progress']
+                    transaction.commit()
                 else:
                     print( 'Invalid command', data )
+            except websockets.exceptions.ConnectionClosedOK as e:
+                pass
+                #logging.info(f"Connection handled successfully: {e.reason} {e.code}")
             except Exception as e:
-                connected_clients.remove( websocket )
                 logging.info( f'Invalid message {data} {str(e)}' )
+
+            if( notify_message ):
+                logging.info( f"Messages left: {len(websocket.messages)}" )
+                logging.info( f"Message received: {message}" )
+
             #await websocket.ping()  
     except websockets.exceptions.ConnectionClosedOK as e:
         logging.warning(f"Connection handled successfully: {e.reason} {e.code}")
@@ -189,6 +229,21 @@ async def handle_connection(websocket, path: str):
         logging.error(f"Unhandled exception: {str(e)}", exc_info=True)
     finally:
         logging.info("Connection handler exiting")
+
+def create_quest_info(quest_id, player):
+    player.quests[quest_id] = {}
+    player.quests[quest_id]['accepted'] = False
+    player.quests[quest_id]['finished'] = False
+    player.quests[quest_id]['progress'] = {}
+    transaction.commit()
+
+async def send_quest_info_to_player(websocket, quest_id, player):
+    send_message = { 'command': 'quest_info', 'quest': quest_id }
+    send_message['accepted'] = player.quests[quest_id]['accepted']
+    send_message['finished'] = player.quests[quest_id]['finished']
+    send_message['progress'] = player.quests[quest_id]['progress']
+
+    await send_message_to_player(websocket, send_message)
 
 def get_next_message( websocket ):
     messages = websocket.messages
@@ -316,7 +371,7 @@ async def broadcast_message_to_all( object ):
 async def broadcast_positions():
     """broadcasts the positions to all clients
     """    
-    print( "Broadcasting positions" ) # Too much clutter
+    #print( "Broadcasting positions" ) # Too much clutter
     dbGlobal.start_edit()
     object_to_send = {"command": "player_pos"}
     positions = {

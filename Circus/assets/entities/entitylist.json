@@ -1,5 +1,6 @@
 {
 	"base":	{
+		"_hidden_in_editor": "true",
 		"attr":		{
 			"name": "str",
 			"pos": "vec2"
@@ -7,15 +8,24 @@
 	},
 	
 	"entity.WorldObject":	{
+		"_hidden_in_editor": "true",
 		"base": "base"
 	},
 	
 	"entity.BaseSpriteEntity":	{
+		"_hidden_in_editor": "true",
 		"base": "entity.WorldObject"		
 	},
 	
 	"entity.Entity":	{
 		"base": "entity.BaseSpriteEntity"		
+	},
+	
+	"npc.NPCBase":	{
+		"base": "entity.Entity",
+		"attr":		{
+			"template": "str"
+		}
 	},
 	
 	"stacked_sprite.StackedSprite":	{

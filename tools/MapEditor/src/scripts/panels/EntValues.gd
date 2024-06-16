@@ -87,3 +87,11 @@ func _on_ok_pressed():
 
 func _on_cancel_pressed():
 	self.hide()
+
+
+func _on_delete_pressed():
+	$Main/ConfirmationButtons/Delete/ConfirmDelete.show()
+
+func _on_confirmation_dialog_confirmed():
+	edit_entity.queue_free()
+	self.hide()

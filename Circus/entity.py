@@ -24,6 +24,20 @@ class WorldObject(object):
     def __del__(self):
         clientApp().draw_manager.remove_drawable(self)
 
+    def load_info_from_map( self, attribute_dict: dict):
+        for attributeName, attributeValue in attribute_dict.items():
+            self.load_attribute( attributeName, attributeValue )
+
+    def load_attribute( self, name, value ):
+        if( not hasattr( self, name ) ):
+            return
+
+        match name:
+            case "pos":
+                self.set_pos( strToVec(value) * TILE_SIZE )
+            case _:
+                setattr(self, name, value)
+
     def set_pos( self, newPos ):
         if( newPos == self.pos ):
             return
@@ -187,12 +201,23 @@ class BaseSpriteEntity( WorldObject ):
 
         self.sprite = None
 
+        self.load_attrs_from_name( self.name )
+    
+    def load_attribute(self, name, value):
+        match name:
+            case "name":
+                self.load_attrs_from_name(value)
+            case _:
+                super().load_attribute(name, value)
+
+    def load_attrs_from_name( self, name ):
+        self.name = name
         self.attrs = ENTITY_SPRITE_ATTRS[ self.name ]
         entity_cache = clientApp().cache.entity_sprite_cache
         self.images = entity_cache[ self.name ][ 'images' ]
         self.mask = entity_cache[ self.name ][ 'mask' ]
         self.frame_index = 0
-    
+
     def on_start_drawing(self):
         super().on_start_drawing()
         self.sprite = pg.sprite.Sprite( self.group )

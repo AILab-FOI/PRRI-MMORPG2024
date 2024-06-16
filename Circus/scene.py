@@ -1,4 +1,7 @@
 from importlib import import_module
+from quests.test_quest import PositionQuest
+from quest import Quest
+from npc import NPCBase
 from shared import *
 from stacked_sprite import *
 from random import uniform
@@ -146,7 +149,12 @@ class Scene:
 
     def load_scene( self, mapname: str ):
         self.load_map_file( mapname )
-        
+
+        clientApp().player.questDialogue.display(ESSAY)
+        Interface('hud')
+        BarInterface('health-bar')
+        BarInterface('mana-bar')
+
         rand_rot = lambda: uniform( 0, 360 )
         rand_pos = lambda pos: pos + vec2( uniform( -0.25, 0.25 ))
 
@@ -157,10 +165,6 @@ class Scene:
                 pos = vec2( i, j ) + vec2( 0.5 )
                 if name == 'player':
                     player_pos = pos * TILE_SIZE
-                    clientApp().player.questDialogue.display(ESSAY)
-                    Interface('hud')
-                    BarInterface('health-bar')
-                    BarInterface('mana-bar')
                 elif name == 'kitty' or name == 'circus' or name == 'movement' or name == 'resource' or name == 'combat' or name == 'tetris' or name == 'globe' or name == 'upgrades' or name == 'ui':
                     Entity( name=name, pos=pos )
                 elif str( name ).startswith( 'tree' ) or name == 'bush':
@@ -181,7 +185,6 @@ class Scene:
             # But it will do for now
             elif( clientApp().players_pos[ pl ]['position'] != vec2(0) ):
                 player_pos = clientApp().players_pos[ pl ]['position']
-                print("YIPEE THE RIGHGT ONE")
         
         clientApp().player.offset = player_pos
 
@@ -230,6 +233,11 @@ class Scene:
                     newEnt = entClass(name)
                     if( "pos" in attr ):
                         newEnt.set_pos( strToVec(attr["pos"]) * TILE_SIZE )
+                    
+                    try:
+                        newEnt.load_info_from_map(attr)
+                    except Exception as e:
+                        pass
 
                     print(newEnt)
 
@@ -301,7 +309,6 @@ class LoadingScene:
     def done_cache( self ):
         self.done = True
         
-
     def update( self ):
         counter = next( self.stacked_sprite_iterator, 'done' )
         if counter == 'done':
@@ -320,7 +327,7 @@ class LoadingScene:
 
     def draw( self ):
         #client_app.screen.fill( BG_COLOR )
-        self.bg_img = pg.image.load( 'assets/images/png' )
+        self.bg_img = pg.image.load( 'assets/images/splash.png' )
         self.bg_img = pg.transform.smoothscale( self.bg_img, clientApp().screen.get_size() )
         clientApp().screen.blit( self.bg_img, self.bg_img.get_rect() )
         screen_center_x = clientApp().screen.get_width() // 2

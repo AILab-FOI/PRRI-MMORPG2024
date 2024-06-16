@@ -1,3 +1,4 @@
+import math
 from shared import *
 from pygame import Surface
 import os
@@ -20,7 +21,8 @@ class Material:
                 self.image: Surface = pg.image.load( "assets/" + self.path )
 
                 if( self.type == "tile" ):
-                    self.image = pg.transform.scale( self.image, vec2(TILE_SIZE, TILE_SIZE) )
+                    self.image = pg.transform.scale( self.image, vec2(TILE_SIZE+1, TILE_SIZE+1) )
+                    self.rotated_image = self.image
 
             else:
                 self.key = file
@@ -50,3 +52,12 @@ class MaterialSystem:
         self.material_registry[file] = ret
 
         return ret
+    
+    def recalculate_tile_rotation(self):
+        for material in self.material_registry.values():
+            if( material.type != "tile" ):
+                continue
+
+            angle = clientApp().active_viewpoint.angle
+            angle = -math.degrees(angle)
+            material.rotated_image = pg.transform.rotate( material.image, angle )
