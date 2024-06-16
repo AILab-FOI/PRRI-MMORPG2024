@@ -12,22 +12,21 @@ class Interface( pg.sprite.Sprite ):
         self.shown = shown
         self.group = clientApp().draw_manager.layer_masks["hud_layer"]
         super().__init__( self.group )
-        self.attrs = INTERFACE_ATTRS[ name ]
+        self.attrs = INTERFACE_ATTRS[ self.name ]
         self.pos = vec2( self.attrs[ 'pos' ] )
         self.size = vec2( self.attrs[ 'size' ] )
         self.interactable = False
-        if 'interactibles' in self.attrs:
-            self.interactable = True
-            self.interactibles = INTERFACE_ATTRS[ name ][ 'interactibles' ]
-            for interaction in self.interactibles:
-                Interactible(self.name, interaction, self.attrs[ 'z' ])
+        if self.shown:
+            self.create_interactions()
         
         self.sprite = pg.image.load( self.attrs[ 'path' ] ).convert_alpha()
         if self.shown:
             self.image = pg.image.load( self.attrs[ 'path' ] ).convert_alpha()
             self.rect = self.image.get_rect()
             self.rect.topleft = self.pos
-
+        else:
+            self.image = pg.Surface( (0, 0) )
+            self.rect = self.image.get_rect()
         self.group.change_layer( self, self.attrs[ 'z' ] )
     
     def __del__( self ):
@@ -47,15 +46,30 @@ class Interface( pg.sprite.Sprite ):
             self.image = None
     
     def show( self ):
+        self.create_interactions()
         self.shown = True
         self.image = pg.image.load( self.attrs[ 'path' ] ).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.topleft = self.pos
 
     def hide( self ):
+        self.remove_interactions()
         self.shown = False
         self.image = None
         self.rect = None
+
+    def create_interactions ( self ):
+        if 'interactibles' in self.attrs:
+            self.interactable = True
+            self.interactibles = INTERFACE_ATTRS[ self.name ][ 'interactibles' ]
+            for interaction in self.interactibles:
+                Interactible(self.name, interaction, self.attrs[ 'z' ])
+    
+    def remove_interactions ( self ):
+        if self.interactable:
+            for interaction in self.interactibles:
+                del interaction
+
 
 class BarInterface( Interface ):
     def __init__(self, name):

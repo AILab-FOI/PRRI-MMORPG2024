@@ -31,9 +31,7 @@ class Interactible:
 
     def try_interact( self ):
         mx, my = pg.mouse.get_pos()
-        x = self.x - mx
-        y = self.y - my
-        if x < self.width and y < self.height:
+        if mx > self.x and my > self.y and mx < self.x + self.width and my < self.y + self.height:
             return {'z':self.z, 'interaction':self.interaction}
         else:
             return ''

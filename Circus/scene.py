@@ -130,8 +130,6 @@ class Scene:
         self.transform_objects = []
         self.done = False
         self.load_scene(SCENE_MAPNAME)
-        clientApp().message.set_message( clientApp().player.message )
-        clientApp().message.active = True
 
     def load_scene( self, mapname: str ):
         self.load_map_file( mapname )

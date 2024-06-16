@@ -337,13 +337,34 @@ INTERFACE_ATTRS = {
         'size': (800, 450),
         'z': 0,
         'interactibles': {
-            'Ability1': {
-                'x': 240,
-                'y': 352,
-                'width': 24,
-                'height': 24,
-                'interaction': 'ability1'
-                }
+            'Slash': {
+                'x': 319,
+                'y': 394,
+                'width': 32,
+                'height': 32,
+                'interaction': 'ability_slash'
+                },
+            'Fireball': {
+                'x': 356,
+                'y': 394,
+                'width': 32,
+                'height': 32,
+                'interaction': 'ability_fireball'
+                },
+            'Lightning': {
+                'x': 393,
+                'y': 394,
+                'width': 32,
+                'height': 32,
+                'interaction': 'ability_lightning'
+                },
+            'Heal': {
+                'x': 430,
+                'y': 394,
+                'width': 32,
+                'height': 32,
+                'interaction': 'ability_heal'
+                },
         }
     },
     'health-bar': {

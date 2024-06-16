@@ -2,18 +2,28 @@ from interface import Interface
 from shared import *
 import textwrap
 from itertools import chain
-
+import math
 class Dialogue( Interface ):
-    def __init__( self, pos, type = 'dialogue-box', font_size = 15, max_lines = 3):
+    def __init__( self, type = 'dialogue-box', font_size = 15, max_lines = 3, color = ( 29, 29, 29 ), source = None):
+        """Dialogue class
+
+        Args:
+            type (string): identifiable name for shared.py, defaults to dialogue-box
+            font_size (int): size of the font to display
+            max_lines (int): maximum number of lines to display
+            color (vec3): RGB color for the text
+            source (WorldObject): object that is "sending" the dialogue, used for checking distance to cancel dialogue when getting too far away
+        """
         super().__init__(type, False)
         self.font = pg.font.Font( "assets/PressStart2P-Regular.ttf", font_size )
         self.max_lines = max_lines
-        self.pos = pos
+        self.color = color
         self.text_pos = self.attrs[ 'text-pos' ]
         self.text_area = self.attrs[ 'text-area' ]
         self.line_height = self.font.get_height()
         self.text_index = 0
         self.inner_surface = pg.Surface((self.text_area['width'], self.text_area['height']))
+        self.source = source
 
     def set_message( self, msg ):
         t = [ textwrap.wrap( m, width=39 ) for m in msg.split( '\n' ) ]
@@ -25,7 +35,7 @@ class Dialogue( Interface ):
         self.show_text = self.wrapped_text[ self.text_index:self.text_index + self.max_lines ]
 
         for i, line in enumerate( self.show_text ):
-            text = self.font.render( line, False, ( 29, 29, 29 ))
+            text = self.font.render( line, False, self.color)
             text_rect = text.get_rect()
             text_rect.top = i * self.line_height
             self.inner_surface.blit( text, text_rect )
@@ -33,14 +43,22 @@ class Dialogue( Interface ):
         self.image.blit( self.inner_surface, self.text_pos)
 
     def close( self ):
+        self.text_index = 0
         self.hide()
     
     def handle_input( self ):
         if self.text_index < len( self.wrapped_text ):
             self.text_index += self.max_lines
         else:
-            self.text_index = 0
             self.close()
     
+    def dist_to_source( self ):
+        if not self.source:
+            return 0
+        dist_x = clientApp().player.pos.x - self.source.pos.x
+        dist_y = clientApp().player.pos.y - self.source.pos.y
+        dist = math.sqrt((dist_x ** 2) * (dist_y ** 2))
+        return dist
+
     def update( self ):
         return

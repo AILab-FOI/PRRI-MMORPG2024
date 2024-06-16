@@ -48,7 +48,7 @@ class Player( BaseSpriteEntity ):
         clientApp().trackables['player-health'] = {'object': self, 'attr': 'health', 'max': 100}
         clientApp().trackables['player-mana'] = {'object': self, 'attr': 'mana', 'max': 100}
 
-        self.dialogue = Dialogue((92,242))
+        self.questDialogue = Dialogue()
 
     def on_start_drawing(self):
         super().on_start_drawing()

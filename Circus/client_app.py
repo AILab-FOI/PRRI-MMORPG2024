@@ -60,7 +60,6 @@ class ClientApp:
         self.input_surface.set_alpha(128)  # Adjust alpha for transparency
 
         # groups
-        self.interaction = InteractionHandler()
         self.entity_system = EntitySystem()
         self.draw_manager = DrawManager()
         self.material_system = MaterialSystem()
@@ -95,6 +94,16 @@ class ClientApp:
 
         self.active_viewpoint: Viewpoint = None
 
+
+        # INTERACTIONS
+
+        self.interaction = InteractionHandler()
+
+        # REGISTER INTERACTIONS HERE WITH CALLS TO FUNCTIONS THAT HANDLE THEM
+
+        # !!!
+
+        
     def set_local_player(self, player: Player):
         """Set the local player
 
@@ -137,6 +146,7 @@ class ClientApp:
         if self.scene:
             self.scene.update()
             pg.display.set_caption('Age of Dogma a1.0')
+            pg.display.set_icon(pg.image.load('assets/images/favicon.png'))
         
         self.entity_system.think()
         self.draw_manager.update()
@@ -208,8 +218,8 @@ class ClientApp:
                             max = interaction
                 if not clicked:
                     self.player.single_fire( event=e )
-                #else:
-                    #handle interaction stored in max
+                else:
+                    self.interaction.hit(max[ 'interaction' ])
             else:
                 self.player.single_fire( event=e )
             

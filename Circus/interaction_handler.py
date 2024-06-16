@@ -19,4 +19,6 @@ class InteractionHandler:
         Args:
             name (string): identifiable name of a registered interaction
         """
+        if name not in self.registered_interactions:
+            return
         self.registered_interactions[ name ]()
