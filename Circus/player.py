@@ -25,7 +25,6 @@ class Player( BaseSpriteEntity ):
         self.prev_inc = vec2( 0 )
         self.last_inc = vec2( 0 )
         self.angle = 0
-        self.diag_move_corr = 1 / math.sqrt( 2 )
 
         self.viewpoint = Viewpoint()
 
@@ -127,8 +126,9 @@ class Player( BaseSpriteEntity ):
             self.moving = True
 
         if self.inc.x and self.inc.y:
-            self.inc *= self.diag_move_corr
-
+            self.inc.normalize()
+            self.inc.scale_to_length( speed )
+            
     def damage( self, amount ):
         if self.health - amount <= 0:
             self.health = 0
