@@ -342,7 +342,7 @@ INTERFACE_ATTRS = {
                 'y': 352,
                 'width': 24,
                 'height': 24,
-                'interaction': 'a'
+                'interaction': 'ability1'
                 }
         }
     },

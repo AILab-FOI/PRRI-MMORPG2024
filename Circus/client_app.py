@@ -13,7 +13,7 @@ from entity_system import EntitySystem
 from materialsystem import MaterialSystem
 import sys
 import pygame as pg  
-
+from interaction_handler import InteractionHandler
 from entity import RemotePlayer
 
 
@@ -60,6 +60,7 @@ class ClientApp:
         self.input_surface.set_alpha(128)  # Adjust alpha for transparency
 
         # groups
+        self.interaction = InteractionHandler()
         self.entity_system = EntitySystem()
         self.draw_manager = DrawManager()
         self.material_system = MaterialSystem()

@@ -5,7 +5,7 @@ from bullet import Bullet
 from itertools import cycle
 import json
 import logging
-
+from dialogue import Dialogue
 from viewpoint import Viewpoint
 
 
@@ -48,7 +48,7 @@ class Player( BaseSpriteEntity ):
         clientApp().trackables['player-health'] = {'object': self, 'attr': 'health', 'max': 100}
         clientApp().trackables['player-mana'] = {'object': self, 'attr': 'mana', 'max': 100}
 
-        self.message = ""
+        self.dialogue = Dialogue((92,242))
 
     def on_start_drawing(self):
         super().on_start_drawing()
