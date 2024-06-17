@@ -15,6 +15,8 @@ import json
 from interface import Interface
 from interface import BarInterface
 from dialogue import Dialogue
+from chat import Chat
+
 vartypes = {
     "vec2": vec2
 }
@@ -117,17 +119,13 @@ MAP_EMPTY = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
 ]
 
-ESSAY = """
-
-Dummy text: Its function as a filler or as a tool for comparing the visual impression of different typefaces
+ESSAY = """Dummy text: Its function as a filler or as a tool for comparing the visual impression of different typefaces
 
 Dummy text is text that is used in the publishing industry or by web designers to occupy the space which will later be filled with 'real' content. This is required when, for example, the final text is not yet available. Dummy text is also known as 'fill text'. It is said that song composers of the past used dummy texts as lyrics when writing melodies in order to have a 'ready-made' text to sing with the melody. Dummy texts have been in use by typesetters since the 16th century.
 The usefulness of nonsensical content
 
 Dummy text is also used to demonstrate the appearance of different typefaces and layouts, and in general the content of dummy text is nonsensical. Due to its widespread use as filler text for layouts, non-readability is of great importance: human perception is tuned to recognize certain patterns and repetitions in texts. If the distribution of letters and 'words' is random, the reader will not be distracted from making a neutral judgement on the visual impact and readability of the typefaces (typography), or the distribution of text on the page (layout or type area). For this reason, dummy text usually consists of a more or less random series of words or syllables. This prevents repetitive patterns from impairing the overall visual impression and facilitates the comparison of different typefaces. Furthermore, it is advantageous when the dummy text is relatively realistic so that the layout impression of the final publication is not compromised.
-Incomprehensibility or readability? That is the question.
-
-"""
+Incomprehensibility or readability? That is the question."""
 
 
 # Koju map datoteku da ucita
@@ -151,7 +149,8 @@ class Scene:
     def load_scene( self, mapname: str ):
         self.load_map_file( mapname )
 
-        clientApp().player.questDialogue.display(ESSAY)
+        clientApp().player.questDialogue.set_message(ESSAY)
+        clientApp().player.questDialogue.display()
         Interface('hud')
         BarInterface('health-bar')
         BarInterface('mana-bar')
@@ -160,6 +159,9 @@ class Scene:
         rand_pos = lambda pos: pos + vec2( uniform( -0.25, 0.25 ))
 
         player_pos = vec2(0)
+        
+
+        #clientApp().chat.show()
 
         for j, row in enumerate( MAP ):
             for i, name in enumerate( row ):
@@ -326,7 +328,9 @@ class LoadingScene:
         if self.done:
             # Switch to the game scene after loading is complete
             clientApp().set_local_player( Player() )
+            clientApp().set_chat( Chat() )
             clientApp().set_active_scene( Scene() )
+            
         else:
             # Simulate loading progress
             self.progress = clientApp().done_counter / self.MAX * len( self.messages )

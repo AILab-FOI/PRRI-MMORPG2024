@@ -14,7 +14,7 @@ from entity_system import EntitySystem
 from materialsystem import MaterialSystem
 import sys
 import pygame as pg  
-
+from chat import Chat
 import quest
 
 from entity import RemotePlayer
@@ -30,21 +30,6 @@ class ClientApp:
         
         pg.font.init()
 
-        self.WIDTH, self.HEIGHT = 400, 200
- 
-        self.WHITE = (255, 255, 255)
-        self.BLACK = (0, 0, 0)
-        self.GREY = (200, 200, 200)
-
-        self.CHAT_BOX_HEIGHT = 100
-        self.input_box = pg.Rect(self.WIDTH - 10 - (self.WIDTH - 20), self.HEIGHT - self.CHAT_BOX_HEIGHT + 10, self.WIDTH - 20, 32)
-        self.chat_display_box = pg.Rect(self.WIDTH - 10 - (self.WIDTH - 20), 10, self.WIDTH - 20, self.HEIGHT - self.CHAT_BOX_HEIGHT - 20)
-
-        self.active = False
-        self.text = ''
-        self.chat_messages = []
-        self.chat_scroll_offset = 0  # Offset for scrolling
-
         # Font
         self.font = pg.font.Font(None, 32)
 
@@ -55,12 +40,6 @@ class ClientApp:
         self.anim_event = pg.USEREVENT + 0
         pg.time.set_timer(self.anim_event, 100)
         
-        # Transparent surfaces
-        self.chat_surface = pg.Surface((self.chat_display_box.width, self.chat_display_box.height))
-        self.chat_surface.set_alpha(128)  # Adjust alpha for transparency
-        self.input_surface = pg.Surface((self.input_box.width, self.input_box.height))
-        self.input_surface.set_alpha(128)  # Adjust alpha for transparency
-
         # groups
         self.entity_system = EntitySystem()
         self.draw_manager = DrawManager()
@@ -77,6 +56,7 @@ class ClientApp:
         # game objects
         self.player: Player = None
 
+        self.chat: Chat = None
         # player credentials
         self.username = username
         self.password = password
@@ -102,6 +82,13 @@ class ClientApp:
         self.fps_counter = Message([self.screen.get_size()[0]-200, 0], [200, 80], font_size=10)
 
         self.active_viewpoint: Viewpoint = None
+    def set_chat(self, chat: Chat):
+        """Set the Chat
+
+        Args:
+            chat (Chat): chat object
+        """
+        self.chat = chat
 
     def set_local_player(self, player: Player):
         """Set the local player
@@ -166,35 +153,12 @@ class ClientApp:
             self.message.draw()
             self.fps_counter.draw()
             # Crtanje chata
-            self.draw_chat()
+            #self.draw_chat()
         except Exception as e:
             logging.info( f"Couldn't draw scene {str(e)}" )
         
 
         pg.display.flip()
-
-    def draw_chat(self):
-        # Draw chat display box with transparency
-        self.chat_surface.fill((self.GREY[0], self.GREY[1], self.GREY[2], 128))  # Transparent background
-        y = 10 + self.chat_scroll_offset
-        for message in self.chat_messages:
-            msg_surface = self.font.render(message, True, self.BLACK)
-            self.chat_surface.blit(msg_surface, (5, y))
-            y += msg_surface.get_height() + 5
-
-        # Draw input box with transparency
-        self.input_surface.fill((self.WHITE[0], self.WHITE[1], self.WHITE[2], 128))  # Transparent background
-        txt_surface = self.font.render(self.text, True, self.BLACK)
-        width = max(200, txt_surface.get_width() + 10)
-        self.input_box.w = width
-        self.input_surface.blit(txt_surface, (5, 5))
-
-        # Draw chat surfaces on the main screen
-        self.screen.blit(self.chat_surface, (self.chat_display_box.x, self.chat_display_box.y))
-        self.screen.blit(self.input_surface, (self.input_box.x, self.input_box.y))
-
-        pg.draw.rect(self.screen, self.BLACK, self.chat_display_box, 2)
-        pg.draw.rect(self.screen, self.BLACK, self.input_box, 2)
 
     def print_quests( self ):
         for id, quest in self.quest_list.items():
@@ -223,51 +187,29 @@ class ClientApp:
                     sys.exit()
             elif e.type == self.anim_event:
                 self.anim_trigger = True
-            elif e.type == pg.MOUSEBUTTONDOWN:
-                # to do seperate this into its own function for testing and handling
-                clicked = False
-                max_interacts = 0
-                interact = ''
-                for clickable in self.clickable_group:
-                    interaction = clickable.try_interact()
-                    if interaction != '':
-                        clicked = True
-                        if interaction[ 'z' ] >= max_interacts:
-                            max_interacts = interaction[ 'z' ]
-                            interact = interaction[ 'interaction' ]
-                if not clicked:
-                    self.player.single_fire( event=e )
-                else:
-                    interact()
             else:
-                self.player.single_fire( event=e )
+                self.check_interactable_events( e )
+
+
+            self.chat.check_event( e=e )
+
+    def check_interactable_events( self, event):
+
+        interacted = []
+        for clickable in self.clickable_group:
+                interaction = clickable.try_interact( event )
+                if interaction != '':
+                    interacted.append(interaction)
+        max_z_interaction = 0
+        max_interaction = None
+        for i in interacted:
+            if i[ 'z' ] >= max_z_interaction:
+                max_z_interaction = i[ 'z' ]
+                max_interaction = i[ 'interaction' ]
+        
+        if max_interaction:
+            max_interaction()
             
-            # Chat input handling
-            if e.type == pg.MOUSEBUTTONDOWN:
-                if self.input_box.collidepoint(e.pos):
-                    self.active = True
-                else:
-                    self.active = False
-            if e.type == pg.KEYDOWN:
-                if self.active:
-                    if e.key == pg.K_RETURN:
-                        # Send chat message to server
-                        if self.text.strip() != '':
-                            self.send_chat_message(self.text)
-                        self.text = ''
-                    elif e.key == pg.K_BACKSPACE:
-                        self.text = self.text[:-1]
-                    else:
-                        self.text += e.unicode
-            # Scroll chat messages
-            if e.type == pg.MOUSEBUTTONDOWN:
-                if self.chat_display_box.collidepoint(e.pos):
-                    self.active = True
-            if e.type == pg.MOUSEBUTTONDOWN and self.chat_display_box.collidepoint(e.pos):
-                if e.button == 4:  # Scroll up
-                    self.chat_scroll_offset = min(self.chat_scroll_offset + 20, 0)
-                if e.button == 5:  # Scroll down
-                    self.chat_scroll_offset = max(self.chat_scroll_offset - 20, -max(0, len(self.chat_messages) * 37 - self.chat_display_box.height))
 
     def send_chat_message(self, message):
         chat_message = {"command": "chat_message", "message": message, "sender": self.username}
@@ -385,9 +327,11 @@ class ClientApp:
         return message
 
     def handle_chat_message(self, json_message):
+        if not self.chat:
+            return
         sender = json_message["sender"]
         chat_message = json_message["message"]
-        self.chat_messages.append(f"{sender}: {chat_message}")
+        self.chat.add_message(f"{sender}: {chat_message}")
 
     def handle_quest_info_update(self, json_message):
         quest_id = json_message['quest']

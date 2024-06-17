@@ -12,7 +12,7 @@ PLAYER_SPEED = 0.4
 PLAYER_ROT_SPEED = 0.0015
 
 BG_COLOR = ( 9, 20, 38 ) #'white'  # olivedrab
-NUM_ANGLES = 8  # multiple of 360 -> 24, 30, 36, 40, 45, 60, 72, 90, 120, 180
+NUM_ANGLES = 72  # multiple of 360 -> 24, 30, 36, 40, 45, 60, 72, 90, 120, 180
 
 pg.mixer.init()
 pg.mixer.music.load( "assets/bgm/bgm.ogg" )
@@ -362,6 +362,7 @@ INTERFACE_ATTRS = {
                 'y': 394,
                 'width': 32,
                 'height': 32,
+                'interact-with': [pg.MOUSEBUTTONDOWN,pg.K_1],
                 'interaction': lambda: logging.info('ability_slash')
                 },
             'Fireball': {
@@ -369,6 +370,7 @@ INTERFACE_ATTRS = {
                 'y': 394,
                 'width': 32,
                 'height': 32,
+                'interact-with': [pg.MOUSEBUTTONDOWN,pg.K_2],
                 'interaction': lambda: logging.info('ability_fireball')
                 },
             'Lightning': {
@@ -376,6 +378,7 @@ INTERFACE_ATTRS = {
                 'y': 394,
                 'width': 32,
                 'height': 32,
+                'interact-with': [pg.MOUSEBUTTONDOWN,pg.K_3],
                 'interaction': lambda: logging.info('ability_lightning')
                 },
             'Heal': {
@@ -383,6 +386,7 @@ INTERFACE_ATTRS = {
                 'y': 394,
                 'width': 32,
                 'height': 32,
+                'interact-with': [pg.MOUSEBUTTONDOWN,pg.K_4],
                 'interaction': lambda: logging.info('ability_heal')
                 },
             'CheckQuests':{
@@ -390,6 +394,7 @@ INTERFACE_ATTRS = {
                 'y': 0,
                 'width': 100,
                 'height': 50,
+                'interact-with': [pg.MOUSEBUTTONDOWN],
                 'interaction': lambda : clientApp().print_quests()
             }
         }
@@ -426,12 +431,32 @@ INTERFACE_ATTRS = {
                 'y': 242,
                 'width': 599,
                 'height': 211,
+                'interact-with': [pg.MOUSEBUTTONDOWN],
                 'interaction': lambda : clientApp().player.questDialogue.handle_input()
                 }
         },
     },
     'chat-box': {
+        'path': 'assets/images/chat_box.png',
+        'pos': (0, 0),
+        'size': (251, 160),
+        'z': 0,
+        'text-pos':(12, 11),
+        'text-area': {
+            'width':227,
+            'height':125,
+        },
+        'interactibles':{
 
+            'enter-message': {
+                'x': 11,
+                'y': 138,
+                'width': 229,
+                'height': 22,
+                'interact-with': [pg.MOUSEBUTTONDOWN, pg.K_RETURN],
+                'interaction': lambda : clientApp().chat.activate()
+                },
+        },
     },
 }
 

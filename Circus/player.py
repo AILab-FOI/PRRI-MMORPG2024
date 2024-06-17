@@ -44,6 +44,8 @@ class Player( BaseSpriteEntity ):
         self.mana = 100
         self.alive = True
 
+        self.inControl = True
+
         clientApp().trackables['player-health'] = {'object': self, 'attr': 'health', 'max': 100}
         clientApp().trackables['player-mana'] = {'object': self, 'attr': 'mana', 'max': 100}
 
@@ -94,6 +96,9 @@ class Player( BaseSpriteEntity ):
 
 
     def control( self ):
+        if not self.inControl:
+            return
+        
         self.moving = False
         self.last_inc[0] = self.inc[0]
         self.last_inc[1] = self.inc[1]
@@ -139,16 +144,10 @@ class Player( BaseSpriteEntity ):
             self.health = 100
         else:
             self.health += amount
-    def single_fire( self, event ):
-        if event.type == pg.MOUSEBUTTONDOWN:
-            if event.button == 1:  
-                Bullet(pos=self.pos)
-                self.damage(8.72)
-                
-        elif event.type == pg.KEYDOWN:
+    def single_fire( self, event ):     
+        if event.type == pg.KEYDOWN:
             if event.key == pg.K_SPACE:
-                self.heal(6.32)
-                clientApp().message.handle_input()
+                self.questDialogue.handle_input()
 
     def check_collision( self ):
         if( self.sprite == None ):
