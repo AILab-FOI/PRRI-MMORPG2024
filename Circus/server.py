@@ -113,6 +113,11 @@ class Player( persistent.Persistent ):
 # Set to keep track of connected clients
 connected_clients = set()
 
+websocket_to_player = {}
+
+def get_player_from_websocket( websocket ):
+    return list(websocket_to_player.keys())[list(websocket_to_player.values()).index(websocket)]
+
 # WebSocket server handling
 # Unutar funkcije handle_connection, nakon logike koja već obrađuje dolazne poruke
 async def handle_connection(websocket, path: str):
@@ -124,10 +129,17 @@ async def handle_connection(websocket, path: str):
     """    
     logging.info( f"New connection: {path}" )
     connected_clients.add( websocket )
-
     try:
         # Existing connection handling logic...
         async for message in websocket:
+            # First handle sending the gameApp messages
+            # YES, this is hacky and probably not the best way to do it
+            # But we don't have time to figure out a better solution
+            # And for now, this works, because the client always sends an update message
+            await gameApp().handle_network_messages()
+
+            print(f"Handling connection")
+
             # Handle incoming messages...
             data = json.loads( message )
 
@@ -220,19 +232,35 @@ async def handle_connection(websocket, path: str):
             #await websocket.ping()  
     except websockets.exceptions.ConnectionClosedOK as e:
         logging.warning(f"Connection handled successfully: {e.reason} {e.code}")
-        logging.warning(f"Command: {data}")
-        connected_clients.remove( websocket )
+        if( data ):
+            logging.warning(f"Command: {data}")
+        disconnect_socket(websocket)
     except websockets.exceptions.ConnectionClosed as e:
         logging.warning(f"Connection closed: {e.reason} {e.code}")
-        logging.warning(f"Command: {data}")
-        connected_clients.remove( websocket )
+        if( data ):
+            logging.warning(f"Command: {data}")
+        disconnect_socket(websocket)
     except Exception as e:
         logging.error(f"Unhandled exception: {str(e)}", exc_info=True)
-        connected_clients.remove( websocket )
+        disconnect_socket(websocket)
     finally:
         logging.info("Connection handler exiting")
 
+def disconnect_socket(websocket):
+    player_id = get_player_from_websocket(websocket)
+
+    dbGlobal.start_edit()
+    if( player_id in dbGlobal.root.players ):
+        player: Player = dbGlobal.root.players[player_id]
+        player.logout(player.password)
+        websocket_to_player.pop(player_id)
+    dbGlobal.end_edit()
+
+    connected_clients.remove( websocket )
+
 async def send_client_base_info( websocket, player_id ):
+    websocket_to_player[player_id] = websocket
+
     await send_message_to_player(websocket, {"command": "login_successful"})
 
     dbGlobal.start_edit()
@@ -372,23 +400,15 @@ def update_player_position( player_id: str, position, velocity ):
         print( f'No such player {player_id}' )
     dbGlobal.end_edit()
 
-WEBSOCKET_SEMAPHORE = threading.BoundedSemaphore(value=1)
-
 # Broadcast positions to all clients
 async def send_message_to_player( client, object ):  
-    # Send to all connected clients
-    WEBSOCKET_SEMAPHORE.acquire()
     message = json.dumps( object )
     logging.info(f"Sending message{message} to client {client}")
     await client.send( message )
 
-    WEBSOCKET_SEMAPHORE.release()
-
 async def broadcast_message_to_all( object ):
-    WEBSOCKET_SEMAPHORE.acquire()
     message = json.dumps( object )
     await asyncio.gather( *( client.send( message ) for client in connected_clients ) )
-    WEBSOCKET_SEMAPHORE.release()
 
 # Broadcast positions to all clients
 async def broadcast_positions():
@@ -418,20 +438,26 @@ class Entity(object):
         self.last_network_info = {}
 
     def tick(self):
-        self.physics_think()
         self.think()
+        self.physics_think()
         self.gather_network_info()
         self.send_network_info()
 
     def think(self):
-        targetpos = vec2(0)
+        targetpos = None
         dbGlobal.start_edit()
-        if( len(dbGlobal.root.players) > 0 ):
-            player: Player = dbGlobal.root.players.values()[0]
-            targetpos = vec2( player.x, player.y )
+        for player in dbGlobal.root.players.values():
+            if( player.logged_in == False ):
+                continue
+
+            playerpos = vec2( player.x, player.y )
+            dist = self.position.distance_squared_to(playerpos)
+            if( targetpos == None or self.position.distance_squared_to(targetpos) > dist ):
+                targetpos = playerpos
         dbGlobal.end_edit()
 
-        self.velocity = self.position.move_towards(targetpos, 1) * 10
+        if( targetpos != None ):
+            self.velocity = (self.position.move_towards(targetpos, 1) - self.position) * 100
 
     def physics_think(self):
         if( self.velocity == vec2(0) ):
@@ -439,18 +465,18 @@ class Entity(object):
         
         # Delta time is *probably* not needed because we use a consistent tick time
         # However, in the cases that it skips a frame or two, this will help
-        self.position += self.velocity * gameApp().delta_time
+        self.position += self.velocity * gameApp().get_delta_time_sec()
 
     def gather_network_info(self) -> dict:
         network_info = {}
         network_info["netid"] = self.index
         # Can't send Vec2 directly
-        network_info["position"] = { "x": self.position.x, "y":self.position.x}
-        network_info["velocity"] = { "x": self.velocity.x, "y":self.velocity.x}
+        network_info["position"] = { "x": self.position.x, "y":self.position.y}
+        network_info["velocity"] = { "x": self.velocity.x, "y":self.velocity.y}
         return network_info
 
     def network_info_changed(self, network_info) -> bool:
-        return network_info == self.last_network_info
+        return network_info != self.last_network_info
 
     def send_network_info(self):
         network_info = self.gather_network_info()
@@ -459,9 +485,17 @@ class Entity(object):
         if( not self.network_info_changed(network_info) ):
             return
 
-        network_info["command"] = "server_ent_update"
+        message = {}
+        message["command"] = "server_ent_update"
+        message["data"] = network_info
 
-        gameApp().push_network_message(network_info)
+        print(f"{network_info}")
+        
+        existing_message = gameApp().get_entity_update_message(self.index)
+        if( existing_message == -1 ):
+            gameApp().push_network_message(message)
+        else:
+            gameApp().network_messages[existing_message] = message
 
         self.last_network_info = network_info
 
@@ -497,27 +531,30 @@ class EntitySystem(object):
         dbGlobal.end_edit()
 
     def add_entity(self, entity: Entity):
-        ENTITY_SEMAPHORE.acquire()
+        #ENTITY_SEMAPHORE.acquire()
         entity.index = self.freeindex
         self.entitylist[entity.index] = entity
         self.add_to_db(entity)
 
         self.freeindex += 1
-        ENTITY_SEMAPHORE.release()
+        #ENTITY_SEMAPHORE.release()
 
     def tick(self):
-        ENTITY_SEMAPHORE.acquire()
+        #ENTITY_SEMAPHORE.acquire()
         for entity in self.entitylist.values():
             entity.tick()
-        ENTITY_SEMAPHORE.release()
+        #ENTITY_SEMAPHORE.release()
     
     async def send_entities_to_client(self, websocket):
-        ENTITY_SEMAPHORE.acquire()
+        #ENTITY_SEMAPHORE.acquire()
         for entity in self.entitylist.values():
-            message = entity.gather_network_info()
+            message = {}
             message["command"] = "server_ent_update"
+            message["data"] =  entity.gather_network_info()
             await send_message_to_player(websocket, message)
-        ENTITY_SEMAPHORE.release()
+        #ENTITY_SEMAPHORE.release()
+
+NETWORK_MESSAGE_SEMAPHORE = threading.BoundedSemaphore(1)
 
 class GameApp( object ):
     def __init__(self) -> types.NoneType:
@@ -538,17 +575,34 @@ class GameApp( object ):
         await self.tick()
         self.currtick += 1
         self.delta_time = self.clock.tick(TARGET_TICKRATE)
+        print(f"Tick")
 
     async def tick(self):
         self.entity_handler.tick()
-        await self.handle_network_messages()
     
     def push_network_message( self, message ):
+        #NETWORK_MESSAGE_SEMAPHORE.acquire()
         self.network_messages.append(message)
+        #NETWORK_MESSAGE_SEMAPHORE.release()
     
+    def get_entity_update_message(self, id):
+        for index in range(len(self.network_messages)):
+            message = self.network_messages[index]
+            if( message["command"] != "server_ent_update" ):
+                continue
+
+            if( message["data"]["netid"] != id ):
+                continue
+
+            return index
+
+        return -1
+
     async def handle_network_messages( self ):
+        #NETWORK_MESSAGE_SEMAPHORE.acquire()
         for message in self.network_messages:
             await broadcast_message_to_all(message)
+        #NETWORK_MESSAGE_SEMAPHORE.release()
 
 TARGET_TICKRATE = 60
 

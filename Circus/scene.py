@@ -189,6 +189,9 @@ class Scene:
         
         clientApp().player.offset = player_pos
 
+        ent = Entity( name="kitty", pos=vec2(0) )
+        clientApp().entity_system.test_ent = ent
+
         self.done = True
     
     def redraw_tile_rotation( self ):
