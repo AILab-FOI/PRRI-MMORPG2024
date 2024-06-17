@@ -460,6 +460,17 @@ INTERFACE_ATTRS = {
     },
 }
 
+ABILITY_ATTRS = {
+    'ability_slash': {
+        'path': 'assets/entities/abilities/ability_slash.png',
+        'num_layers': 1,
+        'scale': 1,
+        'y_offset': 50,
+        'lifetime': 5,
+        'cooldown': 1,
+    },
+}
+
 # NOTE NOTE: Only use this with strings that *we* made, not something the user can edit
 #            and ESPECIALLY not something an user can send to others
 #            This can cause unwanted code execution
