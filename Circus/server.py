@@ -19,6 +19,8 @@ import atexit
 
 from config import SHOST, SPORT, DBHOST, DBPORT
 
+vec2 = pg.math.Vector2
+
 class dbGlobal:
     db = None
     connection = None
@@ -43,6 +45,11 @@ def setup_database():
     if not hasattr( root, 'players' ):
         print( 'Creating new database' )
         root.players = OOBTree()
+        transaction.commit()
+
+    if not hasattr( root, 'entities' ):
+        print( 'Creating new entity database' )
+        root.entities = OOBTree()
         transaction.commit()
     
     template_player = Player( "tmp", "tmp" )
@@ -200,6 +207,7 @@ async def handle_connection(websocket, path: str):
                     notify_message = False
                     player_id = data[ 'player' ]
                     quest_id = data['quest']
+                    dbGlobal.start_edit()
                     player: Player = dbGlobal.root.players[ player_id ]
                     
                     if( not quest_id in player.quests ):
@@ -208,7 +216,7 @@ async def handle_connection(websocket, path: str):
                     player.quests[quest_id]['accepted'] = data['accepted']
                     player.quests[quest_id]['finished'] = data['finished']
                     player.quests[quest_id]['progress'] = data['progress']
-                    transaction.commit()
+                    dbGlobal.end_edit()
                 else:
                     print( 'Invalid command', data )
             except websockets.exceptions.ConnectionClosedOK as e:
@@ -237,11 +245,12 @@ async def handle_connection(websocket, path: str):
         logging.info("Connection handler exiting")
 
 def create_quest_info(quest_id, player):
+    dbGlobal.start_edit()
     player.quests[quest_id] = {}
     player.quests[quest_id]['accepted'] = False
     player.quests[quest_id]['finished'] = False
     player.quests[quest_id]['progress'] = {}
-    transaction.commit()
+    dbGlobal.end_edit()
 
 async def send_quest_info_to_player(websocket, quest_id, player):
     send_message = { 'command': 'quest_info', 'quest': quest_id }
@@ -362,16 +371,23 @@ def update_player_position( player_id: str, position, velocity ):
         print( f'No such player {player_id}' )
     dbGlobal.end_edit()
 
+WEBSOCKET_SEMAPHORE = threading.BoundedSemaphore(value=1)
+
 # Broadcast positions to all clients
 async def send_message_to_player( client, object ):  
     # Send to all connected clients
+    WEBSOCKET_SEMAPHORE.acquire()
     message = json.dumps( object )
     logging.info(f"Sending message{message} to client {client}")
     await client.send( message )
 
+    WEBSOCKET_SEMAPHORE.release()
+
 async def broadcast_message_to_all( object ):
+    WEBSOCKET_SEMAPHORE.acquire()
     message = json.dumps( object )
     await asyncio.gather( *( client.send( message ) for client in connected_clients ) )
+    WEBSOCKET_SEMAPHORE.release()
 
 # Broadcast positions to all clients
 async def broadcast_positions():
@@ -393,12 +409,97 @@ async def broadcast_positions():
     await broadcast_message_to_all( object_to_send )
     dbGlobal.end_edit()
 
+class Entity(object):
+    def __init__(self) -> types.NoneType:
+        self.index = -1
+        self.position = vec2(0)
+        self.velocity = vec2(0)
+        self.last_network_info = {}
+
+    def tick(self):
+        self.physics_think()
+        self.think()
+        self.gather_network_info()
+        self.send_network_info()
+
+    def think(self):
+        pass
+
+    def physics_think(self):
+        if( self.velocity == vec2(0) ):
+            return
+        
+        # Delta time is *probably* not needed because we use a consistent tick time
+        # However, in the cases that it skips a frame or two, this will help
+        self.position += self.velocity * gameApp().delta_time
+
+    def gather_network_info(self) -> dict:
+        network_info = {}
+        network_info["netid"] = self.index
+        network_info["position"] = self.position
+        network_info["velocity"] = self.velocity
+
+    def network_info_changed(self, network_info) -> bool:
+        return network_info == self.last_network_info
+
+    def send_network_info(self):
+        network_info = self.gather_network_info()
+
+        # Only push if something changed
+        if( not self.network_info_changed(network_info) ):
+            return
+
+        network_info["command"] = "server_ent_update"
+
+        gameApp().push_network_message(network_info)
+
+        self.last_network_info = network_info
+
+ENTITY_SEMAPHORE = threading.BoundedSemaphore(value=1)
+
+class EntitySystem(object):
+    def __init__(self) -> types.NoneType:
+        self.entitylist: dict[Entity] = {}
+        self.freeindex = 0
+    
+    def load_from_db(self):
+        dbGlobal.start_edit()
+
+        for entindex, ent in dbGlobal.root.entities.items():
+            self.entitylist[entindex] = ent
+
+        dbGlobal.end_edit()
+
+    def add_to_db(self, entity: Entity):
+        # Already exists
+        if entity.index in dbGlobal.root.entities:
+            return
+
+        dbGlobal.start_edit()
+        dbGlobal.root.entities[ entity.index ] = entity
+        dbGlobal.end_edit()
+
+    def add_entity(self, entity: Entity):
+        entity.index = self.freeindex
+        self.entitylist[entity.index] = entity
+        self.add_to_db(entity)
+
+        self.freeindex += 1
+
+    def tick(self):
+        ENTITY_SEMAPHORE.acquire()
+        for entity in self.entitylist:
+            entity.think()
+        ENTITY_SEMAPHORE.release()
+
 class GameApp( object ):
     def __init__(self) -> types.NoneType:
         self.clock = pg.time.Clock()
         self.start_time = time.time()
         self.delta_time = 0.01
         self.currtick = 0
+        self.network_messages = []
+        self.entity_handler = EntitySystem()
 
     def get_delta_time_ms(self):
         return self.delta_time
@@ -406,29 +507,43 @@ class GameApp( object ):
     def get_delta_time_sec(self):
         return self.delta_time * 0.001
 
-    def _tick(self):
-        self.tick()
+    async def _tick(self):
+        await self.tick()
         self.currtick += 1
         self.delta_time = self.clock.tick(TARGET_TICKRATE)
 
-    def tick(self):
-        print(f"Tick: {self.currtick}\nSeconds:{time.time()-self.start_time}")
-        if( self.currtick == 60 ):
-            _globals.stop_thread = True
+    async def tick(self):
+        self.entity_handler.tick()
+        await self.handle_network_messages()
+    
+    def push_network_message( self, message ):
+        self.network_messages.append(message)
+    
+    async def handle_network_messages( self ):
+        for message in self.network_messages:
+            await broadcast_message_to_all(message)
 
 TARGET_TICKRATE = 60
 
-def game_loop():
-    app = GameApp()
+def game_start():
+    asyncio.run( game_loop() )
+
+async def game_loop():
+    _globals.app = GameApp()
 
     while( True ):
-        app._tick()
+        await gameApp()._tick()
+
         if( _globals.stop_thread ):
             return
+
+def gameApp() -> GameApp:
+    return _globals.app
 
 class _globals:
     game_thread: threading.Thread = None
     stop_thread: bool = False
+    app: GameApp = None
 
 # Run the server
 async def main():
@@ -436,7 +551,7 @@ async def main():
     dbGlobal.db = setup_database()  # Initialize database
     dbGlobal.start_edit()
     dbGlobal.end_edit()
-    _globals.game_thread = threading.Thread(target=game_loop)
+    _globals.game_thread = threading.Thread(target=game_start)
     _globals.game_thread.start()
 
     print( "Starting websocket server" )
