@@ -62,7 +62,7 @@ def setup_database():
             
             if( not hasattr(player,attr) ):
                 setattr( player, attr, getattr(template_player, attr) )
-                logging.warn( f"Player {player.username} has missing attribute {attr}, adding default value...")
+                logging.warning( f"Player {player.username} has missing attribute {attr}, adding default value...")
     
     transaction.commit()
 
