@@ -57,6 +57,15 @@ class Inventory ( object ):
     def on_inventory_updated( self ):
         pass
 
+    def load_from_net(self, data):
+        self.items_list = []
+        for item_dict in data:
+            item = inventory_item.InventoryItem()
+            for attr, val in item_dict.items():
+                setattr(item, attr, val)
+            
+            self.items_list.append(item)
+
     def update_info(self):
         message = {"command": "update_inventory_info"}
         message['inventory'] = self.id

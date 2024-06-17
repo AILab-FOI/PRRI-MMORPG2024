@@ -22,6 +22,7 @@ pg.mixer.music.play( loops=-1 )
 class _globals:
     app = None
     tmp_quest_list = {}
+    tmp_inv = None
 
 def clientApp():
     return _globals.app

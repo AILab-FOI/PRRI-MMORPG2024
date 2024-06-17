@@ -1,4 +1,5 @@
 from shared import *
+from shared import _globals
 import math
 from entity import BaseSpriteEntity
 from bullet import Bullet
@@ -53,7 +54,9 @@ class Player( BaseSpriteEntity ):
         self.alive = True
         
         self.inventory : inventory.Inventory = inventory.Inventory()
-        self.inventory.add_items([inventory_item.InventoryItem()])
+        if( _globals.tmp_inv != None ):
+            self.inventory.load_from_net(_globals.tmp_inv)
+            _globals.tmp_inv = None
 
         self.inControl = True
 

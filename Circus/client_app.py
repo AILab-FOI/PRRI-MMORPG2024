@@ -307,18 +307,27 @@ class ClientApp:
                 # Handle incoming chat message
                 self.handle_chat_message(json_message)
             case "server_ent_update":
-                data = json_message["data"]
-                netid = data["netid"]
+                self.handle_server_ent_update(message, json_message)
+            case "inventory_update":
+                data = json_message["inventory"]
+                if( clientApp().player == None ):
+                    _globals.tmp_inv = data
+                else:
+                    clientApp().player.inventory.load_from_net(data)
 
-                new_message = self.get_latest_update_message_and_remove_the_rest(netid)
-                if( new_message == None ):
-                    json_message = json.loads(message)
+    def handle_server_ent_update(self, message, json_message):
+        data = json_message["data"]
+        netid = data["netid"]
 
-                if( self.entity_system.test_ent != None ):
-                    newpos = vec2( data["position"]["x"],
+        new_message = self.get_latest_update_message_and_remove_the_rest(netid)
+        if( new_message == None ):
+            json_message = json.loads(message)
+
+        if( self.entity_system.test_ent != None ):
+            newpos = vec2( data["position"]["x"],
                          data["position"]["y"] )
                     
-                    self.entity_system.test_ent.set_pos(newpos)
+            self.entity_system.test_ent.set_pos(newpos)
 
     def get_latest_update_message_and_remove_the_rest( self, entindex ):
         latestUpdateMessage = None

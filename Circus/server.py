@@ -283,6 +283,8 @@ async def send_client_base_info( websocket, player_id ):
         await send_quest_info_to_player(websocket, quest_id, player)
     dbGlobal.end_edit()
 
+    await send_inventory_to_player(websocket, player)
+
     await gameApp().entity_handler.send_entities_to_client(websocket)
 
     await broadcast_positions()
