@@ -136,7 +136,10 @@ async def handle_connection(websocket, path: str):
             # YES, this is hacky and probably not the best way to do it
             # But we don't have time to figure out a better solution
             # And for now, this works, because the client always sends an update message
-            await gameApp().handle_network_messages()
+            try:
+                await gameApp().handle_network_messages()
+            except Exception as e:
+                pass
 
             # Handle incoming messages...
             data = json.loads( message )
@@ -442,20 +445,7 @@ class Entity(object):
         self.send_network_info()
 
     def think(self):
-        targetpos = None
-        dbGlobal.start_edit()
-        for player in dbGlobal.root.players.values():
-            if( player.logged_in == False ):
-                continue
-
-            playerpos = vec2( player.x, player.y )
-            dist = self.position.distance_squared_to(playerpos)
-            if( targetpos == None or self.position.distance_squared_to(targetpos) > dist ):
-                targetpos = playerpos
-        dbGlobal.end_edit()
-
-        if( targetpos != None ):
-            self.velocity = (self.position.move_towards(targetpos, 1) - self.position) * 100
+        pass
 
     def physics_think(self):
         if( self.velocity == vec2(0) ):
@@ -495,6 +485,43 @@ class Entity(object):
 
         self.last_network_info = network_info
 
+class NPC(Entity):
+    def __init__(self) -> types.NoneType:
+        super().__init__()
+        self.nav_target_pos : pg.math.Vector2 = None
+    
+    def think(self):
+        super().think()
+
+        if( self.nav_target_pos != None ):
+            self.velocity = (self.position.move_towards(self.nav_target_pos, 1) - self.position) * 100
+
+    def get_nearest_player(self) -> Player:
+        dbGlobal.start_edit()
+        targetpos = None
+        nearest_player = None
+        for player in dbGlobal.root.players.values():
+            if( player.logged_in == False ):
+                continue
+
+            playerpos = vec2( player.x, player.y )
+            dist = self.position.distance_squared_to(playerpos)
+            if( targetpos == None or self.position.distance_squared_to(targetpos) > dist ):
+                targetpos = playerpos
+                nearest_player = player
+        dbGlobal.end_edit()
+
+        # Can be None!
+        return nearest_player
+
+class NPCFollower(NPC):
+    def think(self):
+        player: Player = self.get_nearest_player()
+        if( player != None ):
+            self.nav_target_pos = vec2(player.x, player.y)
+        
+        super().think()
+
 ENTITY_SEMAPHORE = threading.BoundedSemaphore(value=1)
 
 class EntitySystem(object):
@@ -504,7 +531,7 @@ class EntitySystem(object):
         self.load_from_db()
 
         if( len(self.entitylist) == 0 ):
-            self.add_entity(Entity())
+            self.add_entity(NPCFollower())
     
     def load_from_db(self):
         dbGlobal.start_edit()
@@ -539,6 +566,10 @@ class EntitySystem(object):
         #ENTITY_SEMAPHORE.acquire()
         for entity in self.entitylist.values():
             entity.tick()
+            # Commit entity changes every tick
+            dbGlobal.start_edit()
+            dbGlobal.root.entities[ entity.index ] = entity
+            dbGlobal.end_edit()
         #ENTITY_SEMAPHORE.release()
     
     async def send_entities_to_client(self, websocket):
