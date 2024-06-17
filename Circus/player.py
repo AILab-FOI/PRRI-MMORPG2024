@@ -224,10 +224,10 @@ class Player( BaseSpriteEntity ):
         self.offset = newPos
 
     def on_player_inventory_updated(self):
-        for inv_item  in self.inventory.items_list:
+        for inv_item in self.inventory.items_list:
+            # gleda se zadnji u listi
             if inv_item.type == "armor":
                 self.armor = inv_item.stat
-
 
 
 
