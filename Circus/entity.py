@@ -217,6 +217,9 @@ class BaseSpriteEntity( WorldObject ):
         self.sprite: pg.sprite.Sprite = None
 
         self.load_attrs_from_name( self.name )
+
+        if( self.name == 'kitty' ):
+            self.set_ang( 45 )
     
     def load_attribute(self, name, value):
         match name:
@@ -229,6 +232,7 @@ class BaseSpriteEntity( WorldObject ):
         self.name = name
         self.attrs = ENTITY_SPRITE_ATTRS[ self.name ]
         entity_cache = clientApp().cache.entity_sprite_cache
+        self.og_images = entity_cache[ self.name ][ 'images' ]
         self.images = entity_cache[ self.name ][ 'images' ]
         self.mask = entity_cache[ self.name ][ 'mask' ]
         self.frame_index = 0
@@ -261,9 +265,6 @@ class BaseSpriteEntity( WorldObject ):
 
     def update_visuals( self ):
         self.animate()
-
-        if( self.name == 'kitty' ):
-            self.set_ang( self.ang + clientApp().get_delta_time_sec() * 10 )
 
 
 class Entity( BaseSpriteEntity ):
@@ -298,7 +299,11 @@ class Entity( BaseSpriteEntity ):
         super().update_screenpos()
 
         if( self.prev_screen_ang != self.screen_ang ):
-            self.sprite.image = pg.transform.rotate( self.images[ self.frame_index ], self.screen_ang )
+            for index in range(len(self.og_images)):
+                image = self.og_images[index]
+                self.images[index] = pg.transform.rotate( image, self.screen_ang )
+            
+            self.sprite.image = self.images[self.frame_index]
             self.sprite.rect = self.sprite.image.get_rect()
         
         self.sprite.rect.center = self.screen_pos + self.y_offset
