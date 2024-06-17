@@ -453,7 +453,7 @@ INTERFACE_ATTRS = {
                 'y': 138,
                 'width': 229,
                 'height': 22,
-                'interact-with': [pg.MOUSEBUTTONDOWN],
+                'interact-with': [pg.MOUSEBUTTONDOWN, pg.K_RETURN],
                 'interaction': lambda : clientApp().chat.activate()
                 },
         },
