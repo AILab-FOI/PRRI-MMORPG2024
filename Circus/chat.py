@@ -29,7 +29,7 @@ class Chat ( Dialogue ):
         msg = ''
         for message in self.messages:
             msg += message + '\n'
-        self.set_message( msg, width=5 )
+        self.set_message( msg, width=22 )
         self.display(offset=self.chat_scroll_offset)
             
 
@@ -59,7 +59,6 @@ class Chat ( Dialogue ):
                 else:
                     self.text += e.unicode
         # Scroll chat messages
-        # NOT CURRENTLY WORKING
 
         if e.type == pg.MOUSEBUTTONDOWN and self.chat_display_box.collidepoint(e.pos):
             if e.button == 5:  # Scroll down

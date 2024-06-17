@@ -27,7 +27,7 @@ class Dialogue( Interface ):
         self.msg = ''
 
     def set_message( self, msg, width=39 ):
-        t = [ textwrap.wrap( m, width=39 ) for m in msg.split( '\n' ) ]
+        t = [ textwrap.wrap( m, width=width ) for m in msg.split( '\n' ) ]
         self.wrapped_text = list( chain( *t ) )
 
     def display( self, offset=0 ):
