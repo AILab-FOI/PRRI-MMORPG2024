@@ -14,7 +14,6 @@ class Ability( Entity ):
         self.pos /= TILE_SIZE
         self.lifetime = self.attrs[ 'lifetime' ]
         self.cycles = 0
-        self.cooldown = self.attrs[ 'cooldown' ]
         self.instance_start_time = datetime.now()
 
         self.always_update = True
@@ -48,19 +47,6 @@ class Ability( Entity ):
         clientApp().collision_group.remove( self )
         self.run()
         self.check_life_time()
-
-
-    def check_cooldown( self ):
-        """Checks if cooldown has passed
-
-        Returns:
-            bool: has cooldown passed
-        """
-        elapsed = datetime.now() - self.instance_start_time
-        if elapsed.total_seconds() > self.cooldown:
-            return True
-        else:
-            return False
 
     def run( self ):
         """Function to override, updates ability, most often position

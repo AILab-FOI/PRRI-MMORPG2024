@@ -22,5 +22,5 @@ class Heal ( Ability ):
     def heal_tick( self ):
         elapsed = datetime.now() - self.tick_time
         if elapsed.seconds >= 0.5:
-            self.player.heal(2)
+            self.player.heal(6)
             self.tick_time = datetime.now()

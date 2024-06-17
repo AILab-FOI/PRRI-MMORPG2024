@@ -127,6 +127,7 @@ ENTITY_SPRITE_ATTRS = {
         'y_offset': 50,
         'lifetime': 2,
         'cooldown': 2,
+        'can_collide': False
     },
     'ability_fireball': {
         'path': 'assets/entities/abilities/ability_fireball.png',
@@ -135,6 +136,7 @@ ENTITY_SPRITE_ATTRS = {
         'y_offset': 50,
         'lifetime': 150,
         'cooldown': 5,
+        'can_collide': False
     },
     'ability_lightning': {
         'path': 'assets/entities/abilities/ability_lightning.png',
@@ -143,14 +145,16 @@ ENTITY_SPRITE_ATTRS = {
         'y_offset': 50,
         'lifetime': 4,
         'cooldown': 1,
+        'can_collide': False
     },
     'ability_heal': {
         'path': 'assets/entities/abilities/ability_heal.png',
         'num_layers': 6,
         'scale': 3,
         'y_offset': 50,
-        'lifetime': 30,
-        'cooldown': 30,
+        'lifetime': 60,
+        'cooldown': 10,
+        'can_collide': False
     },
     'movement': {
         'path': 'assets/entities/movement/movement.png',

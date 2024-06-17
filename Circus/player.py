@@ -12,7 +12,7 @@ from slash import Slash
 from fireball import Fireball
 from lightning import Lightning
 from heal import Heal
-
+from datetime import datetime, timedelta
 
 class Player( BaseSpriteEntity ):
     """Player base class
@@ -55,6 +55,18 @@ class Player( BaseSpriteEntity ):
         clientApp().trackables['player-mana'] = {'object': self, 'attr': 'mana', 'max': 100}
 
         self.questDialogue = Dialogue()
+
+
+        slash = ENTITY_SPRITE_ATTRS[ 'ability_slash' ]
+        fireball = ENTITY_SPRITE_ATTRS[ 'ability_fireball' ]
+        lightning = ENTITY_SPRITE_ATTRS[ 'ability_lightning' ]
+        heal = ENTITY_SPRITE_ATTRS[ 'ability_heal' ]
+        self.gcd = datetime.now()
+        self.abilities = []
+        self.abilities.append({'cooldown': slash['cooldown'], 'used-time': datetime.now()})
+        self.abilities.append({'cooldown': fireball['cooldown'], 'used-time': datetime.now()})
+        self.abilities.append({'cooldown': lightning['cooldown'], 'used-time': datetime.now()})
+        self.abilities.append({'cooldown': heal['cooldown'], 'used-time': datetime.now()})
 
     def on_start_drawing(self):
         super().on_start_drawing()
@@ -238,16 +250,36 @@ class Player( BaseSpriteEntity ):
         self.offset = newPos
 
     def use_slash( self ):
-        Slash()
+        if self.check_cooldown(self.abilities[0]):
+            Slash()
 
     def use_fireball( self ):
-        Fireball()
+        if self.check_cooldown(self.abilities[1]):
+            Fireball()
 
     def use_lightning( self ):
-        Lightning()
+        if self.check_cooldown(self.abilities[2]):
+            Lightning()
 
     def use_heal( self ):
-        Heal() 
+        if self.check_cooldown(self.abilities[3]):
+            Heal()
+            
+
+    def check_cooldown( self, ability ):
+
+        global_elapsed = datetime.now() - self.gcd
+        if global_elapsed.total_seconds() < 0.5:
+            return False
+
+        elapsed = datetime.now() - ability['used-time']
+
+        if elapsed.total_seconds() > ability['cooldown']:
+            self.gcd = datetime.now()
+            ability['used-time'] = datetime.now()
+            return True
+        else:
+            return False
 
 
 

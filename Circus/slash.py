@@ -11,9 +11,9 @@ class Slash ( Ability ):
         # positioning slash
         screen_center = vec2(WIDTH // 2, HEIGHT // 2)
         position = screen_center - pg.mouse.get_pos()
-
+        self.player.damage(10)
         self.angle = math.atan2(position.y, position.x)
-
+        
         # WHY THE FUCK JE LIJEVI VECTOR ZA NAPRIJED ????????????
         self.direction = (-self.player.right()).rotate_rad(self.angle)
         self.direction.normalize()
@@ -34,9 +34,7 @@ class Slash ( Ability ):
         self.set_pos(newpos)
     
     def update_rotation( self ):
-        return #doesnt work
-        if self.is_drawing:
-            self.sprite.image = pg.transform.rotate(self.sprite.image, angle)
+        self.set_ang(180)
 
         
     def hit_enemy( self ):
