@@ -8,6 +8,7 @@ import logging
 from dialogue import Dialogue
 from viewpoint import Viewpoint
 import inventory
+import inventory_item
 
 
 class Player( BaseSpriteEntity ):
@@ -42,6 +43,7 @@ class Player( BaseSpriteEntity ):
         self.moving = False
 
         self.health = 100
+        self.armor = 0
         self.mana = 100
         self.alive = True
         
@@ -221,6 +223,10 @@ class Player( BaseSpriteEntity ):
         super().set_pos(newPos)
         self.offset = newPos
 
+    def on_player_inventory_updated(self):
+        for inv_item  in self.inventory.items_list:
+            if inv_item.type == "armor":
+                self.armor = inv_item.stat
 
 
 
