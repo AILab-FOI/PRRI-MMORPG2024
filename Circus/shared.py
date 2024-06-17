@@ -132,9 +132,9 @@ ENTITY_SPRITE_ATTRS = {
     'ability_fireball': {
         'path': 'assets/entities/abilities/ability_fireball.png',
         'num_layers': 4,
-        'scale': 8,
+        'scale': 3,
         'y_offset': 50,
-        'lifetime': 150,
+        'lifetime': 100,
         'cooldown': 5,
         'can_collide': False
     },

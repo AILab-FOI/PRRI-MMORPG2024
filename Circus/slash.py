@@ -27,7 +27,7 @@ class Slash ( Ability ):
     def run ( self ):
         self.update_position()
         self.update_rotation()
-        self.hit_enemy
+        self.hit_enemy()
     
     # idfk why the following maths work but they do be workin
     def update_position( self ):
