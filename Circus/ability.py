@@ -28,7 +28,7 @@ class Ability( Entity ):
         """Checks if ability collides with collision group
 
         Returns:
-            bool: has it collided
+            List: collided objects
         """
         if( not self.sprite ):
             return
