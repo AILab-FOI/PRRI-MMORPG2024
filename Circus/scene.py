@@ -230,6 +230,9 @@ class Scene:
                     try:
                         module_path, class_name = classStr.rsplit('.', 1)
                         module = import_module(module_path)
+
+                        if( class_name == "StackedSprite" ):
+                            continue
                         entClass = getattr(module, class_name)
                     except (ImportError, AttributeError) as e:
                         raise ImportError(classStr)
@@ -238,7 +241,7 @@ class Scene:
 
                     if( "name" in attr ):
                         name = attr["name"]
-                    
+
                     newEnt = entClass(name)
                     if( "pos" in attr ):
                         newEnt.set_pos( strToVec(attr["pos"]) * TILE_SIZE )

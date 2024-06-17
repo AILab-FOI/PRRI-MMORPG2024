@@ -1,4 +1,6 @@
+import asyncio
 import math
+import types
 from shared import *
 from pygame import Surface
 import os
@@ -52,12 +54,16 @@ class MaterialSystem:
         self.material_registry[file] = ret
 
         return ret
-    
+
     def recalculate_tile_rotation(self):
+        if( clientApp().active_viewpoint == None ):
+            return
+
+        angle = clientApp().active_viewpoint.angle
+        angle = -math.degrees(angle)
+
         for material in self.material_registry.values():
             if( material.type != "tile" ):
-                continue
-
-            angle = clientApp().active_viewpoint.angle
-            angle = -math.degrees(angle)
+                continue            
+            
             material.rotated_image = pg.transform.rotate( material.image, angle )
