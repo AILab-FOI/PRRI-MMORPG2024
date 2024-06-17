@@ -138,8 +138,6 @@ async def handle_connection(websocket, path: str):
             # And for now, this works, because the client always sends an update message
             await gameApp().handle_network_messages()
 
-            print(f"Handling connection")
-
             # Handle incoming messages...
             data = json.loads( message )
 
@@ -488,8 +486,6 @@ class Entity(object):
         message = {}
         message["command"] = "server_ent_update"
         message["data"] = network_info
-
-        print(f"{network_info}")
         
         existing_message = gameApp().get_entity_update_message(self.index)
         if( existing_message == -1 ):
@@ -575,7 +571,6 @@ class GameApp( object ):
         await self.tick()
         self.currtick += 1
         self.delta_time = self.clock.tick(TARGET_TICKRATE)
-        print(f"Tick")
 
     async def tick(self):
         self.entity_handler.tick()

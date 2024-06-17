@@ -377,8 +377,6 @@ class ClientApp:
                          data["position"]["y"] )
                     
                     self.entity_system.test_ent.set_pos(newpos)
-                    print(f"{newpos}")
-                    print(f"{self.player.pos}")
 
     def get_latest_update_message_and_remove_the_rest( self, entindex ):
         latestUpdateMessage = None
