@@ -157,6 +157,21 @@ class Player( BaseSpriteEntity ):
                                       dokill=False, collided=pg.sprite.collide_mask )
         hit = pg.sprite.spritecollide( self.sprite, clientApp().draw_manager.layer_masks['entity_layer'],
                                       dokill=False, collided=pg.sprite.collide_mask )
+        
+        for obj in list(hit):
+            if( "can_collide" in obj.entity.attrs and obj.entity.attrs["can_collide"] == False ):
+                hit.remove(obj)
+
+        for obj in list(hitobst):
+            if( "can_collide" in obj.attrs and obj.attrs["can_collide"] == False ):
+                hitobst.remove(obj)
+
+        if len(hit) == 0:
+            hit = None
+
+        if len(hitobst) == 0:
+            hitobst = None
+
         if not hitobst and not hit:
             if self.inc.x or self.inc.y:
                 self.prev_inc = self.inc
@@ -166,7 +181,7 @@ class Player( BaseSpriteEntity ):
                 clientApp().message.set_message( hit[ 0 ].entity.message )
                 clientApp().message.active = True
             if hitobst and hitobst[ 0 ].message != '':
-                clientApp().message.set_message( hitobst[ 0 ].entity.message )
+                clientApp().message.set_message( hitobst[ 0 ].message )
                 clientApp().message.active = True
 
     def has_moved_this_frame(self) -> bool:
