@@ -125,9 +125,9 @@ class Player( BaseSpriteEntity ):
 
         key_state = pg.key.get_pressed()
 
-        if key_state[ pg.K_LEFT ]:
+        if key_state[ pg.K_q ]:
             self.angle += rot_speed
-        if key_state[ pg.K_RIGHT ]:
+        if key_state[ pg.K_e ]:
             self.angle -= rot_speed
 
         if key_state[ pg.K_w ]:
