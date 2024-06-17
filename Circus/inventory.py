@@ -1,3 +1,4 @@
+import json
 from shared import *
 import player
 from shared import _globals
@@ -10,6 +11,7 @@ class Inventory ( object ):
     """    
     def __init__( self, id = None, owner = None, *items ):
         super().__init__( )
+        # What would ID be used for?
         self.id = id
         self.items_list = []
         for item in items:
@@ -59,7 +61,10 @@ class Inventory ( object ):
         message = {"command": "update_inventory_info"}
         message['inventory'] = self.id
         message['player'] = clientApp().username
-        message['inventory_items'] = self.items_list
+        message['inventory_items'] = []
+
+        for item in self.items_list:
+            message['inventory_items'].append(item.toJSON())
 
         clientApp().push_websocket_message(message, False)
 

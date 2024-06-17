@@ -1,3 +1,4 @@
+import json
 from shared import *
 
 class InventoryItem(object):
@@ -10,3 +11,9 @@ class InventoryItem(object):
         # zamisao je da se uspoređuje string?
         self.type = type
         self.stat = stat
+
+    def toJSON(self):
+        return json.dumps(
+            self,
+            default=lambda o: o.__dict__, 
+            sort_keys=True)

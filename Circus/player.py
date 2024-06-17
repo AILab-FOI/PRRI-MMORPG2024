@@ -47,7 +47,8 @@ class Player( BaseSpriteEntity ):
         self.mana = 100
         self.alive = True
         
-        self.inventory : inventory.Inventory = None
+        self.inventory : inventory.Inventory = inventory.Inventory()
+        self.inventory.add_items([inventory_item.InventoryItem()])
 
         self.inControl = True
 

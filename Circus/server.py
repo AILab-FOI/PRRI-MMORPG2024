@@ -74,6 +74,7 @@ class Player( persistent.Persistent ):
         self.vely = 0
         self.logged_in = False
         self.quests = {}
+        self.inventory = []
 
     def login( self, password: str ) -> bool:
         """Logins the player
@@ -152,7 +153,7 @@ async def handle_connection(websocket, path: str):
                         player: Player = dbGlobal.root.players[ player_id ]
                         for quest_id in player.quests:
                             await send_quest_info_to_player(websocket, quest_id, player)
-                        await broadcast_positions()                  
+                        await broadcast_positions()
                 elif data[ 'command' ] == 'logout':
                     logout_player( data[ 'id' ], data[ 'password' ] )
                     logging.info( f'User logged out {data}' )
@@ -206,6 +207,18 @@ async def handle_connection(websocket, path: str):
                     player.quests[quest_id]['finished'] = data['finished']
                     player.quests[quest_id]['progress'] = data['progress']
                     transaction.commit()
+                elif data['command'] == 'update_inventory_info':
+                    player_id = data['player']
+                    inventory_s = data['inventory_items']
+                    inventory = []
+
+                    for item_s in inventory_s:
+                        item = json.loads(item_s)
+                        inventory.append(item)
+                    
+                    dbGlobal.start_edit()
+                    dbGlobal.root.players[player_id].inventory = inventory
+                    dbGlobal.end_edit()
                 else:
                     print( 'Invalid command', data )
             except websockets.exceptions.ConnectionClosedOK as e:
@@ -245,6 +258,12 @@ async def send_quest_info_to_player(websocket, quest_id, player):
     send_message['accepted'] = player.quests[quest_id]['accepted']
     send_message['finished'] = player.quests[quest_id]['finished']
     send_message['progress'] = player.quests[quest_id]['progress']
+
+    await send_message_to_player(websocket, send_message)
+
+async def send_inventory_to_player(websocket, player):
+    send_message = { 'command': 'inventory_update' }
+    send_message['inventory'] = player.inventory
 
     await send_message_to_player(websocket, send_message)
 

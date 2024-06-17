@@ -8,6 +8,13 @@
             "program": "main.py",
             "cwd": "${workspaceFolder}/Circus",
             "args": ["--username", "DEBUGUSER", "--password", "DEBUGYEAH"],
+        },
+        {
+            "name": "Debug: Server",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "server.py",
+            "cwd": "${workspaceFolder}/Circus"
         }
     ]
 }
