@@ -400,27 +400,29 @@ class GameApp( object ):
         self.delta_time = 0.01
         self.currtick = 0
 
+    def get_delta_time_ms(self):
+        return self.delta_time
+    
+    def get_delta_time_sec(self):
+        return self.delta_time * 0.001
+
     def _tick(self):
         self.tick()
         self.currtick += 1
-        self.delta_time = self.clock.tick()
+        self.delta_time = self.clock.tick(TARGET_TICKRATE)
 
     def tick(self):
-        pass
-        #print(f"Tick: {self.currtick % TARGET_TICKRATE}\nSeconds:{time.time()-self.start_time}")
+        print(f"Tick: {self.currtick}\nSeconds:{time.time()-self.start_time}")
+        if( self.currtick == 60 ):
+            _globals.stop_thread = True
 
 TARGET_TICKRATE = 60
 
 def game_loop():
-    tick_time = 1 / TARGET_TICKRATE
-
     app = GameApp()
 
     while( True ):
         app._tick()
-        # Wait for the tick time
-        wait_time = max(tick_time - app.delta_time, 0)
-        time.sleep(wait_time)
         if( _globals.stop_thread ):
             return
 
@@ -434,13 +436,15 @@ async def main():
     dbGlobal.db = setup_database()  # Initialize database
     dbGlobal.start_edit()
     dbGlobal.end_edit()
-    atexit.register(exit_handler)
     _globals.game_thread = threading.Thread(target=game_loop)
     _globals.game_thread.start()
 
     print( "Starting websocket server" )
-    async with websockets.serve( handle_connection, SHOST, SPORT ):
-        await asyncio.Future()  # run forever
+    try:
+        async with websockets.serve( handle_connection, SHOST, SPORT ):
+            await asyncio.Future()  # run forever
+    finally:
+        exit_handler()
 
     dbGlobal.db.close()
     _globals.stop_thread = True
@@ -451,8 +455,10 @@ def exit_handler():
         dbGlobal.db.close()
 
     _globals.stop_thread = True
+    print( "Exited program" )
 
 if __name__ == "__main__":
     print( "Server starting" )
+    atexit.register(exit_handler)
     asyncio.run( main() )
 
