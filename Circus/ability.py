@@ -1,10 +1,9 @@
-from entity import Entity
+from entity import *
 import pygame as pg
-from shared import *
 from datetime import datetime, timedelta
 
 class Ability( Entity ):
-    def __init__( self, name, pos=vec2(0,0)):
+    def __init__( self, name, pos=(0,0)):
         """Ability class
 
         Args:
@@ -18,14 +17,22 @@ class Ability( Entity ):
         self.cooldown = self.attrs[ 'cooldown' ]
         self.instance_start_time = datetime.now()
 
+        self.always_update = True
+
+    def should_think(self) -> bool:
+        return True    
+
     def check_life_time( self ):
         if clientApp().anim_trigger:
             self.cycles += 1
             if self.cycles > self.lifetime:
                 self.kill()
 
-    def check_collision( self ):
+    def check_collision( self, hitList ):
         """Checks if ability collides with collision group
+        
+        Args:
+            hitList (list): list of enemies to check through
 
         Returns:
             List: collided objects
@@ -33,13 +40,15 @@ class Ability( Entity ):
         if( not self.sprite ):
             return
 
-        hits = pg.sprite.spritecollide( self.sprite, clientApp().collision_group,
+        hits = pg.sprite.spritecollide( self.sprite, hitList,
                                       dokill=False, collided=pg.sprite.collide_mask )
         return hits
 
     def think( self ):
+        clientApp().collision_group.remove( self )
         self.run()
         self.check_life_time()
+
 
     def check_cooldown( self ):
         """Checks if cooldown has passed

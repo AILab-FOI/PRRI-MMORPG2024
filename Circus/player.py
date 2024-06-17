@@ -8,6 +8,11 @@ import logging
 from dialogue import Dialogue
 from viewpoint import Viewpoint
 
+from slash import Slash
+from fireball import Fireball
+from lightning import Lightning
+from heal import Heal
+
 
 class Player( BaseSpriteEntity ):
     """Player base class
@@ -39,7 +44,7 @@ class Player( BaseSpriteEntity ):
 
         self.direction = 'DOWN'
         self.moving = False
-
+        
         self.health = 100
         self.mana = 100
         self.alive = True
@@ -216,6 +221,18 @@ class Player( BaseSpriteEntity ):
     def set_pos(self, newPos):
         super().set_pos(newPos)
         self.offset = newPos
+
+    def use_slash( self ):
+        Slash()
+
+    def use_fireball( self ):
+        Fireball()
+
+    def use_lightning( self ):
+        Lightning()
+
+    def use_heal( self ):
+        Heal() 
 
 
 

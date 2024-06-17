@@ -149,8 +149,8 @@ class Scene:
     def load_scene( self, mapname: str ):
         self.load_map_file( mapname )
 
-        clientApp().player.questDialogue.set_message(ESSAY)
-        clientApp().player.questDialogue.display()
+        #clientApp().player.questDialogue.set_message(ESSAY)
+        #clientApp().player.questDialogue.display()
         Interface('hud')
         BarInterface('health-bar')
         BarInterface('mana-bar')
