@@ -126,7 +126,7 @@ ENTITY_SPRITE_ATTRS = {
         'scale': 6,
         'y_offset': 50,
         'lifetime': 2,
-        'cooldown': 2,
+        'cooldown': 1,
         'can_collide': False
     },
     'ability_fireball': {
@@ -144,7 +144,7 @@ ENTITY_SPRITE_ATTRS = {
         'scale': 8,
         'y_offset': 50,
         'lifetime': 4,
-        'cooldown': 1,
+        'cooldown': 8,
         'can_collide': False
     },
     'ability_heal': {

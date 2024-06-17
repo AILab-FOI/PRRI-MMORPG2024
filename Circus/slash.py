@@ -18,8 +18,8 @@ class Slash ( Ability ):
         self.direction = (-self.player.right()).rotate_rad(self.angle)
         self.direction.normalize()
         self.direction *= 100
-        self.update_position
-
+        self.update_position()
+        self.update_rotation()
         self.collided = []
 
     def think ( self ):
@@ -35,7 +35,6 @@ class Slash ( Ability ):
     
     def update_rotation( self ):
         self.set_ang(180)
-
         
     def hit_enemy( self ):
         # collides = self.check_collision( enemy list )
