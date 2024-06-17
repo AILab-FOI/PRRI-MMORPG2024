@@ -22,32 +22,30 @@ class Inventory ( object ):
     def set_owner(self, owner):
         self.owner = owner
 
-    # arguments: 1 if add, -1 if remove
-    def update_inventory( self, items, add_or_rm : str):
-        
-       # add_or_rm = del za brisanje, add za dodavanje
-
-        if add_or_rm == "add":
-            # if len(self.items_list) >= 3:
-            #     raise Exception("inventory cannot go over 3 items")
-            # else:
-            
-            # removed limit on items for now
+    def delete_items(self, items):
+        if len(self.items_list) <= 0:
+            raise Exception("inventory cannot contain negative items")
+        else:
             for item in items:
-                 self.items_list.append(item)
-    
-        elif add_or_rm == "del":
-            if len(self.items_list) <= 0:
-                raise Exception("inventory cannot contain negative items")
-            else:
-                for item in items:
-                    if len(self.items_list) > 0:
-                        self.items_list.remove(item)
-                    else:
-                        raise Exception("cannot remove any more items")
+                if len(self.items_list) > 0:
+                    self.items_list.remove(item)
+                else:
+                    raise Exception("cannot remove any more items")
 
         self.on_inventory_updated()
+        self.update_info()
 
+    def add_items(self, items):
+        # if len(self.items_list) >= 3:
+        #     raise Exception("inventory cannot go over 3 items")
+        # else:
+        
+        # removed limit on items for now
+
+        for item in items:
+             self.items_list.append(item)
+
+        self.on_inventory_updated()
         self.update_info()
     
     def items_string(self) -> str:
@@ -61,7 +59,7 @@ class Inventory ( object ):
         message = {"command": "update_inventory_info"}
         message['inventory'] = self.id
         message['player'] = clientApp().username
-        message['inventory items'] = self.items_list
+        message['inventory_items'] = self.items_list
 
         clientApp().push_websocket_message(message, False)
 
