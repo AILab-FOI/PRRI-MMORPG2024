@@ -2,6 +2,7 @@ import pygame as pg
 import sys
 import re
 import logging
+
 vec2 = pg.math.Vector2
 
 RES = WIDTH, HEIGHT = vec2( 800, 450 ) #vec2( 1600, 900 )
@@ -118,6 +119,42 @@ ENTITY_SPRITE_ATTRS = {
         'scale': 0.4,
         'path': 'assets/entities/bullet/bullet.png',
         'y_offset': 50,
+    },
+    'ability_slash': {
+        'path': 'assets/entities/abilities/ability_slash.png',
+        'num_layers': 3,
+        'scale': 6,
+        'y_offset': 50,
+        'lifetime': 2,
+        'cooldown': 1,
+        'can_collide': False
+    },
+    'ability_fireball': {
+        'path': 'assets/entities/abilities/ability_fireball.png',
+        'num_layers': 4,
+        'scale': 3,
+        'y_offset': 50,
+        'lifetime': 100,
+        'cooldown': 5,
+        'can_collide': False
+    },
+    'ability_lightning': {
+        'path': 'assets/entities/abilities/ability_lightning.png',
+        'num_layers': 9,
+        'scale': 8,
+        'y_offset': 50,
+        'lifetime': 4,
+        'cooldown': 8,
+        'can_collide': False
+    },
+    'ability_heal': {
+        'path': 'assets/entities/abilities/ability_heal.png',
+        'num_layers': 6,
+        'scale': 3,
+        'y_offset': 50,
+        'lifetime': 60,
+        'cooldown': 10,
+        'can_collide': False
     },
     'movement': {
         'path': 'assets/entities/movement/movement.png',
@@ -364,7 +401,7 @@ INTERFACE_ATTRS = {
                 'width': 32,
                 'height': 32,
                 'interact-with': [pg.MOUSEBUTTONDOWN,pg.K_1],
-                'interaction': lambda: logging.info('ability_slash')
+                'interaction': lambda: clientApp().player.use_slash()
                 },
             'Fireball': {
                 'x': 356,
@@ -372,7 +409,7 @@ INTERFACE_ATTRS = {
                 'width': 32,
                 'height': 32,
                 'interact-with': [pg.MOUSEBUTTONDOWN,pg.K_2],
-                'interaction': lambda: logging.info('ability_fireball')
+                'interaction': lambda: clientApp().player.use_fireball()
                 },
             'Lightning': {
                 'x': 393,
@@ -380,7 +417,7 @@ INTERFACE_ATTRS = {
                 'width': 32,
                 'height': 32,
                 'interact-with': [pg.MOUSEBUTTONDOWN,pg.K_3],
-                'interaction': lambda: logging.info('ability_lightning')
+                'interaction': lambda: clientApp().player.use_lightning()
                 },
             'Heal': {
                 'x': 430,
@@ -388,7 +425,7 @@ INTERFACE_ATTRS = {
                 'width': 32,
                 'height': 32,
                 'interact-with': [pg.MOUSEBUTTONDOWN,pg.K_4],
-                'interaction': lambda: logging.info('ability_heal')
+                'interaction': lambda: clientApp().player.use_heal()
                 },
             'CheckQuests':{
                 'x': 800-100,

@@ -10,6 +10,11 @@ from viewpoint import Viewpoint
 import inventory
 import inventory_item
 
+from slash import Slash
+from fireball import Fireball
+from lightning import Lightning
+from heal import Heal
+from datetime import datetime, timedelta
 
 class Player( BaseSpriteEntity ):
     """Player base class
@@ -41,7 +46,7 @@ class Player( BaseSpriteEntity ):
 
         self.direction = 'DOWN'
         self.moving = False
-
+        
         self.health = 100
         self.armor = 0
         self.mana = 100
@@ -56,6 +61,18 @@ class Player( BaseSpriteEntity ):
         clientApp().trackables['player-mana'] = {'object': self, 'attr': 'mana', 'max': 100}
 
         self.questDialogue = Dialogue()
+
+
+        slash = ENTITY_SPRITE_ATTRS[ 'ability_slash' ]
+        fireball = ENTITY_SPRITE_ATTRS[ 'ability_fireball' ]
+        lightning = ENTITY_SPRITE_ATTRS[ 'ability_lightning' ]
+        heal = ENTITY_SPRITE_ATTRS[ 'ability_heal' ]
+        self.gcd = datetime.now()
+        self.abilities = []
+        self.abilities.append({'cooldown': slash['cooldown'], 'used-time': datetime.now()})
+        self.abilities.append({'cooldown': fireball['cooldown'], 'used-time': datetime.now()})
+        self.abilities.append({'cooldown': lightning['cooldown'], 'used-time': datetime.now()})
+        self.abilities.append({'cooldown': heal['cooldown'], 'used-time': datetime.now()})
 
     def on_start_drawing(self):
         super().on_start_drawing()
@@ -114,9 +131,9 @@ class Player( BaseSpriteEntity ):
 
         key_state = pg.key.get_pressed()
 
-        if key_state[ pg.K_LEFT ]:
+        if key_state[ pg.K_q ]:
             self.angle += rot_speed
-        if key_state[ pg.K_RIGHT ]:
+        if key_state[ pg.K_e ]:
             self.angle -= rot_speed
 
         if key_state[ pg.K_w ]:
@@ -244,14 +261,33 @@ class Player( BaseSpriteEntity ):
             if inv_item.type == "armor":
                 self.armor = inv_item.stat
 
+    def use_slash( self ):
+        if self.check_cooldown(self.abilities[0]):
+            Slash()
 
+    def use_fireball( self ):
+        if self.check_cooldown(self.abilities[1]):
+            Fireball()
 
+    def use_lightning( self ):
+        if self.check_cooldown(self.abilities[2]):
+            Lightning()
 
+    def use_heal( self ):
+        if self.check_cooldown(self.abilities[3]):
+            Heal()
 
+    def check_cooldown( self, ability ):
 
+        global_elapsed = datetime.now() - self.gcd
+        if global_elapsed.total_seconds() < 0.5:
+            return False
 
+        elapsed = datetime.now() - ability['used-time']
 
-
-
-
-
+        if elapsed.total_seconds() > ability['cooldown']:
+            self.gcd = datetime.now()
+            ability['used-time'] = datetime.now()
+            return True
+        else:
+            return False

@@ -149,8 +149,8 @@ class Scene:
     def load_scene( self, mapname: str ):
         self.load_map_file( mapname )
 
-        clientApp().player.questDialogue.set_message(ESSAY)
-        clientApp().player.questDialogue.display()
+        #clientApp().player.questDialogue.set_message(ESSAY)
+        #clientApp().player.questDialogue.display()
         Interface('hud')
         BarInterface('health-bar')
         BarInterface('mana-bar')
@@ -190,6 +190,9 @@ class Scene:
                 player_pos = clientApp().players_pos[ pl ]['position']
         
         clientApp().player.offset = player_pos
+
+        ent = Entity( name="kitty", pos=vec2(0) )
+        clientApp().entity_system.test_ent = ent
 
         self.done = True
     
