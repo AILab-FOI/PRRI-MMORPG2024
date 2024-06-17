@@ -350,6 +350,8 @@ class ClientApp:
             case "chat_message":
                 # Handle incoming chat message
                 self.handle_chat_message(json_message)
+            case "server_ent_update":
+                print("YOOO")
 
     def handle_player_pos_message(self, json_message):
         data = json_message["data"]

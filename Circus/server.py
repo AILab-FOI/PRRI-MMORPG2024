@@ -141,28 +141,16 @@ async def handle_connection(websocket, path: str):
 
                     if register_player( player_id, data[ 'password' ] ):
                         if( login_player( player_id, data[ 'password' ] ) ):
-                            await send_message_to_player(websocket, {"command": "login_successful"})
-                        
-                        player: Player = dbGlobal.root.players[ player_id ]
-                        for quest_id in player.quests:
-                            await send_quest_info_to_player(websocket, quest_id, player)
-                        
-                        await broadcast_positions()
+                            await send_client_base_info(websocket, player_id)
                     else:
                         logging.info( f'Error registring: username already taken {data}' )
                 elif data[ 'command' ] == 'login':
                     player_id = data[ 'id' ]
-
-                    if not login_player( player_id, data[ 'password' ] ):
+                    if login_player( player_id, data[ 'password' ] ):
+                        await send_client_base_info(websocket, player_id)              
+                    else:
                         await send_message_to_player( websocket, {"command": "login_failed", "data":"player_doesnt_exist"} )
                         logging.info( f'Invalid login attempt {data}' )
-                    else:
-                        await send_message_to_player(websocket, {"command": "login_successful"})      
-
-                        player: Player = dbGlobal.root.players[ player_id ]
-                        for quest_id in player.quests:
-                            await send_quest_info_to_player(websocket, quest_id, player)
-                        await broadcast_positions()                  
                 elif data[ 'command' ] == 'logout':
                     logout_player( data[ 'id' ], data[ 'password' ] )
                     logging.info( f'User logged out {data}' )
@@ -243,6 +231,19 @@ async def handle_connection(websocket, path: str):
         connected_clients.remove( websocket )
     finally:
         logging.info("Connection handler exiting")
+
+async def send_client_base_info( websocket, player_id ):
+    await send_message_to_player(websocket, {"command": "login_successful"})
+
+    dbGlobal.start_edit()
+    player: Player = dbGlobal.root.players[ player_id ]
+    for quest_id in player.quests:
+        await send_quest_info_to_player(websocket, quest_id, player)
+    dbGlobal.end_edit()
+
+    await gameApp().entity_handler.send_entities_to_client(websocket)
+
+    await broadcast_positions()
 
 def create_quest_info(quest_id, player):
     dbGlobal.start_edit()
@@ -423,7 +424,14 @@ class Entity(object):
         self.send_network_info()
 
     def think(self):
-        pass
+        targetpos = vec2(0)
+        dbGlobal.start_edit()
+        if( len(dbGlobal.root.players) > 0 ):
+            player: Player = dbGlobal.root.players.values()[0]
+            targetpos = vec2( player.x, player.y )
+        dbGlobal.end_edit()
+
+        self.velocity = self.position.move_towards(targetpos, 1) * 10
 
     def physics_think(self):
         if( self.velocity == vec2(0) ):
@@ -436,8 +444,10 @@ class Entity(object):
     def gather_network_info(self) -> dict:
         network_info = {}
         network_info["netid"] = self.index
-        network_info["position"] = self.position
-        network_info["velocity"] = self.velocity
+        # Can't send Vec2 directly
+        network_info["position"] = { "x": self.position.x, "y":self.position.x}
+        network_info["velocity"] = { "x": self.velocity.x, "y":self.velocity.x}
+        return network_info
 
     def network_info_changed(self, network_info) -> bool:
         return network_info == self.last_network_info
@@ -461,13 +471,20 @@ class EntitySystem(object):
     def __init__(self) -> types.NoneType:
         self.entitylist: dict[Entity] = {}
         self.freeindex = 0
+        self.load_from_db()
+
+        if( len(self.entitylist) == 0 ):
+            self.add_entity(Entity())
     
     def load_from_db(self):
         dbGlobal.start_edit()
-
+        last_free_index = 0
         for entindex, ent in dbGlobal.root.entities.items():
             self.entitylist[entindex] = ent
+            if( entindex >= last_free_index ):
+                last_free_index = entindex+1
 
+        self.freeindex = last_free_index
         dbGlobal.end_edit()
 
     def add_to_db(self, entity: Entity):
@@ -480,16 +497,26 @@ class EntitySystem(object):
         dbGlobal.end_edit()
 
     def add_entity(self, entity: Entity):
+        ENTITY_SEMAPHORE.acquire()
         entity.index = self.freeindex
         self.entitylist[entity.index] = entity
         self.add_to_db(entity)
 
         self.freeindex += 1
+        ENTITY_SEMAPHORE.release()
 
     def tick(self):
         ENTITY_SEMAPHORE.acquire()
-        for entity in self.entitylist:
-            entity.think()
+        for entity in self.entitylist.values():
+            entity.tick()
+        ENTITY_SEMAPHORE.release()
+    
+    async def send_entities_to_client(self, websocket):
+        ENTITY_SEMAPHORE.acquire()
+        for entity in self.entitylist.values():
+            message = entity.gather_network_info()
+            message["command"] = "server_ent_update"
+            await send_message_to_player(websocket, message)
         ENTITY_SEMAPHORE.release()
 
 class GameApp( object ):
