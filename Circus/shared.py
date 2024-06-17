@@ -362,6 +362,7 @@ INTERFACE_ATTRS = {
                 'y': 394,
                 'width': 32,
                 'height': 32,
+                'interact-with': [pg.MOUSEBUTTONDOWN,pg.K_1],
                 'interaction': lambda: logging.info('ability_slash')
                 },
             'Fireball': {
@@ -369,6 +370,7 @@ INTERFACE_ATTRS = {
                 'y': 394,
                 'width': 32,
                 'height': 32,
+                'interact-with': [pg.MOUSEBUTTONDOWN,pg.K_2],
                 'interaction': lambda: logging.info('ability_fireball')
                 },
             'Lightning': {
@@ -376,6 +378,7 @@ INTERFACE_ATTRS = {
                 'y': 394,
                 'width': 32,
                 'height': 32,
+                'interact-with': [pg.MOUSEBUTTONDOWN,pg.K_3],
                 'interaction': lambda: logging.info('ability_lightning')
                 },
             'Heal': {
@@ -383,6 +386,7 @@ INTERFACE_ATTRS = {
                 'y': 394,
                 'width': 32,
                 'height': 32,
+                'interact-with': [pg.MOUSEBUTTONDOWN,pg.K_4],
                 'interaction': lambda: logging.info('ability_heal')
                 },
             'CheckQuests':{
@@ -390,6 +394,7 @@ INTERFACE_ATTRS = {
                 'y': 0,
                 'width': 100,
                 'height': 50,
+                'interact-with': [pg.MOUSEBUTTONDOWN],
                 'interaction': lambda : clientApp().print_quests()
             }
         }
@@ -426,6 +431,7 @@ INTERFACE_ATTRS = {
                 'y': 242,
                 'width': 599,
                 'height': 211,
+                'interact-with': [pg.MOUSEBUTTONDOWN],
                 'interaction': lambda : clientApp().player.questDialogue.handle_input()
                 }
         },
@@ -447,6 +453,7 @@ INTERFACE_ATTRS = {
                 'y': 138,
                 'width': 229,
                 'height': 22,
+                'interact-with': [pg.MOUSEBUTTONDOWN],
                 'interaction': lambda : clientApp().chat.activate()
                 },
         },

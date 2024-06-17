@@ -48,7 +48,6 @@ class Chat ( Dialogue ):
             msg += message + '\n'
         self.set_message( msg, width=22 )
         self.display(offset=self.chat_scroll_offset)
-            
 
     def activate( self ):
         self.active = True

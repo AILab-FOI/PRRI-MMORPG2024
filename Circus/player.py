@@ -144,16 +144,10 @@ class Player( BaseSpriteEntity ):
             self.health = 100
         else:
             self.health += amount
-    def single_fire( self, event ):
-        if event.type == pg.MOUSEBUTTONDOWN:
-            if event.button == 1:  
-                Bullet(pos=self.pos)
-                self.damage(8.72)
-                
-        elif event.type == pg.KEYDOWN:
+    def single_fire( self, event ):     
+        if event.type == pg.KEYDOWN:
             if event.key == pg.K_SPACE:
-                self.heal(6.32)
-                clientApp().message.handle_input()
+                self.questDialogue.handle_input()
 
     def check_collision( self ):
         if( self.sprite == None ):

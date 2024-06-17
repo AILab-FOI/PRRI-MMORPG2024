@@ -51,8 +51,9 @@ class Interface( pg.sprite.Sprite ):
     def show( self ):
         """Displays interface, recreating interactibles
         """
+        if not self.shown:
+            self.create_interactions()
         self.shown = True
-        self.create_interactions()
         self.image = pg.image.load( self.attrs[ 'path' ] ).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.topleft = self.pos
@@ -60,8 +61,9 @@ class Interface( pg.sprite.Sprite ):
     def hide( self ):
         """Hides interface, removing interactibles
         """
+        if self.shown:
+            self.remove_interactions()
         self.shown = False
-        self.remove_interactions()
         self.image = pg.Surface( (0, 0) )
         self.rect = self.image.get_rect()
 
