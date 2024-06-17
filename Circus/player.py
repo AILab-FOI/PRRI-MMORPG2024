@@ -7,6 +7,7 @@ import json
 import logging
 from dialogue import Dialogue
 from viewpoint import Viewpoint
+import inventory
 
 
 class Player( BaseSpriteEntity ):
@@ -43,6 +44,8 @@ class Player( BaseSpriteEntity ):
         self.health = 100
         self.mana = 100
         self.alive = True
+        
+        self.inventory : inventory.Inventory = None
 
         clientApp().trackables['player-health'] = {'object': self, 'attr': 'health', 'max': 100}
         clientApp().trackables['player-mana'] = {'object': self, 'attr': 'mana', 'max': 100}
