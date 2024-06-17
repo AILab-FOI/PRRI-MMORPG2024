@@ -160,7 +160,7 @@ class Scene:
         player_pos = vec2(0)
         
 
-        clientApp().chat.show()
+        #clientApp().chat.show()
 
         for j, row in enumerate( MAP ):
             for i, name in enumerate( row ):

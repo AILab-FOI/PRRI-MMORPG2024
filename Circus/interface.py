@@ -8,6 +8,12 @@ import logging
 
 class Interface( pg.sprite.Sprite ):
     def __init__(self, name, shown=True ):
+        """Interface class
+
+        Args:
+            name (string): identifiable name for shared.py
+            shown (bool): to immediately render interface or to wait for interface.show() to be called 
+        """
         self.name = name
         self.shown = shown
         self.attrs = INTERFACE_ATTRS[ self.name ]
@@ -43,6 +49,8 @@ class Interface( pg.sprite.Sprite ):
             self.image = None
     
     def show( self ):
+        """Displays interface, recreating interactibles
+        """
         self.shown = True
         self.create_interactions()
         self.image = pg.image.load( self.attrs[ 'path' ] ).convert_alpha()
@@ -50,6 +58,8 @@ class Interface( pg.sprite.Sprite ):
         self.rect.topleft = self.pos
 
     def hide( self ):
+        """Hides interface, removing interactibles
+        """
         self.shown = False
         self.remove_interactions()
         self.image = pg.Surface( (0, 0) )
@@ -72,8 +82,16 @@ class Interface( pg.sprite.Sprite ):
 
 
 class BarInterface( Interface ):
-    def __init__(self, name):
-        super().__init__(name)
+    def __init__(self, name, shown=True):
+        """Bar Interface class
+        Used for UI elements that track information in the style of a "bar"
+        To track information REQUIRES for the information to be added to clientApp().trackables
+
+        Args:
+            name (string): identifiable name for shared.py
+            shown (bool): to immediately render interface or to wait for interface.show() to be called 
+        """
+        super().__init__(name, shown)
         self.frames = self.attrs[ 'frames' ]
         self.tracking = self.attrs[ 'tracking' ]
         self.frame_index = 0

@@ -3,8 +3,13 @@ import pygame as pg
 from shared import *
 
 class Chat ( Dialogue ):
-    def __init__ ( self, max_messages=50 ):
-        super().__init__( name = 'chat-box', font_size=10, max_lines=max_messages, color=(150, 150, 150) )
+    def __init__ ( self, max_messages=150 ):
+        """Chat class
+
+        Args:
+            max_messages (int): maximum ammount of messages to keep track of and display, defaults to 150
+        """
+        super().__init__( name = 'chat-box', font_size=10, max_lines=max_messages, color=(150, 150, 150), shown=True )
         self.max_messages = max_messages
         self.messages = []
         self.chat_scroll_offset = 0 
@@ -14,11 +19,23 @@ class Chat ( Dialogue ):
 
         self.chat_display_box = pg.Rect(self.text_pos, (self.text_area[ 'width' ], self.text_area[ 'height' ]))
 
+        input =  self.interactibles[ 'enter-message' ]
+        self.input_pos = (input[ 'x' ] + 4, input[ 'y' ] + 4)
+        self.input_size = (input[ 'width' ] - 8, input[ 'height' ] - 8)
+        self.input_display = pg.Surface(self.input_size)
+
     def update( self ):
         super().update()
         self.get_dialogue_msg()
+        self.get_input_text()
         if self.onHold:
             self.onHold = False
+
+    def get_input_text( self ):
+        self.clear_text( self.input_display )
+        aligning = max(0 ,self.font.size(self.text)[0] - self.input_size[0])
+        self.render_text( self.text, self.input_display, color=(29, 29, 29), alignmode='left', align=-aligning )
+        self.image.blit( self.input_display, self.input_pos )
 
     def add_message( self, message ):
         if len(self.messages) >= self.max_lines - 1:
@@ -61,7 +78,8 @@ class Chat ( Dialogue ):
         # Scroll chat messages
 
         if e.type == pg.MOUSEBUTTONDOWN and self.chat_display_box.collidepoint(e.pos):
-            if e.button == 5:  # Scroll down
-                self.chat_scroll_offset = min(self.chat_scroll_offset + 10, 0)
-            if e.button == 4:  # Scroll up
-                self.chat_scroll_offset = max(self.chat_scroll_offset - 10, -max(0, len(self.messages) * 11 - self.chat_display_box.height))
+            if len(self.messages) > 0:
+                if e.button == 5:  # Scroll down
+                    self.chat_scroll_offset = min(self.chat_scroll_offset + 10, 0)
+                if e.button == 4:  # Scroll up
+                    self.chat_scroll_offset = max(self.chat_scroll_offset - 10, -max(0, len(self.wrapped_text) * self.line_height * 1.1 - self.text_area[ 'height' ]))
