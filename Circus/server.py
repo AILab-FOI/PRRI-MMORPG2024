@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 import asyncio
+import threading
+import time
 import types
 import websockets
 import logging
+import pygame as pg
 logging.basicConfig(level=logging.INFO)
 
 import json
@@ -390,26 +393,66 @@ async def broadcast_positions():
     await broadcast_message_to_all( object_to_send )
     dbGlobal.end_edit()
 
+class GameApp( object ):
+    def __init__(self) -> types.NoneType:
+        self.clock = pg.time.Clock()
+        self.start_time = time.time()
+        self.delta_time = 0.01
+        self.currtick = 0
+
+    def _tick(self):
+        self.tick()
+        self.currtick += 1
+        self.delta_time = self.clock.tick()
+
+    def tick(self):
+        pass
+        #print(f"Tick: {self.currtick % TARGET_TICKRATE}\nSeconds:{time.time()-self.start_time}")
+
+TARGET_TICKRATE = 60
+
+def game_loop():
+    tick_time = 1 / TARGET_TICKRATE
+
+    app = GameApp()
+
+    while( True ):
+        app._tick()
+        # Wait for the tick time
+        wait_time = max(tick_time - app.delta_time, 0)
+        time.sleep(wait_time)
+        if( _globals.stop_thread ):
+            return
+
+class _globals:
+    game_thread: threading.Thread = None
+    stop_thread: bool = False
+
 # Run the server
 async def main():
     print( "Setting up database" )
     dbGlobal.db = setup_database()  # Initialize database
     dbGlobal.start_edit()
     dbGlobal.end_edit()
+    atexit.register(exit_handler)
+    _globals.game_thread = threading.Thread(target=game_loop)
+    _globals.game_thread.start()
 
     print( "Starting websocket server" )
     async with websockets.serve( handle_connection, SHOST, SPORT ):
         await asyncio.Future()  # run forever
 
     dbGlobal.db.close()
+    _globals.stop_thread = True
 
 def exit_handler():
     if( dbGlobal.db != None ):
         dbGlobal.connection.close()
         dbGlobal.db.close()
 
+    _globals.stop_thread = True
+
 if __name__ == "__main__":
     print( "Server starting" )
-    atexit.register(exit_handler)
     asyncio.run( main() )
 
