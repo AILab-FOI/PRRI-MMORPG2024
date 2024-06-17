@@ -49,6 +49,8 @@ class Player( BaseSpriteEntity ):
         
         self.inventory : inventory.Inventory = None
 
+        self.inControl = True
+
         clientApp().trackables['player-health'] = {'object': self, 'attr': 'health', 'max': 100}
         clientApp().trackables['player-mana'] = {'object': self, 'attr': 'mana', 'max': 100}
 
@@ -99,6 +101,9 @@ class Player( BaseSpriteEntity ):
 
 
     def control( self ):
+        if not self.inControl:
+            return
+        
         self.moving = False
         self.last_inc[0] = self.inc[0]
         self.last_inc[1] = self.inc[1]
@@ -144,16 +149,10 @@ class Player( BaseSpriteEntity ):
             self.health = 100
         else:
             self.health += amount
-    def single_fire( self, event ):
-        if event.type == pg.MOUSEBUTTONDOWN:
-            if event.button == 1:  
-                Bullet(pos=self.pos)
-                self.damage(8.72)
-                
-        elif event.type == pg.KEYDOWN:
+    def single_fire( self, event ):     
+        if event.type == pg.KEYDOWN:
             if event.key == pg.K_SPACE:
-                self.heal(6.32)
-                clientApp().message.handle_input()
+                self.questDialogue.handle_input()
 
     def check_collision( self ):
         if( self.sprite == None ):
@@ -163,6 +162,21 @@ class Player( BaseSpriteEntity ):
                                       dokill=False, collided=pg.sprite.collide_mask )
         hit = pg.sprite.spritecollide( self.sprite, clientApp().draw_manager.layer_masks['entity_layer'],
                                       dokill=False, collided=pg.sprite.collide_mask )
+        
+        for obj in list(hit):
+            if( "can_collide" in obj.entity.attrs and obj.entity.attrs["can_collide"] == False ):
+                hit.remove(obj)
+
+        for obj in list(hitobst):
+            if( "can_collide" in obj.attrs and obj.attrs["can_collide"] == False ):
+                hitobst.remove(obj)
+
+        if len(hit) == 0:
+            hit = None
+
+        if len(hitobst) == 0:
+            hitobst = None
+
         if not hitobst and not hit:
             if self.inc.x or self.inc.y:
                 self.prev_inc = self.inc
@@ -172,7 +186,7 @@ class Player( BaseSpriteEntity ):
                 clientApp().message.set_message( hit[ 0 ].entity.message )
                 clientApp().message.active = True
             if hitobst and hitobst[ 0 ].message != '':
-                clientApp().message.set_message( hitobst[ 0 ].entity.message )
+                clientApp().message.set_message( hitobst[ 0 ].message )
                 clientApp().message.active = True
 
     def has_moved_this_frame(self) -> bool:

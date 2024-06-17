@@ -14,8 +14,10 @@ class WorldObject(object):
     """    
     def __init__( self, pos=( 0, 0 ) ):
         self.pos: vec2 = vec2( pos )
+        self.ang: float = 0
         self.screen_pos: vec2 = vec2( 0 )
         self.screen_ang = 0
+        self.prev_screen_ang = 0
         self.visible: bool = True
         self.always_update: bool = False
         self.is_drawing = False
@@ -35,6 +37,8 @@ class WorldObject(object):
         match name:
             case "pos":
                 self.set_pos( strToVec(value) * TILE_SIZE )
+            case "ang":
+                self.set_ang( value )
             case _:
                 setattr(self, name, value)
 
@@ -43,6 +47,16 @@ class WorldObject(object):
             return
 
         self.pos = newPos
+
+        if( self.is_drawing ):
+            self.calculate_viewpoint_position()
+            self.update_screenpos()
+
+    def set_ang( self, newAng ):
+        if( newAng == self.ang ):
+            return
+
+        self.ang = newAng
 
         if( self.is_drawing ):
             self.calculate_viewpoint_position()
@@ -58,7 +72,8 @@ class WorldObject(object):
         view_pos = view_pos.rotate_rad( viewpoint.angle )
         self.screen_pos = view_pos + CENTER
 
-        self.screen_ang = -math.degrees( viewpoint.angle )
+        self.prev_screen_ang = self.screen_ang
+        self.screen_ang = self.ang
 
     # Called by Sprite layers - Primarily used for visuals
     def _draw_update( self ):
@@ -199,9 +214,12 @@ class BaseSpriteEntity( WorldObject ):
 
         clientApp().entity_system.add_entity(self)
 
-        self.sprite = None
+        self.sprite: pg.sprite.Sprite = None
 
         self.load_attrs_from_name( self.name )
+
+        if( self.name == 'kitty' ):
+            self.set_ang( 45 )
     
     def load_attribute(self, name, value):
         match name:
@@ -222,7 +240,6 @@ class BaseSpriteEntity( WorldObject ):
         super().on_start_drawing()
         self.sprite = pg.sprite.Sprite( self.group )
         self.sprite.entity = self
-
         self.sprite.image = self.images[ 0 ]
         self.sprite.rect = self.sprite.image.get_rect()
 
@@ -243,7 +260,10 @@ class BaseSpriteEntity( WorldObject ):
     def animate( self ):
         if clientApp().anim_trigger:
             self.frame_index = ( self.frame_index + 1 ) % len( self.images )
-            self.sprite.image = self.images[ self.frame_index ]
+            if( self.screen_ang != 0 ):
+                self.sprite.image = pg.transform.rotate( self.images[ self.frame_index ], self.screen_ang )
+            else:
+                self.sprite.image = self.images[ self.frame_index ]
 
     def update_visuals( self ):
         self.animate()
@@ -280,6 +300,10 @@ class Entity( BaseSpriteEntity ):
     def update_screenpos( self ):
         super().update_screenpos()
 
+        if( self.prev_screen_ang != self.screen_ang ):
+            self.sprite.image = pg.transform.rotate( self.images[ self.frame_index ], self.screen_ang )
+            self.sprite.rect = self.sprite.image.get_rect()
+        
         self.sprite.rect.center = self.screen_pos + self.y_offset
 
         self.change_layer()

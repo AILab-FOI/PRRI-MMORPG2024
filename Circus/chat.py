@@ -1,5 +1,84 @@
 from dialogue import Dialogue
+import pygame as pg
+from shared import *
 
 class Chat ( Dialogue ):
-    def __init__ ( self ):
-        super().__init__( type = 'chat-box', font_size=10, max_lines=8 )
+    def __init__ ( self, max_messages=150 ):
+        """Chat class
+
+        Args:
+            max_messages (int): maximum ammount of messages to keep track of and display, defaults to 150
+        """
+        super().__init__( name = 'chat-box', font_size=10, max_lines=max_messages, color=(150, 150, 150), shown=True )
+        self.max_messages = max_messages
+        self.messages = []
+        self.chat_scroll_offset = 0 
+        self.active = False
+        self.onHold = False
+        self.text = ''
+
+        self.chat_display_box = pg.Rect(self.text_pos, (self.text_area[ 'width' ], self.text_area[ 'height' ]))
+
+        input =  self.interactibles[ 'enter-message' ]
+        self.input_pos = (input[ 'x' ] + 4, input[ 'y' ] + 4)
+        self.input_size = (input[ 'width' ] - 8, input[ 'height' ] - 8)
+        self.input_display = pg.Surface(self.input_size)
+
+    def update( self ):
+        super().update()
+        self.get_dialogue_msg()
+        self.get_input_text()
+        if self.onHold:
+            self.onHold = False
+
+    def get_input_text( self ):
+        self.clear_text( self.input_display )
+        aligning = max(0 ,self.font.size(self.text)[0] - self.input_size[0])
+        self.render_text( self.text, self.input_display, color=(29, 29, 29), alignmode='left', align=-aligning )
+        self.image.blit( self.input_display, self.input_pos )
+
+    def add_message( self, message ):
+        if len(self.messages) >= self.max_lines - 1:
+            del self.messages[0]
+        self.messages.append( message )
+
+    def get_dialogue_msg( self ):
+        msg = ''
+        for message in self.messages:
+            msg += message + '\n'
+        self.set_message( msg, width=22 )
+        self.display(offset=self.chat_scroll_offset)
+
+    def activate( self ):
+        self.active = True
+        clientApp().player.inControl = False
+
+        self.onHold = True
+
+    def check_event( self, e ):
+        if e.type == pg.MOUSEBUTTONDOWN:
+            if self.active and not self.onHold:
+                self.active = False
+                clientApp().player.inControl = True
+
+        if e.type == pg.KEYDOWN:
+            if self.active:
+                if e.key == pg.K_RETURN:
+                    # Send chat message to server
+                    if self.text.strip() != '':
+                        clientApp().send_chat_message(self.text)
+                        self.active = False
+                        clientApp().player.inControl = True
+                    self.text = ''
+                elif e.key == pg.K_BACKSPACE:
+                    self.text = self.text[:-1]
+                else:
+                    self.text += e.unicode
+        # Scroll chat messages
+
+        if e.type == pg.MOUSEBUTTONDOWN and self.chat_display_box.collidepoint(e.pos):
+            if len(self.messages) > 0:
+                if e.button == 5:  # Scroll down
+                    self.chat_scroll_offset = min(self.chat_scroll_offset + 10, 0)
+                if e.button == 4:  # Scroll up
+                    self.chat_scroll_offset = max(self.chat_scroll_offset - 10, -max(0, len(self.wrapped_text) * self.line_height * 1.1 - self.text_area[ 'height' ]))
