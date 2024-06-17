@@ -4,7 +4,7 @@ import textwrap
 from itertools import chain
 import math
 class Dialogue( Interface ):
-    def __init__( self, name = 'dialogue-box', font_size = 15, max_lines = 5, color = ( 29, 29, 29 ), source = None):
+    def __init__( self, name = 'dialogue-box', font_size = 13, max_lines = 6, color = ( 29, 29, 29 ), source = None):
         """Dialogue class
 
         Args:
@@ -26,7 +26,7 @@ class Dialogue( Interface ):
         self.source = source
         self.msg = ''
 
-    def set_message( self, msg, width=39 ):
+    def set_message( self, msg, width=30 ):
         t = [ textwrap.wrap( m, width=width ) for m in msg.split( '\n' ) ]
         self.wrapped_text = list( chain( *t ) )
 
@@ -56,7 +56,7 @@ class Dialogue( Interface ):
     def handle_input( self ):
         if self.text_index < len( self.wrapped_text ):
             self.text_index += self.max_lines
-            self.display( self.msg )
+            self.display()
         else:
             self.text_index = 0
             self.close()
