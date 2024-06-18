@@ -39,8 +39,12 @@ class Interactible:
         if event.type == pg.MOUSEBUTTONDOWN:
             mx, my = pg.mouse.get_pos()
             if mx > self.x and my > self.y and mx < self.x + self.width and my < self.y + self.height:
+                CLICK_SOUND.play()
                 return {'z':self.z, 'interaction':self.interaction}
+                
         elif event.type == pg.KEYDOWN:
             if event.key in self.interact_with:
+                CLICK_SOUND.play()
                 return {'z':self.z, 'interaction':self.interaction}
+                
         return ''

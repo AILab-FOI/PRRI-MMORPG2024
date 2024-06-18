@@ -300,6 +300,7 @@ class Player( BaseSpriteEntity ):
     def use_slash( self ):
         if self.check_cooldown(self.abilities[0]):
             Slash()
+            ATTACK_SOUND.play()
 
     def use_fireball( self ):
         if self.check_cooldown(self.abilities[1]):

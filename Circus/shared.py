@@ -13,11 +13,14 @@ PLAYER_SPEED = 0.4
 PLAYER_ROT_SPEED = 0.0015
 
 BG_COLOR = ( 9, 20, 38 ) #'white'  # olivedrab
-NUM_ANGLES = 72  # multiple of 360 -> 24, 30, 36, 40, 45, 60, 72, 90, 120, 180
+NUM_ANGLES = 3  # multiple of 360 -> 24, 30, 36, 40, 45, 60, 72, 90, 120, 180
 
 pg.mixer.init()
 pg.mixer.music.load( "assets/bgm/bgm.ogg" )
 pg.mixer.music.play( loops=-1 )
+pg.mixer.music.set_volume(0.3)
+ATTACK_SOUND = pg.mixer.Sound('assets/bgm/Attack.ogg')
+CLICK_SOUND = pg.mixer.Sound('assets/bgm/Click.ogg')
 
 class _globals:
     app = None
