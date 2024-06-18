@@ -103,6 +103,13 @@ ENTITY_SPRITE_ATTRS = {
         'y_offset': -20,
         'can_collide': False
     },
+    'empty': {
+        'path': 'assets/entities/cats/empty.png',
+        'num_layers': 8,
+        'scale': 0.1,
+        'y_offset': -20,
+        'can_collide': False
+    },
     'circus': {
         'path': 'assets/entities/circus/circus_tent.png',
         'num_layers': 1,

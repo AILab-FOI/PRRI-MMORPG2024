@@ -9,7 +9,7 @@ from typing import List
 NPCS = {
     'test_npc': {
         'name': 'Guggy',
-        'entity': 'kitty',
+        'entity': 'empty',
         'dialog': 'Hey, could you fetch some apples for me?\nAn apple tree is to the east of here!',
         'quests': [
             FetchQuest(
