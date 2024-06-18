@@ -45,6 +45,8 @@ class Player( BaseSpriteEntity ):
         self.right_ind = [ 0, 4, 8, 12 ]
         self.right_list = cycle( self.right_ind )
 
+        self.tick_time = datetime.now()
+
         self.direction = 'DOWN'
         self.moving = False
         
@@ -124,6 +126,23 @@ class Player( BaseSpriteEntity ):
 
             self.sprite.image = self.images[ self.frame_index ]
 
+
+    def use_mana( self, amount ):
+        if self.mana - amount <= 0:
+            self.mana = 0
+        else:
+            self.mana -= amount
+
+    def retrieve_mana ( self ):
+        elapsed = datetime.now() - self.tick_time
+        if elapsed.seconds >= 0.5:
+            if self.mana + 8 >= 100:
+                self.mana = 100
+            else:
+                self.mana += 8
+            self.tick_time = datetime.now()
+
+        
 
     def control( self ):
         if not self.inControl:
@@ -254,6 +273,7 @@ class Player( BaseSpriteEntity ):
         self.viewpoint.set_pos( self.offset )
 
     def think( self ):
+        self.retrieve_mana()
         self.control()
         self.check_collision()
         self.move()
@@ -283,15 +303,21 @@ class Player( BaseSpriteEntity ):
 
     def use_fireball( self ):
         if self.check_cooldown(self.abilities[1]):
-            Fireball()
+            if self.mana >= 15:
+                Fireball()
+                self.use_mana(50)
 
     def use_lightning( self ):
         if self.check_cooldown(self.abilities[2]):
-            Lightning()
+            if self.mana >= 50:
+                Lightning()
+                self.use_mana(50)
 
     def use_heal( self ):
         if self.check_cooldown(self.abilities[3]):
-            Heal()
+            if self.mana >= 30:
+                Heal()
+                self.use_mana(30)
 
     def check_cooldown( self, ability ):
 

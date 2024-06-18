@@ -33,7 +33,7 @@
             "label": "Start Client",
             "type": "process",
             "command": "python",
-            "args": ["main.py", "--username", "USER", "--password", "PASS"],
+            "args": ["main.py", "--username", "Iris", "--password", "PASS"],
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -46,7 +46,7 @@
             "label": "Start Second Client",
             "type": "process",
             "command": "python",
-            "args": ["main.py", "--username", "USER2", "--password", "PASS2"],
+            "args": ["main.py", "--username", "Ivan", "--password", "PASS2"],
             "group": {
                 "kind": "build",
                 "isDefault": true
