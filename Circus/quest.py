@@ -1,6 +1,7 @@
 from shared import *
 import player
 from shared import _globals
+from inventory_item import InventoryItem
 
 class Reward( object ):
     def __init__(self) -> None:
@@ -21,8 +22,10 @@ class ItemReward( Reward ):
             self.items.append(item)
         
     def give_reward(self):
-        print("Granted items: ")
-        print(self.items)
+        clientApp().player.inventory.add_items([
+            InventoryItem( id=1, name="Apple",description="+40% Doctor resistance", type="Armor", stat=40 ),
+            InventoryItem( id=2, name="Gold",description="Common Currency", type="Currency", stat=1 ),
+        ])
     
     def reward_string(self) -> str:
         return str(self.items)

@@ -52,8 +52,12 @@ class Player( BaseSpriteEntity ):
         self.armor = 0
         self.mana = 100
         self.alive = True
+
+        self.inventoryDisplay = Dialogue(name='inventory-display')
+        self.inventoryDisplay.set_message("")
+        self.inventoryDisplay.display()
         
-        self.inventory : inventory.Inventory = inventory.Inventory()
+        self.inventory : inventory.Inventory = inventory.Inventory(owner=self)
         if( _globals.tmp_inv != None ):
             self.inventory.load_from_net(_globals.tmp_inv)
             _globals.tmp_inv = None
@@ -259,6 +263,15 @@ class Player( BaseSpriteEntity ):
         self.offset = newPos
 
     def on_player_inventory_updated(self):
+        inventoryMessage = "Inventory:\n"
+        for item in self.inventory.items_list:
+            itemMessage = f"{item.name}\n  {item.description}\n  Type:{item.type}\n  Power:{item.stat}\n"
+            inventoryMessage += itemMessage
+
+        print(inventoryMessage)
+        self.inventoryDisplay.set_message(inventoryMessage)
+        self.inventoryDisplay.display()
+
         for inv_item in self.inventory.items_list:
             # gleda se zadnji u listi
             if inv_item.type == "armor":

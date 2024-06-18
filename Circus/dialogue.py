@@ -17,8 +17,15 @@ class Dialogue( Interface ):
         """
         super().__init__(name, shown)
         self.font = pg.font.Font( "assets/PressStart2P-Regular.ttf", font_size )
-        self.max_lines = max_lines
-        self.color = color
+        if "max_lines" in self.attrs:
+            self.max_lines = self.attrs[ 'max_lines' ]
+        else:
+            self.max_lines = max_lines
+
+        if "color" in self.attrs:
+            self.color = self.attrs[ 'color' ]
+        else:
+            self.color = color
         self.text_pos = self.attrs[ 'text-pos' ]
         self.text_area = self.attrs[ 'text-area' ]
         self.line_height = self.font.get_height()

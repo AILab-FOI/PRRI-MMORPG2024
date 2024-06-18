@@ -18,7 +18,7 @@ class Inventory ( object ):
             self.items_list.append(item)
     
         # reference to the inventory's owner, fix if wrong
-        self.owner = owner
+        self.owner: player.Player = owner
 
 
     def set_owner(self, owner):
@@ -55,7 +55,7 @@ class Inventory ( object ):
     
     # Called before info is sent to server
     def on_inventory_updated( self ):
-        pass
+        self.owner.on_player_inventory_updated()
 
     def load_from_net(self, data):
         self.items_list = []
@@ -65,6 +65,7 @@ class Inventory ( object ):
                 setattr(item, attr, val)
             
             self.items_list.append(item)
+        self.on_inventory_updated()
 
     def update_info(self):
         message = {"command": "update_inventory_info"}
