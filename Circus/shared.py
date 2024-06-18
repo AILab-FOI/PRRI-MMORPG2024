@@ -765,7 +765,7 @@ INTERFACE_ATTRS = {
         'pos': (96, 281),
         'size': (575, 154),
         'z': 3,
-        'text-pos':(179, 43),
+        'text-pos':(182, 47),
         'text-area': {
             'width':362,
             'height':90,

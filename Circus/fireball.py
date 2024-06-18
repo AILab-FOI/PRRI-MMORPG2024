@@ -13,7 +13,7 @@ class Fireball ( Ability ):
         self.direction.normalize()
         self.direction *= 4
 
-        self.set_pos(self.player.pos + self.direction)
+        self.set_pos(self.player.pos + 50 * self.player.forward())
         self.set_ang(math.degrees(-self.angle) - 90)
 
     def think ( self ):
