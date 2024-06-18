@@ -374,7 +374,7 @@ STACKED_SPRITE_ATTRS = {
     'satyr': {
         'path': 'assets/stacked_sprites/satyr.png',
         'num_layers': 44,
-        'scale': 6,
+        'scale': 3,
         'y_offset': -150,
         'transparency': True,
         'mask_layer': 3,
