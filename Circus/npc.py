@@ -10,7 +10,7 @@ NPCS = {
     'test_npc': {
         'name': 'Guggy',
         'entity': 'kitty',
-        'dialog': 'Hey, could you fetch some apples for me?\nA tree is to the southeast of here!',
+        'dialog': 'Hey, could you fetch some apples for me?\nAn apple tree is to the east of here!',
         'quests': [
             FetchQuest(
                 id="QUEST_FETCH_APPLE", 
