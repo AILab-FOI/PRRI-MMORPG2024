@@ -8,25 +8,25 @@ from typing import List
 
 NPCS = {
     'test_npc': {
-        'name': 'Guggy',
+        'name': 'Satyr',
         'entity': 'empty',
-        'dialog': 'Hey, could you fetch some apples for me?\nAn apple tree is to the east of here!',
+        'dialog': 'Hail traveler, would you mind helping me out?\nA spirit has escaped to tree is to the east of here.\nFetch it and retrieve it for me for some coin.',
         'quests': [
             FetchQuest(
-                id="QUEST_FETCH_APPLE", 
+                id="QUEST_FETCH_SPIRIT", 
                 required_items=[
-                    InventoryItem( id=2, name="Apple",description="+40% Doctor resistance", type="Armor", stat=40 )
+                    InventoryItem( id=2, name="Wild Spirit",description="+20% Magic resistance", type="Armor", stat=20 )
                 ],
                 reward=ItemReward(
-                    InventoryItem( id=1, name="Gold",description="Feels oddly chocholatey", type="Currency", stat=1 ),
+                    InventoryItem( id=1, name="Gold",description="Common currency.", type="Currency", stat=1 ),
                 ),
-                title = "The Testiest Quest",
-                text = "Move to the lower right tree." ),
+                title = "The Beginnings",
+                text = "Move to the tree to the right." ),
             PositionQuest(
                 id="QUEST_APPLE_GAIN",
                 position=vec2( 13.90625 * TILE_SIZE, 14.125 * TILE_SIZE ),
                 reward=ItemReward(
-                    InventoryItem( id=2, name="Apple",description="+40% Doctor resistance", type="Armor", stat=40 ),
+                    InventoryItem( id=2, name="Wild Spirit",description="+20% Magic resistance", type="Armor", stat=20 ),
                 )
                 )
                 ],
