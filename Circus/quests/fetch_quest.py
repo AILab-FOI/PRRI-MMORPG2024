@@ -59,6 +59,13 @@ class FetchQuest(quest.Quest):
         super().on_quest_finished()
         self.progress['distance'] = -1
 
+        ids = []
+        for item in self.required_items:
+            ids.append(item.id)
+
+        inventory: Inventory = clientApp().player.inventory
+        inventory.delete_items_by_id(ids)
+
         clientApp().player.questDialogue.set_message("Quest Complete!")
         clientApp().player.questDialogue.display()
 

@@ -45,6 +45,17 @@ class Inventory ( object ):
         self.on_inventory_updated()
         self.update_info()
 
+    def delete_items_by_id(self, item_ids):
+        if len(self.items_list) <= 0:
+            raise Exception("inventory cannot contain negative items")
+        else:
+            for item in list(self.items_list):
+                if( item.id in item_ids ):
+                    self.items_list.remove(item)
+
+        self.on_inventory_updated()
+        self.update_info()
+
     def add_items(self, items):
         # if len(self.items_list) >= 3:
         #     raise Exception("inventory cannot go over 3 items")
