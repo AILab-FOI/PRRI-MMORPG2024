@@ -22,6 +22,7 @@ pg.mixer.music.play( loops=-1 )
 class _globals:
     app = None
     tmp_quest_list = {}
+    tmp_inv = None
 
 def clientApp():
     return _globals.app
@@ -473,6 +474,19 @@ INTERFACE_ATTRS = {
                 'interaction': lambda : clientApp().player.questDialogue.handle_input()
                 }
         },
+    },
+    'inventory-display': {
+        'path': 'assets/images/chat_box.png',
+        'pos': (WIDTH-250, HEIGHT-300),
+        'size': (250, 300),
+        'z': 3,
+        'color': (255,255,255),
+        'max_lines': 90,
+        'text-pos':(0, 0),
+        'text-area': {
+            'width':300,
+            'height':300,
+        }
     },
     'chat-box': {
         'path': 'assets/images/chat_box.png',

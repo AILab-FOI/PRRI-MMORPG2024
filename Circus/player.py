@@ -1,4 +1,5 @@
 from shared import *
+from shared import _globals
 import math
 from entity import BaseSpriteEntity
 from bullet import Bullet
@@ -7,6 +8,8 @@ import json
 import logging
 from dialogue import Dialogue
 from viewpoint import Viewpoint
+import inventory
+import inventory_item
 
 from slash import Slash
 from fireball import Fireball
@@ -46,8 +49,18 @@ class Player( BaseSpriteEntity ):
         self.moving = False
         
         self.health = 100
+        self.armor = 0
         self.mana = 100
         self.alive = True
+
+        self.inventoryDisplay = Dialogue(name='inventory-display')
+        self.inventoryDisplay.set_message("")
+        self.inventoryDisplay.display()
+        
+        self.inventory : inventory.Inventory = inventory.Inventory(owner=self)
+        if( _globals.tmp_inv != None ):
+            self.inventory.load_from_net(_globals.tmp_inv)
+            _globals.tmp_inv = None
 
         self.inControl = True
 
@@ -249,6 +262,21 @@ class Player( BaseSpriteEntity ):
         super().set_pos(newPos)
         self.offset = newPos
 
+    def on_player_inventory_updated(self):
+        inventoryMessage = "Inventory:\n"
+        for item in self.inventory.items_list:
+            itemMessage = f"{item.name}\n  {item.description}\n  Type:{item.type}\n  Power:{item.stat}\n"
+            inventoryMessage += itemMessage
+
+        print(inventoryMessage)
+        self.inventoryDisplay.set_message(inventoryMessage)
+        self.inventoryDisplay.display()
+
+        for inv_item in self.inventory.items_list:
+            # gleda se zadnji u listi
+            if inv_item.type == "armor":
+                self.armor = inv_item.stat
+
     def use_slash( self ):
         if self.check_cooldown(self.abilities[0]):
             Slash()
@@ -264,7 +292,6 @@ class Player( BaseSpriteEntity ):
     def use_heal( self ):
         if self.check_cooldown(self.abilities[3]):
             Heal()
-            
 
     def check_cooldown( self, ability ):
 
@@ -280,17 +307,3 @@ class Player( BaseSpriteEntity ):
             return True
         else:
             return False
-
-
-
-
-
-
-
-
-
-
-
-
-
-

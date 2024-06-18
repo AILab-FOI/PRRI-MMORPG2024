@@ -12,6 +12,7 @@ class EntitySystem(object):
         self.entity_list: dict = {}
         self.delete_list: list = []
         self.index = 0
+        self.test_ent = None
     
     def add_entity( self, entity ):
         """Adds an entity

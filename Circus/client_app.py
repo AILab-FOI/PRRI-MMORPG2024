@@ -63,6 +63,7 @@ class ClientApp:
 
         # server connection
         self.messages_to_send: list = []
+        self.messages_to_receive: list = []
         self.closing = False
         self.closed = False
         self.connect()
@@ -238,6 +239,10 @@ class ClientApp:
         self.websocket_thread.start()
 
     def websocket_loop(self):
+        self.handle_received_messages()
+        self.send_websocket_messages()
+
+    def send_websocket_messages(self):
         if( len(self.messages_to_send) <= 0 ):
             self.push_websocket_message({"command": "keep_connection"})
 
@@ -246,7 +251,6 @@ class ClientApp:
             try:
                 #if( message['command'] != "keep_connection" ):
                 #    print(f"Sending message: {message}")
-                
                 self.ws.send(json.dumps(message))
                 self.messages_to_send.pop(0)
             # If we fail to send because the connection closed, break
@@ -275,6 +279,16 @@ class ClientApp:
         """        
         #logging.info( f"Message received: {message}" )
         
+        self.messages_to_receive.append(message)
+
+    def handle_received_messages(self):
+        while( len(self.messages_to_receive) ):
+            message = self.messages_to_receive[0]
+            self.handle_received_message(message)
+            self.messages_to_receive.pop(0)
+
+
+    def handle_received_message(self, message):
         json_message = json.loads(message)
 
         #print(json_message)
@@ -292,6 +306,47 @@ class ClientApp:
             case "chat_message":
                 # Handle incoming chat message
                 self.handle_chat_message(json_message)
+            case "server_ent_update":
+                self.handle_server_ent_update(message, json_message)
+            case "inventory_update":
+                data = json_message["inventory"]
+                if( clientApp().player == None ):
+                    _globals.tmp_inv = data
+                else:
+                    clientApp().player.inventory.load_from_net(data)
+
+    def handle_server_ent_update(self, message, json_message):
+        data = json_message["data"]
+        netid = data["netid"]
+
+        new_message = self.get_latest_update_message_and_remove_the_rest(netid)
+        if( new_message == None ):
+            json_message = json.loads(message)
+
+        if( self.entity_system.test_ent != None ):
+            newpos = vec2( data["position"]["x"],
+                         data["position"]["y"] )
+                    
+            self.entity_system.test_ent.set_pos(newpos)
+
+    def get_latest_update_message_and_remove_the_rest( self, entindex ):
+        latestUpdateMessage = None
+        for messageIndex in range(len(self.messages_to_receive)-1, -1,-1):
+            message = self.messages_to_receive[messageIndex]
+            data = json.loads( message )
+            if( data['command'] != 'server_ent_update' ):
+                continue
+
+            if( data["data"]['netid'] != entindex ):
+                continue
+
+            if latestUpdateMessage == None:
+                latestUpdateMessage = message
+        
+            data['command'] = 'skip'
+            self.messages_to_receive[messageIndex] = json.dumps(data)
+        
+        return latestUpdateMessage
 
     def handle_player_pos_message(self, json_message):
         data = json_message["data"]
@@ -313,7 +368,7 @@ class ClientApp:
             player_info["position"] = pos
             player_info["velocity"] = vel
 
-            if self.scene.done and player != self.username and not player_exists: 
+            if self.scene and self.scene.done and player != self.username and not player_exists: 
                 RemotePlayer( 'remote_player', pos, player )
 
             self.players_pos[ player ] = player_info

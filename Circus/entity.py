@@ -217,9 +217,6 @@ class BaseSpriteEntity( WorldObject ):
         self.sprite: pg.sprite.Sprite = None
 
         self.load_attrs_from_name( self.name )
-
-        if( self.name == 'kitty' ):
-            self.set_ang( 45 )
     
     def load_attribute(self, name, value):
         match name:

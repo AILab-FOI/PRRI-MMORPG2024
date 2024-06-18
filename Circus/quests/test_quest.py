@@ -33,7 +33,7 @@ class PositionQuest(quest.Quest):
         required_distance = 200
 
         # Close to NPC, accept
-        if distance <= required_distance:
+        if distance <= required_distance and self.owner.spoke_to == True:
             has_quest_condition = True
 
         return has_quest_condition
