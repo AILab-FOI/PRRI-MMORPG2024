@@ -24,7 +24,7 @@ NPCS = {
                 text = "Move to the lower right tree." ),
             PositionQuest(
                 id="QUEST_APPLE_GAIN",
-                position=vec2( 16 * TILE_SIZE, 20 * TILE_SIZE ),
+                position=vec2( 13.90625 * TILE_SIZE, 14.125 * TILE_SIZE ),
                 reward=ItemReward(
                     InventoryItem( id=2, name="Apple",description="+40% Doctor resistance", type="Armor", stat=40 ),
                 )

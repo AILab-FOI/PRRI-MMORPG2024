@@ -207,7 +207,15 @@ and is also cached for all angles of the object, set manually or by default
 equal to num_layer // 2'''
 
 STACKED_SPRITE_ATTRS = {
-
+    'tree_apple': {
+        'path': 'assets/stacked_sprites/tree_apple.png',
+        'num_layers': 46,
+        'scale': 8,
+        'y_offset': -130,
+        'transparency': True,
+        'mask_layer': 3,
+        'outline': 10,
+    },
 
     'treestump1': {
         'path': 'assets/stacked_sprites/treestump1.png',
