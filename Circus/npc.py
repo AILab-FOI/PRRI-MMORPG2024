@@ -1,6 +1,8 @@
+from inventory_item import InventoryItem
 from shared import *
 import entity
 from quest import Quest, ItemReward
+from quests.fetch_quest import FetchQuest
 from quests.test_quest import PositionQuest
 from typing import List
 
@@ -8,11 +10,26 @@ NPCS = {
     'test_npc': {
         'name': 'Guggy',
         'entity': 'kitty',
-        'quests': PositionQuest(id="TEST_QUEST_POSITION", 
-                position=vec2( 16 * TILE_SIZE, 20 * TILE_SIZE ),
-                reward=ItemReward("Apple(+doctor resistance)","Outdated Magazine"),
+        'dialog': 'Hey, could you fetch some apples for me?\nA tree is to the southeast of here!',
+        'quests': [
+            FetchQuest(
+                id="QUEST_FETCH_APPLE", 
+                required_items=[
+                    InventoryItem( id=2, name="Apple",description="+40% Doctor resistance", type="Armor", stat=40 )
+                ],
+                reward=ItemReward(
+                    InventoryItem( id=1, name="Gold",description="Feels oddly chocholatey", type="Currency", stat=1 ),
+                ),
                 title = "The Testiest Quest",
                 text = "Move to the lower right tree." ),
+            PositionQuest(
+                id="QUEST_APPLE_GAIN",
+                position=vec2( 16 * TILE_SIZE, 20 * TILE_SIZE ),
+                reward=ItemReward(
+                    InventoryItem( id=2, name="Apple",description="+40% Doctor resistance", type="Armor", stat=40 ),
+                )
+                )
+                ],
     },
 }
 
@@ -22,6 +39,8 @@ class NPCBase( entity.Entity ):
 
         self.npc_name = name
         self.quests : List[Quest] = []
+        self.spoke_to = False
+        self.dialog = ''
 
         if( template != None ):
             self.load_npc_template(template)
@@ -32,6 +51,9 @@ class NPCBase( entity.Entity ):
         self.load_attrs_from_name(template['entity'])
 
         self.npc_name = template['name']
+
+        self.dialog = template['dialog']
+
         self.quests : List[Quest] = []
 
         quests = template['quests']
@@ -40,7 +62,7 @@ class NPCBase( entity.Entity ):
             return
         
         if( isinstance(quests, list) ):
-            for id, quest in quests:
+            for quest in quests:
                 self.add_quest(quest)
         else:
             self.add_quest(quests)
@@ -59,7 +81,28 @@ class NPCBase( entity.Entity ):
     def should_think(self) -> bool:
         return True
     
+    def speak(self):
+        if( self.spoke_to ):
+            return
+        
+        # Cant speak if we already did their stuff
+        for quest in self.quests:
+            if( quest.is_in_progress() or quest.is_finished() ):
+                return
+        
+        message = f"{self.npc_name}\n{self.dialog}"
+
+        clientApp().player.questDialogue.set_message(message)
+        clientApp().player.questDialogue.display()
+        clientApp().player.questDialogue.listener = self
+
+    def end_speak(self):
+        self.spoke_to = True
+
     def think(self):
+        if( abs( self.pos.distance_to(clientApp().player.pos) ) < 200 ):
+            self.speak()
+
         for quest in self.quests:
             if( quest.is_in_progress() ):
                 if( quest.check_quest_finished() ):

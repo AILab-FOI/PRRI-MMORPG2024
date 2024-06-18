@@ -1,4 +1,5 @@
 from shared import *
+from shared import _globals
 import math
 from entity import BaseSpriteEntity
 from bullet import Bullet
@@ -7,7 +8,14 @@ import json
 import logging
 from dialogue import Dialogue
 from viewpoint import Viewpoint
+import inventory
+import inventory_item
 
+from slash import Slash
+from fireball import Fireball
+from lightning import Lightning
+from heal import Heal
+from datetime import datetime, timedelta
 
 class Player( BaseSpriteEntity ):
     """Player base class
@@ -39,15 +47,39 @@ class Player( BaseSpriteEntity ):
 
         self.direction = 'DOWN'
         self.moving = False
-
+        
         self.health = 100
+        self.armor = 0
         self.mana = 100
         self.alive = True
+
+        self.inventoryDisplay = Dialogue(name='inventory-display')
+        self.inventoryDisplay.set_message("")
+        self.inventoryDisplay.display()
+        
+        self.inventory : inventory.Inventory = inventory.Inventory(owner=self)
+        if( _globals.tmp_inv != None ):
+            self.inventory.load_from_net(_globals.tmp_inv)
+            _globals.tmp_inv = None
+
+        self.inControl = True
 
         clientApp().trackables['player-health'] = {'object': self, 'attr': 'health', 'max': 100}
         clientApp().trackables['player-mana'] = {'object': self, 'attr': 'mana', 'max': 100}
 
         self.questDialogue = Dialogue()
+
+
+        slash = ENTITY_SPRITE_ATTRS[ 'ability_slash' ]
+        fireball = ENTITY_SPRITE_ATTRS[ 'ability_fireball' ]
+        lightning = ENTITY_SPRITE_ATTRS[ 'ability_lightning' ]
+        heal = ENTITY_SPRITE_ATTRS[ 'ability_heal' ]
+        self.gcd = datetime.now()
+        self.abilities = []
+        self.abilities.append({'cooldown': slash['cooldown'], 'used-time': datetime.now()})
+        self.abilities.append({'cooldown': fireball['cooldown'], 'used-time': datetime.now()})
+        self.abilities.append({'cooldown': lightning['cooldown'], 'used-time': datetime.now()})
+        self.abilities.append({'cooldown': heal['cooldown'], 'used-time': datetime.now()})
 
     def on_start_drawing(self):
         super().on_start_drawing()
@@ -94,6 +126,9 @@ class Player( BaseSpriteEntity ):
 
 
     def control( self ):
+        if not self.inControl:
+            return
+        
         self.moving = False
         self.last_inc[0] = self.inc[0]
         self.last_inc[1] = self.inc[1]
@@ -103,9 +138,9 @@ class Player( BaseSpriteEntity ):
 
         key_state = pg.key.get_pressed()
 
-        if key_state[ pg.K_LEFT ]:
+        if key_state[ pg.K_q ]:
             self.angle += rot_speed
-        if key_state[ pg.K_RIGHT ]:
+        if key_state[ pg.K_e ]:
             self.angle -= rot_speed
 
         if key_state[ pg.K_w ]:
@@ -139,16 +174,10 @@ class Player( BaseSpriteEntity ):
             self.health = 100
         else:
             self.health += amount
-    def single_fire( self, event ):
-        if event.type == pg.MOUSEBUTTONDOWN:
-            if event.button == 1:  
-                Bullet(pos=self.pos)
-                self.damage(8.72)
-                
-        elif event.type == pg.KEYDOWN:
+    def single_fire( self, event ):     
+        if event.type == pg.KEYDOWN:
             if event.key == pg.K_SPACE:
-                self.heal(6.32)
-                clientApp().message.handle_input()
+                self.questDialogue.handle_input()
 
     def check_collision( self ):
         if( self.sprite == None ):
@@ -158,6 +187,21 @@ class Player( BaseSpriteEntity ):
                                       dokill=False, collided=pg.sprite.collide_mask )
         hit = pg.sprite.spritecollide( self.sprite, clientApp().draw_manager.layer_masks['entity_layer'],
                                       dokill=False, collided=pg.sprite.collide_mask )
+        
+        for obj in list(hit):
+            if( "can_collide" in obj.entity.attrs and obj.entity.attrs["can_collide"] == False ):
+                hit.remove(obj)
+
+        for obj in list(hitobst):
+            if( "can_collide" in obj.attrs and obj.attrs["can_collide"] == False ):
+                hitobst.remove(obj)
+
+        if len(hit) == 0:
+            hit = None
+
+        if len(hitobst) == 0:
+            hitobst = None
+
         if not hitobst and not hit:
             if self.inc.x or self.inc.y:
                 self.prev_inc = self.inc
@@ -167,7 +211,7 @@ class Player( BaseSpriteEntity ):
                 clientApp().message.set_message( hit[ 0 ].entity.message )
                 clientApp().message.active = True
             if hitobst and hitobst[ 0 ].message != '':
-                clientApp().message.set_message( hitobst[ 0 ].entity.message )
+                clientApp().message.set_message( hitobst[ 0 ].message )
                 clientApp().message.active = True
 
     def has_moved_this_frame(self) -> bool:
@@ -218,16 +262,48 @@ class Player( BaseSpriteEntity ):
         super().set_pos(newPos)
         self.offset = newPos
 
+    def on_player_inventory_updated(self):
+        inventoryMessage = "Inventory:\n"
+        for item in self.inventory.items_list:
+            itemMessage = f"{item.name}\n  {item.description}\n  Type:{item.type}\n  Power:{item.stat}\n"
+            inventoryMessage += itemMessage
 
+        print(inventoryMessage)
+        self.inventoryDisplay.set_message(inventoryMessage)
+        self.inventoryDisplay.display()
 
+        for inv_item in self.inventory.items_list:
+            # gleda se zadnji u listi
+            if inv_item.type == "armor":
+                self.armor = inv_item.stat
 
+    def use_slash( self ):
+        if self.check_cooldown(self.abilities[0]):
+            Slash()
 
+    def use_fireball( self ):
+        if self.check_cooldown(self.abilities[1]):
+            Fireball()
 
+    def use_lightning( self ):
+        if self.check_cooldown(self.abilities[2]):
+            Lightning()
 
+    def use_heal( self ):
+        if self.check_cooldown(self.abilities[3]):
+            Heal()
 
+    def check_cooldown( self, ability ):
 
+        global_elapsed = datetime.now() - self.gcd
+        if global_elapsed.total_seconds() < 0.5:
+            return False
 
+        elapsed = datetime.now() - ability['used-time']
 
-
-
-
+        if elapsed.total_seconds() > ability['cooldown']:
+            self.gcd = datetime.now()
+            ability['used-time'] = datetime.now()
+            return True
+        else:
+            return False

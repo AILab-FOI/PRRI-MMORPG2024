@@ -8,11 +8,17 @@ import logging
 
 class Interface( pg.sprite.Sprite ):
     def __init__(self, name, shown=True ):
+        """Interface class
+
+        Args:
+            name (string): identifiable name for shared.py
+            shown (bool): to immediately render interface or to wait for interface.show() to be called 
+        """
         self.name = name
         self.shown = shown
+        self.attrs = INTERFACE_ATTRS[ self.name ]
         self.group = clientApp().draw_manager.layer_masks["hud_layer"]
         super().__init__( self.group )
-        self.attrs = INTERFACE_ATTRS[ self.name ]
         self.pos = vec2( self.attrs[ 'pos' ] )
         self.size = vec2( self.attrs[ 'size' ] )
         self.interactable = False
@@ -32,7 +38,6 @@ class Interface( pg.sprite.Sprite ):
     def __del__( self ):
         self.remove_interactions()
 
-    #this will be used for animated ui
     def update( self ):
         self.get_image()
     
@@ -44,15 +49,21 @@ class Interface( pg.sprite.Sprite ):
             self.image = None
     
     def show( self ):
+        """Displays interface, recreating interactibles
+        """
+        if not self.shown:
+            self.create_interactions()
         self.shown = True
-        self.create_interactions()
         self.image = pg.image.load( self.attrs[ 'path' ] ).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.topleft = self.pos
 
     def hide( self ):
+        """Hides interface, removing interactibles
+        """
+        if self.shown:
+            self.remove_interactions()
         self.shown = False
-        self.remove_interactions()
         self.image = pg.Surface( (0, 0) )
         self.rect = self.image.get_rect()
 
@@ -73,8 +84,16 @@ class Interface( pg.sprite.Sprite ):
 
 
 class BarInterface( Interface ):
-    def __init__(self, name):
-        super().__init__(name)
+    def __init__(self, name, shown=True):
+        """Bar Interface class
+        Used for UI elements that track information in the style of a "bar"
+        To track information REQUIRES for the information to be added to clientApp().trackables
+
+        Args:
+            name (string): identifiable name for shared.py
+            shown (bool): to immediately render interface or to wait for interface.show() to be called 
+        """
+        super().__init__(name, shown)
         self.frames = self.attrs[ 'frames' ]
         self.tracking = self.attrs[ 'tracking' ]
         self.frame_index = 0

@@ -2,6 +2,7 @@ import pygame as pg
 import sys
 import re
 import logging
+
 vec2 = pg.math.Vector2
 
 RES = WIDTH, HEIGHT = vec2( 800, 450 ) #vec2( 1600, 900 )
@@ -21,6 +22,7 @@ pg.mixer.music.play( loops=-1 )
 class _globals:
     app = None
     tmp_quest_list = {}
+    tmp_inv = None
 
 def clientApp():
     return _globals.app
@@ -99,6 +101,7 @@ ENTITY_SPRITE_ATTRS = {
         'num_layers': 8,
         'scale': 0.8,
         'y_offset': -20,
+        'can_collide': False
     },
     'circus': {
         'path': 'assets/entities/circus/circus_tent.png',
@@ -117,6 +120,42 @@ ENTITY_SPRITE_ATTRS = {
         'scale': 0.4,
         'path': 'assets/entities/bullet/bullet.png',
         'y_offset': 50,
+    },
+    'ability_slash': {
+        'path': 'assets/entities/abilities/ability_slash.png',
+        'num_layers': 3,
+        'scale': 6,
+        'y_offset': 50,
+        'lifetime': 2,
+        'cooldown': 1,
+        'can_collide': False
+    },
+    'ability_fireball': {
+        'path': 'assets/entities/abilities/ability_fireball.png',
+        'num_layers': 4,
+        'scale': 3,
+        'y_offset': 50,
+        'lifetime': 100,
+        'cooldown': 5,
+        'can_collide': False
+    },
+    'ability_lightning': {
+        'path': 'assets/entities/abilities/ability_lightning.png',
+        'num_layers': 9,
+        'scale': 8,
+        'y_offset': 50,
+        'lifetime': 4,
+        'cooldown': 8,
+        'can_collide': False
+    },
+    'ability_heal': {
+        'path': 'assets/entities/abilities/ability_heal.png',
+        'num_layers': 6,
+        'scale': 3,
+        'y_offset': 50,
+        'lifetime': 60,
+        'cooldown': 10,
+        'can_collide': False
     },
     'movement': {
         'path': 'assets/entities/movement/movement.png',
@@ -653,34 +692,39 @@ INTERFACE_ATTRS = {
                 'y': 394,
                 'width': 32,
                 'height': 32,
-                'interaction': lambda: logging.info('ability_slash')
+                'interact-with': [pg.MOUSEBUTTONDOWN,pg.K_1],
+                'interaction': lambda: clientApp().player.use_slash()
                 },
             'Fireball': {
                 'x': 356,
                 'y': 394,
                 'width': 32,
                 'height': 32,
-                'interaction': lambda: logging.info('ability_fireball')
+                'interact-with': [pg.MOUSEBUTTONDOWN,pg.K_2],
+                'interaction': lambda: clientApp().player.use_fireball()
                 },
             'Lightning': {
                 'x': 393,
                 'y': 394,
                 'width': 32,
                 'height': 32,
-                'interaction': lambda: logging.info('ability_lightning')
+                'interact-with': [pg.MOUSEBUTTONDOWN,pg.K_3],
+                'interaction': lambda: clientApp().player.use_lightning()
                 },
             'Heal': {
                 'x': 430,
                 'y': 394,
                 'width': 32,
                 'height': 32,
-                'interaction': lambda: logging.info('ability_heal')
+                'interact-with': [pg.MOUSEBUTTONDOWN,pg.K_4],
+                'interaction': lambda: clientApp().player.use_heal()
                 },
             'CheckQuests':{
                 'x': 800-100,
                 'y': 0,
                 'width': 100,
                 'height': 50,
+                'interact-with': [pg.MOUSEBUTTONDOWN],
                 'interaction': lambda : clientApp().print_quests()
             }
         }
@@ -717,12 +761,45 @@ INTERFACE_ATTRS = {
                 'y': 242,
                 'width': 599,
                 'height': 211,
+                'interact-with': [pg.MOUSEBUTTONDOWN],
                 'interaction': lambda : clientApp().player.questDialogue.handle_input()
                 }
         },
     },
+    'inventory-display': {
+        'path': 'assets/images/chat_box.png',
+        'pos': (WIDTH-250, HEIGHT-300),
+        'size': (250, 300),
+        'z': 3,
+        'color': (255,255,255),
+        'max_lines': 90,
+        'text-pos':(0, 0),
+        'text-area': {
+            'width':300,
+            'height':300,
+        }
+    },
     'chat-box': {
+        'path': 'assets/images/chat_box.png',
+        'pos': (0, 0),
+        'size': (251, 160),
+        'z': 0,
+        'text-pos':(12, 11),
+        'text-area': {
+            'width':227,
+            'height':125,
+        },
+        'interactibles':{
 
+            'enter-message': {
+                'x': 11,
+                'y': 138,
+                'width': 229,
+                'height': 22,
+                'interact-with': [pg.MOUSEBUTTONDOWN, pg.K_RETURN],
+                'interaction': lambda : clientApp().chat.activate()
+                },
+        },
     },
 }
 
