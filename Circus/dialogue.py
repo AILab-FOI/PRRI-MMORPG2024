@@ -79,6 +79,8 @@ class Dialogue( Interface ):
         else:
             self.text_index = 0
             self.close()
+            if( hasattr(self, "listener") ):
+                self.listener.end_speak()
     
     def dist_to_source( self ):
         """Distance from player to dialogues' source object

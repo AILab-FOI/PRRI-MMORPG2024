@@ -20,6 +20,14 @@ class Inventory ( object ):
         # reference to the inventory's owner, fix if wrong
         self.owner: player.Player = owner
 
+    def count_item_of_id(self, id):
+        count = 0
+        for item in self.items_list:
+            if( item.id != id ):
+                continue
+            
+            count += 1
+        return count
 
     def set_owner(self, owner):
         self.owner = owner

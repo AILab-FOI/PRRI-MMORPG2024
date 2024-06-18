@@ -22,10 +22,7 @@ class ItemReward( Reward ):
             self.items.append(item)
         
     def give_reward(self):
-        clientApp().player.inventory.add_items([
-            InventoryItem( id=1, name="Apple",description="+40% Doctor resistance", type="Armor", stat=40 ),
-            InventoryItem( id=2, name="Gold",description="Common Currency", type="Currency", stat=1 ),
-        ])
+        clientApp().player.inventory.add_items(self.items)
     
     def reward_string(self) -> str:
         return str(self.items)
