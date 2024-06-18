@@ -66,6 +66,6 @@ class FetchQuest(quest.Quest):
         inventory: Inventory = clientApp().player.inventory
         inventory.delete_items_by_id(ids)
 
-        clientApp().player.questDialogue.set_message("Quest Complete!")
+        clientApp().player.questDialogue.set_message("Thank you greatly traveler, here you've earned your reward")
         clientApp().player.questDialogue.display()
 
