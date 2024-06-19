@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import asyncio
 import threading
 import time
@@ -32,9 +33,9 @@ class dbGlobal:
     def end_edit():
         transaction.commit()
 
-def setup_database():
+def setup_database(dbhost, dbport):
     print( 'Connecting to ZEO server' ) # Too much clutter
-    storage = ClientStorage( ( DBHOST, DBPORT ) )
+    storage = ClientStorage( ( dbhost, dbport ) )
     db = DB( storage )
     connection: Connection = db.open()
     root = connection.root()
@@ -674,9 +675,9 @@ class _globals:
     app: GameApp = None
 
 # Run the server
-async def main():
+async def main(port, dbhost, dbport):
     print( "Setting up database" )
-    dbGlobal.db = setup_database()  # Initialize database
+    dbGlobal.db = setup_database(dbhost=dbhost, dbport=dbport)  # Initialize database
     dbGlobal.start_edit()
     dbGlobal.end_edit()
     _globals.game_thread = threading.Thread(target=game_start)
@@ -684,7 +685,7 @@ async def main():
 
     print( "Starting websocket server" )
     try:
-        async with websockets.serve( handle_connection, SHOST, SPORT ):
+        async with websockets.serve( handle_connection, SHOST, port ):
             await asyncio.Future()  # run forever
     finally:
         exit_handler()
@@ -702,6 +703,15 @@ def exit_handler():
 
 if __name__ == "__main__":
     print( "Server starting" )
+
+    parser = argparse.ArgumentParser(description='MMORPG')
+
+    parser.add_argument('--port', type=int, help='Override default server port', required=False, default=SPORT)
+    parser.add_argument('--dbhost', type=str, help='Override default database port', required=False, default=DBHOST)
+    parser.add_argument('--dbport', type=int, help='Override default database port', required=False, default=DBPORT)
+
+    args = parser.parse_args()
+
     atexit.register(exit_handler)
-    asyncio.run( main() )
+    asyncio.run( main(args.port, args.dbhost, args.dbport) )
 

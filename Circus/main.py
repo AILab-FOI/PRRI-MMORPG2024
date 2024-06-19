@@ -5,6 +5,7 @@ import platform
 import asyncio
 import logging
 
+from config import SHOST, SPORT
 from shared import *
 from client_app import ClientApp
 
@@ -32,9 +33,10 @@ if __name__ == '__main__':
 
     parser.add_argument('--username', type=str, help='The username', required=True)
     parser.add_argument('--password', type=str, help='The password', required=True)
+    parser.add_argument('--server', type=str, help='Override default server ip', required=False, default=SHOST)
+    parser.add_argument('--port', type=int, help='Override default server port', required=False, default=SPORT)
 
     args = parser.parse_args()
-    args = parser.parse_args()
 
-    setClientApp( ClientApp( args.username, args.password ) )
+    setClientApp( ClientApp( args.username, args.password, args.server, args.port ) )
     asyncio.run( run( clientApp() ) )

@@ -20,7 +20,7 @@
             "label": "Start WebSocket Server",
             "type": "process",
             "command": "python",
-            "args": ["server.py"],
+            "args": ["server.py", "--port", "5000", "--dbhost", "localhost", "--dbport", "8100" ],
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -33,7 +33,7 @@
             "label": "Start Client",
             "type": "process",
             "command": "python",
-            "args": ["main.py", "--username", "Iris", "--password", "PASS"],
+            "args": ["main.py", "--username", "Iris", "--password", "PASS", "--server", "localhost", "--port", "5000"],
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -46,7 +46,7 @@
             "label": "Start Second Client",
             "type": "process",
             "command": "python",
-            "args": ["main.py", "--username", "Ivan", "--password", "PASS2"],
+            "args": ["main.py", "--username", "Ivan", "--password", "PASS2", "--server", "localhost", "--port", "5000"],
             "group": {
                 "kind": "build",
                 "isDefault": true

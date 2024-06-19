@@ -22,12 +22,14 @@ from entity import RemotePlayer
 class ClientApp:
     """Client app base class
     """    
-    def __init__(self, username: str, password: str):
+    def __init__(self, username: str, password: str, server: str, port: str):
         if __import__("sys").platform == "emscripten":
             self.screen = pg.display.set_mode(RES, pg.FULLSCREEN)
         else:
             self.screen = pg.display.set_mode(RES) 
         
+        self.URI = "ws://%s:%d" % ( server, port )
+
         pg.font.init()
 
         # Font
@@ -230,7 +232,7 @@ class ClientApp:
     def connect(self):
         """Connects self to websocket
         """        
-        self.ws = websocket.WebSocketApp(URI,
+        self.ws = websocket.WebSocketApp(self.URI,
                                          on_open=self.on_open,
                                          on_message=self.on_message,
                                          on_error=self.on_error,
