@@ -1,2 +1,22 @@
-pygame
+# Installation
 
+## Shared
+### Programs
+Install Python 3: https://www.python.org/downloads/
+    Make sure you install PIP alongside it, check if you have it by doing pip in CMD
+
+To install the packages below, you need to run CMD or Powershell in *ADMINISTRATOR* mode
+
+### Python packages
+pip install pygame
+
+## Client
+### Python packages
+pip install websocket-client
+
+## Server
+### Python packages
+pip install websockets
+
+### Database
+pip install zeo

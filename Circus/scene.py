@@ -352,7 +352,7 @@ class LoadingScene:
         # Display the current message based on progress
         current_message_index = min( int( self.progress ), len( self.messages ) - 1 )
         msg = self.messages[ current_message_index ]
-        text = self.font.render( msg, True, ( 0, 0, 0 ))
+        text = self.font.render( msg, True, ( 255, 255, 255 ))
         text_rect = text.get_rect( center=( screen_center_x, screen_center_y + 80 ))
         clientApp().screen.blit( text, text_rect )
 
